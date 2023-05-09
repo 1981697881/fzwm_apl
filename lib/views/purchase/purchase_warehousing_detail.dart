@@ -989,12 +989,12 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
     //下推
     Map<String, dynamic> pushMap = Map();
     pushMap['EntryIds'] = val;
-    pushMap['RuleId'] = "PRD_MODIRECTSENDTOINSTOCK";
+    pushMap['RuleId'] = "PUR_ReceiveBill-STK_InStock";
     pushMap['TargetFormId'] = "STK_InStock";
     pushMap['IsEnableDefaultRule'] = "false";
     pushMap['IsDraftWhenSaveFail'] = "false";
     var downData =
-    await SubmitEntity.pushDown({"formid": "PUR_PurchaseOrder", "data": pushMap});
+    await SubmitEntity.pushDown({"formid": "PUR_ReceiveBill", "data": pushMap});
     var res = jsonDecode(downData);
     print(res);
     //判断成功
@@ -1006,7 +1006,7 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
       inOrderMap['FormId'] = 'STK_InStock';
       inOrderMap['FilterString'] = "FBillNo='$entitysNumber'";
       inOrderMap['FieldKeys'] =
-      'FEntity_FEntryId,FMaterialId.FNumber,FMaterialId.FName,FUnitId.FNumber,FMoBillNo';
+      'FInStockEntry_FEntryId,FMaterialId.FNumber,FMaterialId.FName,FUnitId.FNumber';
       String order = await CurrencyEntity.polling({'data': inOrderMap});
       print(order);
       var resData = jsonDecode(order);
@@ -1022,46 +1022,25 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
       orderMap['IsDeleteEntry'] = false;
       Map<String, dynamic> Model = Map();
       Model['FID'] = res['Result']['ResponseStatus']['SuccessEntitys'][0]['Id'];
-      // ignore: non_constant_identifier_names
       var FEntity = [];
       for (int entity = 0; entity < resData.length; entity++) {
-        /*resData.forEach((entity) {*/
         for (int element = 0; element < this.hobby.length; element++) {
-          /*this.hobby.forEach((element) {*/
           if (resData[entity][1].toString() ==
               this.hobby[element][0]['value']['value'].toString()) {
-            // ignore: non_constant_identifier_names
-            //判断不良品还是良品
-            if (type == "defective") {
-              Map<String, dynamic> FEntityItem = Map();
-              FEntityItem['FEntryID'] = resData[entity][0];
-              FEntityItem['FStockStatusId'] = {"FNumber": "KCZT01_SYS"};
-              FEntityItem['FInStockType'] = '1';
-              FEntityItem['FRealQty'] =
-              this.hobby[element][3]['value']['value'];
-              FEntityItem['FStockId'] = {
-                "FNumber": 'CK101001'
-              };
-              FEntity.add(FEntityItem);
-            } else {
-              Map<String, dynamic> FEntityItem = Map();
-              FEntityItem['FInStockType'] = '2';
-              FEntityItem['FStockStatusId'] = {"FNumber": "KCZT01_SYS"};
-              FEntityItem['FEntryID'] = resData[entity][0];
-              FEntityItem['FRealQty'] =
-              this.hobby[element][4]['value']['value'];
-              FEntityItem['FStockId'] = {
-                "FNumber": 'CK101004'
-              };
-              FEntity.add(FEntityItem);
-            }
+            Map<String, dynamic> FEntityItem = Map();
+            FEntityItem['FEntryID'] = resData[entity][0];
+            FEntityItem['FStockStatusId'] = {"FNumber": "KCZT01_SYS"};
+            FEntityItem['FInStockType'] = '1';
+            FEntityItem['FRealQty'] =
+            this.hobby[element][3]['value']['value'];
+            FEntityItem['FStockId'] = {
+              "FNumber": this.hobby[element][4]['value']['value']
+            };
+            FEntity.add(FEntityItem);
           }
-        } /*);*/
+        }
       }
-      /*);*/
       Model['FEntity'] = FEntity;
-      /* Model['FStockOrgId'] = {"FNumber": orderDate[0][22]};
-      Model['FPrdOrgId'] = {"FNumber": orderDate[0][22]};*/
       orderMap['Model'] = Model;
       dataMap = {"formid": "STK_InStock", "data": orderMap, "isBool": true};
       print(jsonEncode(dataMap));
@@ -1082,7 +1061,135 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
       setState(() {
         this.isSubmit = true;
       });
-      Map<String, dynamic> dataMap = Map();
+      var hobbyIndex = 0;
+      var EntryIds = '';
+      this.hobby.forEach((element) {
+            if (double.parse(element[3]['value']['value']) > 0) {
+              if (EntryIds == '') {
+                EntryIds = orderDate[hobbyIndex][4].toString();
+              } else {
+                EntryIds = EntryIds + ',' + orderDate[hobbyIndex][4].toString();
+              }
+            }
+        hobbyIndex++;
+      });
+      var resCheck = await this.pushDown(EntryIds, 'defective');
+      if (resCheck['isBool'] != false) {
+        print(resCheck);
+        Map<String, dynamic> submitMap = Map();
+        submitMap = {
+          "formid": "STK_InStock",
+          "data": {
+            'Ids': resCheck['data']['Model']['FID']
+          }
+        };
+        //提交
+        HandlerOrder.orderHandler(
+            context,
+            submitMap,
+            1,
+            "STK_InStock",
+            SubmitEntity.submit(submitMap))
+            .then((submitResult) {
+          if (submitResult) {
+            //审核
+            HandlerOrder.orderHandler(
+                context,
+                submitMap,
+                1,
+                "STK_InStock",
+                SubmitEntity.audit(submitMap))
+                .then((auditResult) async{
+              if (auditResult) {
+                var errorMsg = "";
+                if(fBarCodeList == 1){
+                  for (int i = 0; i < this.hobby.length; i++) {
+                    if (this.hobby[i][3]['value']['value'] != '0' &&
+                        this.hobby[i][4]['value']['value'] != '') {
+                      var kingDeeCode = this.hobby[i][0]['value']['kingDeeCode'];
+                      for(int j = 0;j<kingDeeCode.length;j++){
+                        Map<String, dynamic> dataCodeMap = Map();
+                        dataCodeMap['formid'] = 'QDEP_Cust_BarCodeList';
+                        Map<String, dynamic> orderCodeMap = Map();
+                        orderCodeMap['NeedReturnFields'] = [];
+                        orderCodeMap['IsDeleteEntry'] = false;
+                        Map<String, dynamic> codeModel = Map();
+                        var itemCode = kingDeeCode[j].split("-");
+                        codeModel['FID'] = itemCode[0];
+                        codeModel['FOwnerID'] = {
+                          "FNUMBER": orderDate[i][20]
+                        };
+                        codeModel['FStockOrgID'] = {
+                          "FNUMBER": orderDate[i][8]
+                        };
+                        codeModel['FStockID'] = {
+                          "FNUMBER": this.hobby[i][4]['value']['value']
+                        };
+                        Map<String, dynamic> codeFEntityItem = Map();
+                        codeFEntityItem['FBillDate'] = FDate;
+                        codeFEntityItem['FInQty'] = itemCode[1];
+                        codeFEntityItem['FEntryBillNo'] = orderDate[i][0];
+                        codeFEntityItem['FEntryStockID'] ={
+                          "FNUMBER": this.hobby[i][4]['value']['value']
+                        };
+                        var codeFEntity = [codeFEntityItem];
+                        codeModel['FEntity'] = codeFEntity;
+                        orderCodeMap['Model'] = codeModel;
+                        dataCodeMap['data'] = orderCodeMap;
+                        print(dataCodeMap);
+                        String codeRes = await SubmitEntity.save(dataCodeMap);
+                        var barcodeRes = jsonDecode(codeRes);
+                        if(!barcodeRes['Result']['ResponseStatus']['IsSuccess']){
+                          errorMsg +="错误反馈："+itemCode[1]+":"+barcodeRes['Result']['ResponseStatus']['Errors'][0]['Message'];
+                        }
+                        print(codeRes);
+                      }
+                    }
+                  }
+                }
+                if(errorMsg !=""){
+                  ToastUtil.errorDialog(context,
+                      errorMsg);
+                  this.isSubmit = false;
+                }
+                //提交清空页面
+                setState(() {
+                  this.hobby = [];
+                  this.orderDate = [];
+                  this.FBillNo = '';
+                  ToastUtil.showInfo('提交成功');
+                  Navigator.of(context).pop("refresh");
+                });
+              } else {
+                //失败后反审
+                HandlerOrder.orderHandler(
+                    context,
+                    submitMap,
+                    0,
+                    "STK_InStock",
+                    SubmitEntity.unAudit(submitMap))
+                    .then((unAuditResult) {
+                  if (unAuditResult) {
+                    this.isSubmit = false;
+                  }else{
+                    this.isSubmit = false;
+                  }
+                });
+              }
+            });
+          } else {
+            this.isSubmit = false;
+          }
+        });
+      } else {
+        setState(() {
+          this.isSubmit = false;
+          ToastUtil.errorDialog(
+              context, "下推失败");
+        });
+      }
+
+      /*Map<String, dynamic> dataMap = Map();
       dataMap['formid'] = 'STK_InStock';
       Map<String, dynamic> orderMap = Map();
       orderMap['NeedReturnFields'] = [];
@@ -1100,8 +1207,8 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
         Model['FPurchaseOrgId'] = {"FNumber": this.fOrgID};
         Model['FStockOrgId'] = {"FNumber": this.fOrgID};
         Model['FSupplierId'] = {"FNumber": orderDate[0][1].toString()};
-       /* Model['FOwnerTypeIdHead'] = {"FNumber": orderDate[0][1].toString()};
-        Model['FOwnerIdHead'] = {"FNumber": orderDate[0][1].toString()};*/
+       *//* Model['FOwnerTypeIdHead'] = {"FNumber": orderDate[0][1].toString()};
+        Model['FOwnerIdHead'] = {"FNumber": orderDate[0][1].toString()};*//*
       }else{
         if (this.departmentNumber == null) {
           this.isSubmit = false;
@@ -1114,10 +1221,10 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
         }
         Model['FPurchaseOrgId'] = {"FNumber": this.fOrgID};
         Model['FStockOrgId'] = {"FNumber": this.fOrgID};
-        /*Model['FStockDeptId'] = {"FNumber": this.departmentNumber};*/
+        *//*Model['FStockDeptId'] = {"FNumber": this.departmentNumber};*//*
         Model['FSupplierId'] = {"FNumber": this.supplierNumber};
-      /*  Model['FOwnerTypeIdHead'] = {"FNumber": orderDate[0][1].toString()};
-        Model['FOwnerIdHead'] = {"FNumber": orderDate[0][1].toString()};*/
+      *//*  Model['FOwnerTypeIdHead'] = {"FNumber": orderDate[0][1].toString()};
+        Model['FOwnerIdHead'] = {"FNumber": orderDate[0][1].toString()};*//*
       }
       var FEntity = [];
       var hobbyIndex = 0;
@@ -1150,7 +1257,7 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
           FEntityItem['FTaxPrice'] = orderDate[hobbyIndex][18];
           FEntityItem['FEntryTaxRate'] = orderDate[hobbyIndex][19];
           FEntityItem['FOWNERID'] = {"FNumber": this.fOrgID};
-          /*FEntityItem['FReturnType'] = 1;*/
+          *//*FEntityItem['FReturnType'] = 1;*//*
           FEntityItem['FRealQty'] = element[3]['value']['value'];
           FEntityItem['FInStockEntry_Link'] = [
             {
@@ -1230,7 +1337,6 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
                         codeModel['FStockID'] = {
                           "FNUMBER": this.hobby[i][4]['value']['value']
                         };
-                        /*codeModel['FLastCheckTime'] = formatDate(DateTime.now(), [yyyy, "-", mm, "-", dd,]);*/
                         Map<String, dynamic> codeFEntityItem = Map();
                         codeFEntityItem['FBillDate'] = FDate;
                         codeFEntityItem['FInQty'] = itemCode[1];
@@ -1293,7 +1399,7 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
           ToastUtil.errorDialog(
               context, res['Result']['ResponseStatus']['Errors'][0]['Message']);
         });
-      }
+      }*/
     } else {
       ToastUtil.showInfo('无提交数据');
     }

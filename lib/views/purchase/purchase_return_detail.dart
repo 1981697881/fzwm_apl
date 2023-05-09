@@ -144,7 +144,7 @@ class _ReturnGoodsDetailState extends State<PurchaseReturnDetail> {
     if(fOrgID == null){
       this.fOrgID = deptData[1];
     }
-    userMap['FilterString'] = "FForbidStatus = 'A' and FUseOrgId.FNumber ="+fOrgID.toString();
+    userMap['FilterString'] = "FForbidStatus = 'A' and FUseOrgId.FNumber='"+fOrgID+"'";
     Map<String, dynamic> dataMap = Map();
     dataMap['data'] = userMap;
     String res = await CurrencyEntity.polling(dataMap);
@@ -184,10 +184,10 @@ class _ReturnGoodsDetailState extends State<PurchaseReturnDetail> {
     Map<String, dynamic> userMap = Map();
     print(fBillNo);
     userMap['FilterString'] = "fBillNo='$fBillNo'";
-    userMap['FormId'] = 'STK_InStock';
+    userMap['FormId'] = 'PUR_MRAPP';
     userMap['OrderString'] = 'FMaterialId.FNumber ASC';
     userMap['FieldKeys'] =
-    'FBillNo,FPurchaseOrgId.FNumber,FPurchaseOrgId.FName,FDate,FInStockEntry_FEntryId,FMaterialId.FNumber,FMaterialId.FName,FMaterialId.FSpecification,FStockOrgId.FNumber,FStockOrgId.FName,FUnitId.FNumber,FUnitId.FName,FMustQty,FApproveDate,FRealQty,FID,FSupplierId.FNumber,FSupplierId.FName,FStockID.FName,FStockID.FNumber,FLot.FNumber,FStockID.FIsOpenLocation,FMaterialId.FIsBatchManage,FPriceUnitID.FNumber,FTaxPrice,FEntryTaxRate,FBaseUnitID.FName,FBaseUnitID.FNumber,FOwnerIdHead.FNumber';
+    'FBillNo,FPURCHASEORGID.FNumber,FPURCHASEORGID.FName,FDate,FEntity_FEntryId,FMATERIALID.FNumber,FMATERIALID.FName,FMATERIALID.FSpecification,FAPPORGID.FNumber,FAPPORGID.FName,FUNITID.FNumber,FUNITID.FName,FMRAPPQTY,FAPPROVEDATE,FMRQTY,FID,FSUPPLIERID.FNumber,FSUPPLIERID.FName,FStockID.FName,FStockID.FNumber,FLot.FNumber,FStockID.FIsOpenLocation,FMATERIALID.FIsBatchManage,FPRICEUNITID_F.FNumber,FAPPROVEPRICE_F,FEntryTaxRate,FBASEUNITID.FName,FBASEUNITID.FNumber,FRequireOrgId.FNumber';
     Map<String, dynamic> dataMap = Map();
     dataMap['data'] = userMap;
     String order = await CurrencyEntity.polling(dataMap);
@@ -207,7 +207,7 @@ class _ReturnGoodsDetailState extends State<PurchaseReturnDetail> {
           "title": "物料名称",
           "name": "FMaterial",
           "isHide": false,
-          "value": {"label": value[6] + "- (" + value[5] + ")", "value": value[5],"barcode": [],"kingDeeCode": []}
+          "value": {"label": value[6] + "- (" + value[5] + ")", "value": value[5],"barcode": [],"kingDeeCode": [],"scanCode": []}
         });
         arr.add({
           "title": "规格型号",
@@ -231,13 +231,13 @@ class _ReturnGoodsDetailState extends State<PurchaseReturnDetail> {
           "title": "仓库",
           "name": "FStockID",
           "isHide": false,
-        "value": {"label": value[18], "value": value[19]}
+          "value": {"label": "", "value": ""}
         });
         arr.add({
         "title": "批号",
         "name": "FLot",
         "isHide": value[22] != true,
-        "value": {"label": value[20], "value": value[20]}
+        "value": {"label": "", "value": ""}
         });
         arr.add({
         "title": "仓位",
@@ -261,7 +261,16 @@ class _ReturnGoodsDetailState extends State<PurchaseReturnDetail> {
           "title": "可退数量",
           "name": "",
           "isHide": false,
-          "value": {"label": value[14], "value": value[14]}
+          "value": {"label": value[12], "value": value[12]}
+        });
+        arr.add({
+          "title": "最后扫描数量",
+          "name": "FLastQty",
+          "isHide": false,
+          "value": {
+            "label": "0",
+            "value": "0"
+          }
         });
         hobby.add(arr);
       });
@@ -284,61 +293,46 @@ class _ReturnGoodsDetailState extends State<PurchaseReturnDetail> {
     var deptData = sharedPreferences.getString('menuList');
     var menuList = new Map<dynamic, dynamic>.from(jsonDecode(deptData));
     fBarCodeList = menuList['FBarCodeList'];
-    if(fBarCodeList == 1){
-      Map<String, dynamic> barcodeMap = Map();
-      barcodeMap['FilterString'] = "FBarCode='"+event+"'";
-      barcodeMap['FormId'] = 'QDEP_BarCodeList';
-      barcodeMap['FieldKeys'] =
-      'FID,FInQtyTotal,FOutQtyTotal,FEntity_FEntryId,FRemainQty,FStockID.FName,FStockID.FNumber,F_QDEP_MName,FOwnerID.FNumber';
-      Map<String, dynamic> dataMap = Map();
-      dataMap['data'] = barcodeMap;
-      String order = await CurrencyEntity.polling(dataMap);
-      var barcodeData = jsonDecode(order);
-      if (barcodeData.length>0) {
-        var msg = "";
-        var orderIndex = 0;
-        for (var value in orderDate) {
-          if(value[5] == barcodeData[0][7]){
-            /*if(value[28] == barcodeData[0][8]){
-              if(value[16] == barcodeData[0][6]){
-
-
-              }else{
-                msg = '条码仓库与单据仓库不一致';
-                if(fNumber.lastIndexOf(barcodeData[0][7])  == orderIndex){
-                  break;
-                }
-              }
-            }else{
-              msg = '条码货主与单据货主不一致';
-              if(fNumber.lastIndexOf(barcodeData[0][7])  == orderIndex){
-                break;
-              }
-            }*/
-            msg = "";
-            if(fNumber.lastIndexOf(barcodeData[0][7])  == orderIndex){
-              break;
-            }
-          }else{
-            msg = '条码不在单据物料中';
+    /*if (fBarCodeList == 1) {*/
+    Map<String, dynamic> barcodeMap = Map();
+    barcodeMap['FilterString'] = "FBarCodeEn='" + event + "'";
+    barcodeMap['FormId'] = 'QDEP_Cust_BarCodeList';
+    barcodeMap['FieldKeys'] =
+    'FID,FInQtyTotal,FOutQtyTotal,FEntity_FEntryId,FRemainQty,FBarCodeQty,FEntryStockID.FName,FEntryStockID.FNumber,FMATERIALID.FNUMBER,FOwnerID.FNumber,FBarCode';
+    Map<String, dynamic> dataMap = Map();
+    dataMap['data'] = barcodeMap;
+    String order = await CurrencyEntity.polling(dataMap);
+    var barcodeData = jsonDecode(order);
+    if (barcodeData.length > 0) {
+      var msg = "";
+      var orderIndex = 0;
+      for (var value in orderDate) {
+        if(value[5] == barcodeData[0][8]){
+          msg = "";
+          if(fNumber.lastIndexOf(barcodeData[0][8])  == orderIndex){
+            break;
           }
-          orderIndex++;
-        };
-        if(msg ==  ""){
-          _code = event;
-          this.getMaterialList(barcodeData,_code);
-          print("ChannelPage: $event");
         }else{
-          ToastUtil.showInfo(msg);
+          msg = '条码不在单据物料中';
         }
+        orderIndex++;
+      };
+      if(msg ==  ""){
+        _code = event;
+        this.getMaterialList(barcodeData, barcodeData[0][10]);
+        print("ChannelPage: $event");
       }else{
-        ToastUtil.showInfo('条码不在条码清单中');
+        ToastUtil.showInfo(msg);
       }
-    }else{
-      _code = event;
-      this.getMaterialList("",_code);
-      print("ChannelPage: $event");
+    } else {
+      ToastUtil.showInfo('条码不在条码清单中');
     }
+    /*} else {
+      _code = event;
+      this.getMaterialList("", _code);
+      print("ChannelPage: $event");
+    }*/
+    print("ChannelPage: $event");
   }
 
   void _onError(Object error) {
@@ -351,8 +345,8 @@ class _ReturnGoodsDetailState extends State<PurchaseReturnDetail> {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     var menuData = sharedPreferences.getString('MenuPermissions');
     var deptData = jsonDecode(menuData)[0];
-    var scanCode = code.split(",");
-    userMap['FilterString'] = "FNumber='"+scanCode[0]+"' and FForbidStatus = 'A' and FUseOrgId.FNumber = '"+deptData[1]+"'";
+    var scanCode = code.split(";");
+    userMap['FilterString'] = "FNumber='"+barcodeData[0][8]+"' and FForbidStatus = 'A' and FUseOrgId.FNumber = '"+deptData[1]+"'";
     userMap['FormId'] = 'BD_MATERIAL';
     userMap['FieldKeys'] =
     'FMATERIALID,FName,FNumber,FSpecification,FBaseUnitId.FName,FBaseUnitId.FNumber,FIsBatchManage';/*,SubHeadEntity1.FStoreUnitID.FNumber*/
@@ -367,11 +361,11 @@ class _ReturnGoodsDetailState extends State<PurchaseReturnDetail> {
       var barCodeScan;
       if(fBarCodeList == 1){
         barCodeScan = barcodeData[0];
-        barCodeScan[4] = barCodeScan[4].toString();
+        barCodeScan[3] = barCodeScan[3].toString();
       }else{
         barCodeScan = scanCode;
       }
-      var barcodeNum = scanCode[4];
+      var barcodeNum = scanCode[3];
       for (var element in hobby) {
         var residue = 0.0;
         //判断是否启用批号
@@ -392,7 +386,6 @@ class _ReturnGoodsDetailState extends State<PurchaseReturnDetail> {
                   barcodeNum = (double.parse(barcodeNum) - double.parse(barcodeNum)).toString();
                 break;
               }
-
               //判断扫描数量是否大于单据数量
               if(double.parse(element[3]['value']['label']) >= element[9]['value']['value']) {
                   continue;
@@ -733,7 +726,7 @@ class _ReturnGoodsDetailState extends State<PurchaseReturnDetail> {
       List<Widget> comList = [];
       for (int j = 0; j < this.hobby[i].length; j++) {
         if (!this.hobby[i][j]['isHide']) {
-          if (j == 8 || j == 11) {
+          /*if (j == 8 || j == 11) {
             comList.add(
               Column(children: [
                 Container(
@@ -769,56 +762,12 @@ class _ReturnGoodsDetailState extends State<PurchaseReturnDetail> {
                 divider,
               ]),
             );
-          } else if (j == 10) {
+          } else*/ if (j == 6) {
             comList.add(
               _item('仓库:', stockList, this.hobby[i][j]['value']['label'],
                   this.hobby[i][j],stock:this.hobby[i]),
             );
-          }else if(j == 12){
-            comList.add(
-              Visibility(
-                maintainSize: false,
-                maintainState: false,
-                maintainAnimation: false,
-                visible: this.hobby[i][j]["value"]["hide"],
-                child: Column(children: [
-                  Container(
-                    color: Colors.white,
-                    child: ListTile(
-                        title: Text(this.hobby[i][j]["title"] +
-                            '：' +
-                            this.hobby[i][j]["value"]["label"].toString()),
-                        trailing:
-                        Row(mainAxisSize: MainAxisSize.min, children: <Widget>[
-                          IconButton(
-                            icon: new Icon(Icons.filter_center_focus),
-                            tooltip: '点击扫描',
-                            onPressed: () {
-                              this._textNumber.text =
-                                  this.hobby[i][j]["value"]["label"].toString();
-                              this._FNumber =
-                                  this.hobby[i][j]["value"]["label"].toString();
-                              checkItem = 'FNumber';
-                              this.show = false;
-                              checkData = i;
-                              checkDataChild = j;
-                              scanDialog();
-                              print(this.hobby[i][j]["value"]["label"]);
-                              if (this.hobby[i][j]["value"]["label"] != 0) {
-                                this._textNumber.value = _textNumber.value.copyWith(
-                                  text:
-                                  this.hobby[i][j]["value"]["label"].toString(),
-                                );
-                              }
-                            },
-                          ),
-                        ])),
-                  ),
-                  divider,
-                ]),
-              ),
-            );
-          } else if (j == 13) {
+          }else if (j == 7) {
             comList.add(
               Column(children: [
                 Container(

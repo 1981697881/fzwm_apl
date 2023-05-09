@@ -26,6 +26,7 @@ class _ReturnGoodsPageState extends State<PurchaseReturnPage> {
   String keyWord = '';
   String startDate = '';
   String endDate = '';
+  var isScan = false;
   final divider = Divider(height: 1, indent: 20);
   final rightIcon = Icon(Icons.keyboard_arrow_right);
   final scanIcon = Icon(Icons.filter_center_focus);
@@ -81,13 +82,20 @@ class _ReturnGoodsPageState extends State<PurchaseReturnPage> {
       this.endDate = this._dateSelectText.substring(26,36);
       userMap['FilterString'] = "FDocumentStatus ='C' and FDate>= '$startDate' and FDate <= '$endDate'";
     }
-    if (this.keyWord != '') {
-      userMap['FilterString'] = "FBillNo='"+scanCode[0]+"' and FDocumentStatus ='C' and FDate>= '$startDate' and FDate <= '$endDate'";
+    if(this.isScan){
+      if (this.keyWord != '') {
+        userMap['FilterString'] = "FBillNo='"+scanCode[0]+"' and FDocumentStatus ='C'";
+      }
+    }else{
+      if (this.keyWord != '') {
+        userMap['FilterString'] = "FBillNo='"+scanCode[0]+"' and FDocumentStatus ='C' and FDate>= '$startDate' and FDate <= '$endDate'";
+      }
     }
-    userMap['FormId'] = 'STK_InStock';
+    this.isScan = false;
+    userMap['FormId'] = 'PUR_MRAPP';
     userMap['OrderString'] = 'FBillNo ASC,FMaterialId.FNumber ASC';
     userMap['FieldKeys'] =
-    'FBillNo,FPurchaseOrgId.FNumber,FPurchaseOrgId.FName,FDate,FInStockEntry_FEntryId,FMaterialId.FNumber,FMaterialId.FName,FMaterialId.FSpecification,FStockOrgId.FNumber,FStockOrgId.FName,FUnitId.FNumber,FUnitId.FName,FMustQty,FApproveDate,FRealQty,FID,FSupplierId.FNumber,FSupplierId.FName';
+    'FBillNo,FPURCHASEORGID.FNumber,FPURCHASEORGID.FName,FDate,FEntity_FEntryId,FMATERIALID.FNumber,FMATERIALID.FName,FMATERIALID.FSpecification,FAPPORGID.FNumber,FAPPORGID.FName,FUNITID.FNumber,FUNITID.FName,FMRAPPQTY,FAPPROVEDATE,FMRQTY,FID,FSUPPLIERID.FNumber,FSUPPLIERID.FName';
     Map<String, dynamic> dataMap = Map();
     dataMap['data'] = userMap;
     String order = await CurrencyEntity.polling(dataMap);
@@ -178,6 +186,7 @@ class _ReturnGoodsPageState extends State<PurchaseReturnPage> {
     _code = event;
     EasyLoading.show(status: 'loading...');
     keyWord = _code;
+    this.isScan = true;
     this.controller.text = _code;
     await getOrderList();
     /*});*/
@@ -268,6 +277,7 @@ class _ReturnGoodsPageState extends State<PurchaseReturnPage> {
     DateTime now = DateTime.now();
     DateTime start = DateTime(dateTime.year, dateTime.month, dateTime.day);
     DateTime end = DateTime(now.year, now.month, now.day);
+    var seDate = _dateSelectText.split(" - ");
     //显示时间选择器
     DateTimeRange? selectTimeRange = await showDateRangePicker(
       //语言环境
@@ -280,7 +290,7 @@ class _ReturnGoodsPageState extends State<PurchaseReturnPage> {
         cancelText: "取消",
         confirmText: "确定",
         //初始的时间范围选择
-        initialDateRange: DateTimeRange(start: start, end: end));
+        initialDateRange: DateTimeRange(start: DateTime.parse(seDate[0]), end: DateTime.parse(seDate[1])));
     //结果
     if(selectTimeRange != null){
       _dateSelectText = selectTimeRange.toString();

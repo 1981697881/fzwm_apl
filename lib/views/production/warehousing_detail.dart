@@ -220,7 +220,7 @@ class _WarehousingDetailState extends State<WarehousingDetail> {
             "title": "良品数量",
             "name": "goodProductNumber",
             "isHide": false,
-            "value": {"label": "0", "value": "0"}
+            "value": {"label": "1", "value": "1"}
           });
           arr.add({
             "title": "良品仓库",
@@ -247,10 +247,10 @@ class _WarehousingDetailState extends State<WarehousingDetail> {
             "value": {"label": "", "value": ""}
           });
           arr.add({
-            "title": "操作",
-            "name": "",
+            "title": "工时",
+            "name": "FStdManHour",
             "isHide": false,
-            "value": {"label": "", "value": ""}
+            "value": {"label": "0", "value": "0"}
           });
           arr.add({
             "title": "需生产数量",
@@ -984,15 +984,32 @@ class _WarehousingDetailState extends State<WarehousingDetail> {
                       trailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: <Widget>[
-                            new FlatButton(
-                              color: Colors.red,
-                              textColor: Colors.white,
-                              child: new Text('删除'),
+                            IconButton(
+                              icon: new Icon(Icons.filter_center_focus),
+                              tooltip: '点击扫描',
                               onPressed: () {
-                                this.hobby.removeAt(i);
-                                setState(() {});
+                                this._textNumber.text = this
+                                    .hobby[i][j]["value"]["label"]
+                                    .toString();
+                                this._FNumber = this
+                                    .hobby[i][j]["value"]["label"]
+                                    .toString();
+                                checkItem = 'FStdManHour';
+                                this.show = false;
+                                checkData = i;
+                                checkDataChild = j;
+                                scanDialog();
+                                print(this.hobby[i][j]["value"]["label"]);
+                                if (this.hobby[i][j]["value"]["label"] != 0) {
+                                  this._textNumber.value =
+                                      _textNumber.value.copyWith(
+                                        text: this
+                                            .hobby[i][j]["value"]["label"]
+                                            .toString(),
+                                      );
+                                }
                               },
-                            )
+                            ),
                           ])),
                 ),
                 divider,
@@ -1090,6 +1107,13 @@ class _WarehousingDetailState extends State<WarehousingDetail> {
                               this.hobby[checkData][checkDataChild]['value']
                                   ["value"] = _FNumber;
                             });
+                          }else if (checkItem == 'FStdManHour') {
+                            setState(() {
+                              this.hobby[checkData][checkDataChild]["value"]
+                              ["label"] = _FNumber;
+                              this.hobby[checkData][checkDataChild]['value']
+                              ["value"] = _FNumber;
+                            });
                           }
                         },
                         child: Text(
@@ -1146,7 +1170,7 @@ class _WarehousingDetailState extends State<WarehousingDetail> {
           //提交清空页面
           Map<String, dynamic> deleteMap = Map();
           deleteMap = {
-            "formid": "PRD_INSTOCK",
+            "formid": "PRD_MORPT",
             "data": {
               'Ids': res['Result']['ResponseStatus']['SuccessEntitys'][0]['Id']
             }
@@ -1435,7 +1459,7 @@ class _WarehousingDetailState extends State<WarehousingDetail> {
     Map<String, dynamic> pushMap = Map();
     pushMap['EntryIds'] = val;
     pushMap['RuleId'] = "PRD_MO2MORPT";
-    pushMap['TargetFormId'] = "PRD_INSTOCK";
+    pushMap['TargetFormId'] = "PRD_MORPT";
     pushMap['IsEnableDefaultRule'] = "false";
     pushMap['IsDraftWhenSaveFail'] = "false";
     print(pushMap);
@@ -1449,7 +1473,7 @@ class _WarehousingDetailState extends State<WarehousingDetail> {
       var entitysNumber =
           res['Result']['ResponseStatus']['SuccessEntitys'][0]['Number'];
       Map<String, dynamic> inOrderMap = Map();
-      inOrderMap['FormId'] = 'PRD_INSTOCK';
+      inOrderMap['FormId'] = 'PRD_MORPT';
       inOrderMap['FilterString'] = "FBillNo='$entitysNumber'";
       inOrderMap['FieldKeys'] =
           'FEntity_FEntryId,FMaterialId.FNumber,FMaterialId.FName,FUnitId.FNumber,FMoBillNo';
@@ -1460,20 +1484,29 @@ class _WarehousingDetailState extends State<WarehousingDetail> {
       Map<String, dynamic> dataMap = Map();
       dataMap['data'] = inOrderMap;
       Map<String, dynamic> orderMap = Map();
-      orderMap['NeedUpDataFields'] = [
-        'FStockStatusId',
-        'FRealQty',
-        'FInStockType'
-      ];
+      orderMap['NeedUpDataFields'] = [];
       orderMap['IsDeleteEntry'] = false;
       Map<String, dynamic> Model = Map();
       Model['FID'] = res['Result']['ResponseStatus']['SuccessEntitys'][0]['Id'];
       // ignore: non_constant_identifier_names
       var FEntity = [];
       for (int entity = 0; entity < resData.length; entity++) {
-        /*resData.forEach((entity) {*/
         for (int element = 0; element < this.hobby.length; element++) {
-          /*this.hobby.forEach((element) {*/
+          if (resData[entity][1].toString() == this.hobby[element][0]['value']['value'].toString()) {
+            // ignore: non_constant_identifier_names
+            //判断不良品还是良品
+            Map<String, dynamic> FEntityItem = Map();
+            FEntityItem['FEntryID'] = resData[entity][0];
+            FEntityItem['FReportType'] = {"FNumber": "HBLX01_SYS"};
+            FEntityItem['FInStockType'] = '1';
+            FEntityItem['FWorkshipId'] = {"FNumber": "BM00018"};
+            FEntityItem['FStdManHour'] = this.hobby[element][8]['value']['value'];
+            FEntity.add(FEntityItem);
+          }
+        }
+      }
+      /*for (int entity = 0; entity < resData.length; entity++) {
+        for (int element = 0; element < this.hobby.length; element++) {
           if (resData[entity][1].toString() == this.hobby[element][0]['value']['value'].toString()) {
             // ignore: non_constant_identifier_names
             //判断不良品还是良品
@@ -1482,6 +1515,7 @@ class _WarehousingDetailState extends State<WarehousingDetail> {
               FEntityItem['FEntryID'] = resData[entity][0];
               FEntityItem['FStockStatusId'] = {"FNumber": "KCZT01_SYS"};
               FEntityItem['FInStockType'] = '1';
+              FEntityItem['FStdManHour'] = this.hobby[element][8]['value']['value'];
               FEntityItem['FRealQty'] =
                   this.hobby[element][3]['value']['value'];
               FEntityItem['FStockId'] = {
@@ -1493,6 +1527,7 @@ class _WarehousingDetailState extends State<WarehousingDetail> {
               FEntityItem['FInStockType'] = '2';
               FEntityItem['FStockStatusId'] = {"FNumber": "KCZT01_SYS"};
               FEntityItem['FEntryID'] = resData[entity][0];
+              FEntityItem['FStdManHour'] = this.hobby[element][8]['value']['value'];
               FEntityItem['FRealQty'] =
                   this.hobby[element][6]['value']['value'];
               FEntityItem['FStockId'] = {
@@ -1501,14 +1536,11 @@ class _WarehousingDetailState extends State<WarehousingDetail> {
               FEntity.add(FEntityItem);
             }
           }
-        } /*);*/
-      }
-      /*);*/
+        }
+      }*/
       Model['FEntity'] = FEntity;
-      /* Model['FStockOrgId'] = {"FNumber": orderDate[0][22]};
-      Model['FPrdOrgId'] = {"FNumber": orderDate[0][22]};*/
       orderMap['Model'] = Model;
-      dataMap = {"formid": "PRD_INSTOCK", "data": orderMap, "isBool": true};
+      dataMap = {"formid": "PRD_MORPT", "data": orderMap, "isBool": true};
       print(jsonEncode(dataMap));
       //返回保存参数
       return dataMap;
@@ -1593,7 +1625,7 @@ class _WarehousingDetailState extends State<WarehousingDetail> {
                   //提交清空页面
                   Map<String, dynamic> auditMap = Map();
                   auditMap = {
-                    "formid": "PRD_INSTOCK",
+                    "formid": "PRD_MORPT",
                     "data": {
                       'Ids': res['Result']['ResponseStatus']['SuccessEntitys']
                           [0]['Id']
@@ -1603,7 +1635,7 @@ class _WarehousingDetailState extends State<WarehousingDetail> {
                 } else {
                   Map<String, dynamic> deleteMap = Map();
                   deleteMap = {
-                    "formid": "PRD_INSTOCK",
+                    "formid": "PRD_MORPT",
                     "data": {'Ids': resCheck['data']["Model"]["FID"]}
                   };
                   deleteOrder(deleteMap,
@@ -1629,7 +1661,7 @@ class _WarehousingDetailState extends State<WarehousingDetail> {
                   //提交清空页面
                   Map<String, dynamic> auditMap = Map();
                   auditMap = {
-                    "formid": "PRD_INSTOCK",
+                    "formid": "PRD_MORPT",
                     "data": {
                       'Ids': res['Result']['ResponseStatus']['SuccessEntitys']
                           [0]['Id']
@@ -1639,7 +1671,7 @@ class _WarehousingDetailState extends State<WarehousingDetail> {
                 } else {
                   Map<String, dynamic> deleteMap = Map();
                   deleteMap = {
-                    "formid": "PRD_INSTOCK",
+                    "formid": "PRD_MORPT",
                     "data": {'Ids': resCheck['data']["Model"]["FID"]}
                   };
                   deleteOrder(deleteMap,

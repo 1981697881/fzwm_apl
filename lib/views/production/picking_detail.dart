@@ -190,7 +190,7 @@ class _PickingDetailState extends State<PickingDetail> {
       FPrdOrgId = orderDate[0][1].toString();
       this.fOrgID = orderDate[0][1];
       orderDate.forEach((value) {
-        fNumber.add(value[5]);
+        fNumber.add(value[7]);
         List arr = [];
         arr.add({
           "title": "物料编码",
@@ -299,8 +299,11 @@ class _PickingDetailState extends State<PickingDetail> {
       if (barcodeData.length > 0) {
         var msg = "";
         var orderIndex = 0;
+        print(fNumber);
         for (var value in orderDate) {
-          if(value[5] == barcodeData[0][8]){
+          print( value[7]);
+          print( barcodeData[0][8]);
+          if(value[7] == barcodeData[0][8]){
             msg = "";
             if(fNumber.lastIndexOf(barcodeData[0][8])  == orderIndex){
               break;
@@ -804,7 +807,7 @@ class _PickingDetailState extends State<PickingDetail> {
     });
   }
 
-  Widget _item(title, var data, selectData, hobby, {String ?label,var stock}) {
+  Widget _item(title, var data, selectData, hobby, {String? label, var stock}) {
     if (selectData == null) {
       selectData = "";
     }
@@ -814,9 +817,12 @@ class _PickingDetailState extends State<PickingDetail> {
           color: Colors.white,
           child: ListTile(
             title: Text(title),
-            onTap: () => data.length>0?_onClickItem(data, selectData, hobby, label: label,stock: stock):{ToastUtil.showInfo('无数据')},
+            onTap: () => data.length > 0
+                ? _onClickItem(data, selectData, hobby,
+                label: label, stock: stock)
+                : {ToastUtil.showInfo('无数据')},
             trailing: Row(mainAxisSize: MainAxisSize.min, children: <Widget>[
-              MyText(selectData.toString()=="" ? '暂无':selectData.toString(),
+              MyText(selectData.toString() == "" ? '暂无' : selectData.toString(),
                   color: Colors.grey, rightpadding: 18),
               rightIcon
             ]),
@@ -886,7 +892,8 @@ class _PickingDetailState extends State<PickingDetail> {
     );
   }
 
-  void _onClickItem(var data, var selectData, hobby, {String ?label,var stock}) {
+  void _onClickItem(var data, var selectData, hobby,
+      {String? label, var stock}) {
     Pickers.showSinglePicker(
       context,
       data: data,
@@ -897,17 +904,15 @@ class _PickingDetailState extends State<PickingDetail> {
         print('longer >>> 返回数据：$p');
         print('longer >>> 返回数据类型：${p.runtimeType}');
         setState(() {
-          selectStock = p;
-          var elementIndex = 0;
-          stockList.forEach((element) {
-            if (element == p) {
-              selectStockMap['FID'] = stockListObj[elementIndex][0];
-              selectStockMap['FName'] = stockListObj[elementIndex][1];
-              selectStockMap['FNumber'] = stockListObj[elementIndex][2];
-            }
-            elementIndex++;
+            hobby['value']['label'] = p;
           });
-        });
+          var ele;
+          for(var i = 0;i<data.length;i++){
+            if (data[i] == p) {
+              hobby['value']['value'] = stockListObj[i][2];
+              break;
+            }
+          }
       },
     );
   }
@@ -958,7 +963,8 @@ class _PickingDetailState extends State<PickingDetail> {
           if (j == 4) {
             comList.add(
               _item('仓库:', stockList, this.hobby[i][j]['value']['label'],
-                  this.hobby[i][j],stock:this.hobby[i]),
+                  this.hobby[i][j],
+                  stock: this.hobby[i]),
             );
           }else {
             comList.add(
@@ -1425,8 +1431,7 @@ class _PickingDetailState extends State<PickingDetail> {
       //判断成功
       if (res['Result']['ResponseStatus']['IsSuccess']) {
         //查询生产领料单
-        var entitysNumber =
-        res['Result']['ResponseStatus']['SuccessEntitys'][0]['Id'];
+        var entitysNumber = res['Result']['ResponseStatus']['SuccessEntitys'][0]['Id'];
         Map<String, dynamic> OrderMap = Map();
         OrderMap['FormId'] = 'PRD_PickMtrl';
         OrderMap['FilterString'] = "FID='$entitysNumber'";
