@@ -74,7 +74,7 @@ class _PurchaseWarehousingPageState extends State<PurchaseWarehousingPage> {
   getOrderList() async {
     EasyLoading.show(status: 'loading...');
     Map<String, dynamic> userMap = Map();
-    userMap['FilterString'] = "FInStockQty >0";
+    userMap['FilterString'] = "FRemainStockINQty >0";
     var scanCode = keyWord.split(",");
     if (this._dateSelectText != "") {
       this.startDate = this._dateSelectText.substring(0, 10);
@@ -84,20 +84,20 @@ class _PurchaseWarehousingPageState extends State<PurchaseWarehousingPage> {
     }
     if(this.isScan){
       if (this.keyWord != '') {
-        userMap['FilterString'] =/*and FInStockQty>0*/
-        "FBillNo='"+scanCode[0]+"' and FCloseStatus = 'A'";
+        userMap['FilterString'] =/*and FRemainStockINQty>0*/
+        "FBillNo='"+scanCode[0]+"' and FCloseStatus = 'A' and FRemainStockINQty>0";
       }
     }else{
       if (this.keyWord != '') {
-        userMap['FilterString'] =/*and FInStockQty>0*/
-        "FBillNo='"+scanCode[0]+"' and FCloseStatus = 'A' and FDate>= '$startDate' and FDate <= '$endDate'";
+        userMap['FilterString'] =/*and FRemainStockINQty>0*/
+        "FBillNo='"+scanCode[0]+"' and FCloseStatus = 'A' and FDate>= '$startDate' and FDate <= '$endDate' and FRemainStockINQty>0";
       }
     }
     this.isScan = false;
-    userMap['FormId'] = 'PUR_ReceiveBill';
+    userMap['FormId'] = 'PUR_PurchaseOrder';
     userMap['OrderString'] = 'FBillNo ASC,FMaterialId.FNumber ASC';
     userMap['FieldKeys'] =
-    'FBillNo,FSupplierId.FNumber,FSupplierId.FName,FDate,FDetailEntity_FEntryId,FMaterialId.FNumber,FMaterialId.FName,FMaterialId.FSpecification,FPurOrgId.FNumber,FPurOrgId.FName,FUnitId.FNumber,FUnitId.FName,FActlandQty,FSrcBillNo,FID';
+    'FBillNo,FSupplierId.FNumber,FSupplierId.FName,FDate,FPOOrderEntry_FEntryId,FMaterialId.FNumber,FMaterialId.FName,FMaterialId.FSpecification,FPurchaseOrgId.FNumber,FPurchaseOrgId.FName,FUnitId.FNumber,FUnitId.FName,FQty,FSrcBillNo,FID';
     Map<String, dynamic> dataMap = Map();
     dataMap['data'] = userMap;
     String order = await CurrencyEntity.polling(dataMap);

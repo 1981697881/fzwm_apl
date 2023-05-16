@@ -285,7 +285,7 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
     var deptData = sharedPreferences.getString('menuList');
     var menuList = new Map<dynamic, dynamic>.from(jsonDecode(deptData));
     fBarCodeList = menuList['FBarCodeList'];
-    /*if (fBarCodeList == 1) {*/
+    if (fBarCodeList == 1) {
     Map<String, dynamic> barcodeMap = Map();
     barcodeMap['FilterString'] = "FBarCodeEn='" + event + "'";
     barcodeMap['FormId'] = 'QDEP_Cust_BarCodeList';
@@ -319,11 +319,11 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
     } else {
       ToastUtil.showInfo('条码不在条码清单中');
     }
-    /*} else {
+    } else {
       _code = event;
       this.getMaterialList("", _code);
       print("ChannelPage: $event");
-    }*/
+    }
     print("ChannelPage: $event");
   }
 
@@ -364,17 +364,17 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
     ]);
     if (materialDate.length > 0) {
       var number = 0;
-      var barCodeScan;
+      var barCodeScan = [];
       if(fBarCodeList == 1){
         barCodeScan = barcodeData[0];
-        barCodeScan.add(barCodeScan[3]);
-        barCodeScan[3] = barCodeScan[3].toString();
+        barCodeScan.add(barCodeScan[4]);
+        barCodeScan[4] = barCodeScan[4].toString();
       }else{
         barCodeScan = scanCode;
         barCodeScan.add(barCodeScan[3]);
       }
-      var barcodeNum = barCodeScan[3];
-      var residue = double.parse(barCodeScan[3]);
+      var barcodeNum = scanCode[3];
+      var residue = double.parse(scanCode[3]);
       var hobbyIndex = 0;
       for (var element in hobby) {
         hobbyIndex ++;

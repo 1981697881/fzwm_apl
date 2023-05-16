@@ -286,7 +286,7 @@ class _PickingDetailState extends State<PickingDetail> {
     var deptData = sharedPreferences.getString('menuList');
     var menuList = new Map<dynamic, dynamic>.from(jsonDecode(deptData));
     fBarCodeList = menuList['FBarCodeList'];
-   /* if (fBarCodeList == 1) {*/
+    if (fBarCodeList == 1) {
       Map<String, dynamic> barcodeMap = Map();
       barcodeMap['FilterString'] = "FBarCodeEn='" + event + "'";
       barcodeMap['FormId'] = 'QDEP_Cust_BarCodeList';
@@ -323,11 +323,11 @@ class _PickingDetailState extends State<PickingDetail> {
       } else {
         ToastUtil.showInfo('条码不在条码清单中');
       }
-    /*} else {
+    } else {
       _code = event;
       this.getMaterialList("", _code);
       print("ChannelPage: $event");
-    }*/
+    }
     print("ChannelPage: $event");
   }
   getMaterialList(barcodeData, code) async {
@@ -352,11 +352,11 @@ class _PickingDetailState extends State<PickingDetail> {
       var barCodeScan;
       if (fBarCodeList == 1) {
         barCodeScan = barcodeData[0];
-        barCodeScan[3] = barCodeScan[3].toString();
+        barCodeScan[4] = barCodeScan[4].toString();
       } else {
         barCodeScan = scanCode;
       }
-      var barcodeNum = barCodeScan[3];
+      var barcodeNum = scanCode[3];
       for (var element in hobby) {
         var residue = 0.0;
         //判断是否启用批号
@@ -1257,7 +1257,7 @@ class _PickingDetailState extends State<PickingDetail> {
       if (res != null) {
         if (res['Result']['ResponseStatus']['IsSuccess']) {
           var errorMsg = "";
-          /*if (fBarCodeList == 1) {*/
+          if (fBarCodeList == 1) {
             for (int i = 0; i < this.hobby.length; i++) {
               if (this.hobby[i][3]['value']['value'] != '0') {
                 var kingDeeCode = this.hobby[i][0]['value']['kingDeeCode'];
@@ -1295,7 +1295,7 @@ class _PickingDetailState extends State<PickingDetail> {
                 }
               }
             }
-         /* }*/
+          }
           if (errorMsg != "") {
             ToastUtil.errorDialog(context, errorMsg);
           }

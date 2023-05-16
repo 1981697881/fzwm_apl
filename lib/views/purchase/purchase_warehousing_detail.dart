@@ -205,10 +205,10 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
     Map<String, dynamic> userMap = Map();
     print(fBillNo);
     userMap['FilterString'] = "FBillNo='$fBillNo'";
-    userMap['FormId'] = 'PUR_ReceiveBill';
+    userMap['FormId'] = 'PUR_PurchaseOrder';
     userMap['OrderString'] = 'FMaterialId.FNumber ASC';
     userMap['FieldKeys'] =
-    'FBillNo,FSupplierId.FNumber,FSupplierId.FName,FDate,FDetailEntity_FEntryId,FMaterialId.FNumber,FMaterialId.FName,FMaterialId.FSpecification,FPurOrgId.FNumber,FPurOrgId.FName,FUnitId.FNumber,FUnitId.FName,FActlandQty,FSrcBillNo,FID,FMaterialId.FIsBatchManage,FStockOrgId.FNumber,FStockUnitID.FNumber,FTaxPrice,FEntryTaxRate';
+    'FBillNo,FSupplierId.FNumber,FSupplierId.FName,FDate,FPOOrderEntry_FEntryId,FMaterialId.FNumber,FMaterialId.FName,FMaterialId.FSpecification,FPurchaseOrgId.FNumber,FPurchaseOrgId.FName,FUnitId.FNumber,FUnitId.FName,FQty,FSrcBillNo,FID,FMaterialId.FIsBatchManage,FCorrespondOrgId.FNumber,FStockUnitID.FNumber,FTaxPrice,FEntryTaxRate';
     Map<String, dynamic> dataMap = Map();
     dataMap['data'] = userMap;
     String order = await CurrencyEntity.polling(dataMap);
@@ -312,7 +312,7 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
     var deptData = sharedPreferences.getString('menuList');
     var menuList = new Map<dynamic, dynamic>.from(jsonDecode(deptData));
     fBarCodeList = menuList['FBarCodeList'];
-    /*if (fBarCodeList == 1) {*/
+    if (fBarCodeList == 1) {
       Map<String, dynamic> barcodeMap = Map();
       barcodeMap['FilterString'] = "FBarCodeEn='" + event + "'";
       barcodeMap['FormId'] = 'QDEP_Cust_BarCodeList';
@@ -346,11 +346,11 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
       } else {
         ToastUtil.showInfo('条码不在条码清单中');
       }
-    /*} else {
+    } else {
       _code = event;
       this.getMaterialList("", _code);
       print("ChannelPage: $event");
-    }*/
+    }
     print("ChannelPage: $event");
   }
   getMaterialList(barcodeData, code) async {
@@ -375,7 +375,7 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
       var barCodeScan;
       if(fBarCodeList == 1){
         barCodeScan = barcodeData[0];
-        barCodeScan[3] = barCodeScan[3].toString();
+        barCodeScan[4] = barCodeScan[4].toString();
       }else{
         barCodeScan = scanCode;
       }
@@ -989,12 +989,12 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
     //下推
     Map<String, dynamic> pushMap = Map();
     pushMap['EntryIds'] = val;
-    pushMap['RuleId'] = "PUR_ReceiveBill-STK_InStock";
-    pushMap['TargetFormId'] = "STK_InStock";
+    pushMap['RuleId'] = "PUR_PurchaseOrder-PUR_ReceiveBill";
+    pushMap['TargetFormId'] = "PUR_ReceiveBill";
     pushMap['IsEnableDefaultRule'] = "false";
     pushMap['IsDraftWhenSaveFail'] = "false";
     var downData =
-    await SubmitEntity.pushDown({"formid": "PUR_ReceiveBill", "data": pushMap});
+    await SubmitEntity.pushDown({"formid": "PUR_PurchaseOrder", "data": pushMap});
     var res = jsonDecode(downData);
     print(res);
     //判断成功
@@ -1003,10 +1003,10 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
       var entitysNumber =
       res['Result']['ResponseStatus']['SuccessEntitys'][0]['Number'];
       Map<String, dynamic> inOrderMap = Map();
-      inOrderMap['FormId'] = 'STK_InStock';
+      inOrderMap['FormId'] = 'PUR_ReceiveBill';
       inOrderMap['FilterString'] = "FBillNo='$entitysNumber'";
       inOrderMap['FieldKeys'] =
-      'FInStockEntry_FEntryId,FMaterialId.FNumber,FMaterialId.FName,FUnitId.FNumber';
+      'FDetailEntity_FEntryId,FMaterialId.FNumber,FMaterialId.FName,FUnitId.FNumber';
       String order = await CurrencyEntity.polling({'data': inOrderMap});
       print(order);
       var resData = jsonDecode(order);
@@ -1030,8 +1030,7 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
             Map<String, dynamic> FEntityItem = Map();
             FEntityItem['FEntryID'] = resData[entity][0];
             FEntityItem['FStockStatusId'] = {"FNumber": "KCZT01_SYS"};
-            FEntityItem['FInStockType'] = '1';
-            FEntityItem['FRealQty'] =
+            FEntityItem['FActlandQty'] =
             this.hobby[element][3]['value']['value'];
             FEntityItem['FStockId'] = {
               "FNumber": this.hobby[element][4]['value']['value']
@@ -1042,7 +1041,7 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
       }
       Model['FEntity'] = FEntity;
       orderMap['Model'] = Model;
-      dataMap = {"formid": "STK_InStock", "data": orderMap, "isBool": true};
+      dataMap = {"formid": "PUR_ReceiveBill", "data": orderMap, "isBool": true};
       print(jsonEncode(dataMap));
       //返回保存参数
       return dataMap;
@@ -1057,6 +1056,10 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
   }
   //保存
   saveOrder() async {
+    //获取登录信息
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    var menuData = sharedPreferences.getString('MenuPermissions');
+    var deptData = jsonDecode(menuData)[0];
     if (this.hobby.length > 0) {
       setState(() {
         this.isSubmit = true;
@@ -1078,7 +1081,7 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
         print(resCheck);
         Map<String, dynamic> submitMap = Map();
         submitMap = {
-          "formid": "STK_InStock",
+          "formid": "PUR_ReceiveBill",
           "data": {
             'Ids': resCheck['data']['Model']['FID']
           }
@@ -1088,7 +1091,7 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
             context,
             submitMap,
             1,
-            "STK_InStock",
+            "PUR_ReceiveBill",
             SubmitEntity.submit(submitMap))
             .then((submitResult) {
           if (submitResult) {
@@ -1097,7 +1100,7 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
                 context,
                 submitMap,
                 1,
-                "STK_InStock",
+                "PUR_ReceiveBill",
                 SubmitEntity.audit(submitMap))
                 .then((auditResult) async{
               if (auditResult) {
@@ -1117,10 +1120,10 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
                         var itemCode = kingDeeCode[j].split("-");
                         codeModel['FID'] = itemCode[0];
                         codeModel['FOwnerID'] = {
-                          "FNUMBER": orderDate[i][20]
+                          "FNUMBER": deptData[1]
                         };
                         codeModel['FStockOrgID'] = {
-                          "FNUMBER": orderDate[i][8]
+                          "FNUMBER": deptData[1]
                         };
                         codeModel['FStockID'] = {
                           "FNUMBER": this.hobby[i][4]['value']['value']
@@ -1166,7 +1169,7 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
                     context,
                     submitMap,
                     0,
-                    "STK_InStock",
+                    "PUR_ReceiveBill",
                     SubmitEntity.unAudit(submitMap))
                     .then((unAuditResult) {
                   if (unAuditResult) {

@@ -293,7 +293,7 @@ class _ReturnGoodsDetailState extends State<ReturnGoodsDetail> {
     var deptData = sharedPreferences.getString('menuList');
     var menuList = new Map<dynamic, dynamic>.from(jsonDecode(deptData));
     fBarCodeList = menuList['FBarCodeList'];
-    /*if (fBarCodeList == 1) {*/
+    if (fBarCodeList == 1) {
     Map<String, dynamic> barcodeMap = Map();
     barcodeMap['FilterString'] = "FBarCodeEn='" + event + "'";
     barcodeMap['FormId'] = 'QDEP_Cust_BarCodeList';
@@ -327,11 +327,11 @@ class _ReturnGoodsDetailState extends State<ReturnGoodsDetail> {
     } else {
       ToastUtil.showInfo('条码不在条码清单中');
     }
-    /*} else {
+    } else {
       _code = event;
       this.getMaterialList("", _code);
       print("ChannelPage: $event");
-    }*/
+    }
     print("ChannelPage: $event");
   }
 
@@ -362,11 +362,11 @@ class _ReturnGoodsDetailState extends State<ReturnGoodsDetail> {
       var barCodeScan;
       if(fBarCodeList == 1){
         barCodeScan = barcodeData[0];
-        barCodeScan[3] = barCodeScan[3].toString();
+        barCodeScan[4] = barCodeScan[4].toString();
       }else{
         barCodeScan = scanCode;
       }
-      var barcodeNum = scanCode[5];
+      var barcodeNum = scanCode[3];
       for (var element in hobby) {
         var residue = 0.0;
         //判断是否启用批号
@@ -1001,91 +1001,105 @@ class _ReturnGoodsDetailState extends State<ReturnGoodsDetail> {
       print(val);
     });
   }
+  pushDown(val, type) async {
+    //下推
+    Map<String, dynamic> pushMap = Map();
+    pushMap['EntryIds'] = val;
+    pushMap['RuleId'] = "SalReturnNotice-SalReturnStock";
+    pushMap['TargetFormId'] = "SAL_RETURNSTOCK";
+    pushMap['IsEnableDefaultRule'] = "false";
+    pushMap['IsDraftWhenSaveFail'] = "false";
+    var downData =
+    await SubmitEntity.pushDown({"formid": "SAL_RETURNNOTICE", "data": pushMap});
+    var res = jsonDecode(downData);
+    print(res);
+    //判断成功
+    if (res['Result']['ResponseStatus']['IsSuccess']) {
+      //查询入库单
+      var entitysNumber =
+      res['Result']['ResponseStatus']['SuccessEntitys'][0]['Number'];
+      Map<String, dynamic> inOrderMap = Map();
+      inOrderMap['FormId'] = 'SAL_RETURNSTOCK';
+      inOrderMap['FilterString'] = "FBillNo='$entitysNumber'";
+      inOrderMap['FieldKeys'] =
+      'FEntity_FEntryId,FMaterialId.FNumber,FMaterialId.FName,FUnitID.FNumber';
+      String order = await CurrencyEntity.polling({'data': inOrderMap});
+      print(order);
+      var resData = jsonDecode(order);
+      //组装数据
+      Map<String, dynamic> dataMap = Map();
+      dataMap['data'] = inOrderMap;
+      Map<String, dynamic> orderMap = Map();
+      orderMap['NeedUpDataFields'] = [
+        'FStockStatusId',
+        'FRealQty',
+        'FInStockType'
+      ];
+      orderMap['IsDeleteEntry'] = false;
+      Map<String, dynamic> Model = Map();
+      Model['FID'] = res['Result']['ResponseStatus']['SuccessEntitys'][0]['Id'];
+      var FEntity = [];
+      for (int entity = 0; entity < resData.length; entity++) {
+        for (int element = 0; element < this.hobby.length; element++) {
+          if (resData[entity][1].toString() ==
+              this.hobby[element][0]['value']['value'].toString()) {
+            Map<String, dynamic> FEntityItem = Map();
+            FEntityItem['FEntryID'] = resData[entity][0];
+            FEntityItem['FStockStatusId'] = {"FNumber": "KCZT01_SYS"};
+            FEntityItem['FRealQty'] =
+            this.hobby[element][3]['value']['value'];
+            FEntityItem['FStockId'] = {
+              "FNumber": this.hobby[element][4]['value']['value']
+            };
+            FEntity.add(FEntityItem);
+          }
+        }
+      }
+      Model['FEntity'] = FEntity;
+      orderMap['Model'] = Model;
+      dataMap = {"formid": "SAL_RETURNSTOCK", "data": orderMap, "isBool": true};
+      print(jsonEncode(dataMap));
+      //返回保存参数
+      return dataMap;
+    } else {
+      Map<String, dynamic> errorMap = Map();
+      errorMap = {
+        "msg": res['Result']['ResponseStatus']['Errors'][0]['Message'],
+        "isBool": false
+      };
+      return errorMap;
+    }
+  }
   //保存
   saveOrder() async {
+    //获取登录信息
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    var menuData = sharedPreferences.getString('MenuPermissions');
+    var deptData = jsonDecode(menuData)[0];
     if (this.hobby.length > 0) {
       setState(() {
         this.isSubmit = true;
       });
-      Map<String, dynamic> dataMap = Map();
-      dataMap['formid'] = 'SAL_RETURNSTOCK';
-      Map<String, dynamic> orderMap = Map();
-      orderMap['NeedReturnFields'] = [];
-      orderMap['IsDeleteEntry'] = false;
-      Map<String, dynamic> Model = Map();
-      Model['FID'] = 0;
-      Model['FBillType'] = {"FNUMBER": "XSTHD01_SYS"};
-      Model['FDate'] = FDate;
-      //获取登录信息
-      SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-      var menuData = sharedPreferences.getString('MenuPermissions');
-      var deptData = jsonDecode(menuData)[0];
-      //判断有源单 无源单
-      if(this.isScanWork){
-        Model['FStockOrgId'] = {"FNumber": orderDate[0][8].toString()};
-        Model['FSaleOrgId'] = {"FNumber": orderDate[0][1].toString()};
-        Model['FRetcustId'] = {"FNumber": orderDate[0][16].toString()};
-      }else{
-        if (this.customerNumber == null) {
-          this.isSubmit = false;
-          ToastUtil.showInfo('请选择客户');
-          return;
-        }
-        Model['FStockOrgId'] = {"FNumber": this.fOrgID};
-        Model['FSaleOrgId'] = {"FNumber": this.fOrgID};
-        Model['FRetcustId'] = {"FNumber": this.customerNumber};
-      }
-      var FEntity = [];
       var hobbyIndex = 0;
+      var EntryIds = '';
       this.hobby.forEach((element) {
-        if (element[3]['value']['value'] != '0' &&
-            element[4]['value']['value'] != '') {
-          Map<String, dynamic> FEntityItem = Map();
-          FEntityItem['FMaterialId'] = {"FNumber": element[0]['value']['value']};
-          FEntityItem['FUnitID'] = {"FNumber": element[2]['value']['value']};
-          /*FEntityItem['FReturnType'] = 1;*/
-          FEntityItem['FTaxPrice'] = orderDate[hobbyIndex][23];
-          FEntityItem['FEntryTaxRate'] = orderDate[hobbyIndex][24];
-          FEntityItem['FStockId'] = {"FNumber": element[4]['value']['value']};
-          FEntityItem['FLot'] = {"FNumber": element[5]['value']['value']};
-          FEntityItem['FReturnType'] = {"FNumber": orderDate[hobbyIndex][25]};
-          FEntityItem['FStockLocId'] = {
-            "FSTOCKLOCID__FF100011": {
-              "FNumber": element[6]['value']['value']
-            }
-          };
-          FEntityItem['FRealQty'] = element[3]['value']['value'];
-          /*FEntityItem['FEntity_Link'] = [
-            {
-              "FEntity_Link_FRuleId": "SalReturnNotice-SalReturnStock",
-              "FEntity_Link_FSTableName": "T_SAL_RETURNNOTICEENTRY",
-              "FEntity_Link_FSBillId": orderDate[hobbyIndex][15],
-              "FEntity_Link_FSId": orderDate[hobbyIndex][4],
-              "FEntity_Link_FSalBaseQty": element[8]['value']['value']
-            }
-          ];*/
-          FEntity.add(FEntityItem);
+        if (double.parse(element[3]['value']['value']) > 0) {
+          if (EntryIds == '') {
+            EntryIds = orderDate[hobbyIndex][4].toString();
+          } else {
+            EntryIds = EntryIds + ',' + orderDate[hobbyIndex][4].toString();
+          }
         }
         hobbyIndex++;
       });
-      if(FEntity.length==0){
-        this.isSubmit = false;
-        ToastUtil.showInfo('请输入数量,仓库');
-        return;
-      }
-      Model['FEntity'] = FEntity;
-      orderMap['Model'] = Model;
-      dataMap['data'] = orderMap;
-      print(jsonEncode(dataMap));
-      String order = await SubmitEntity.save(dataMap);
-      var res = jsonDecode(order);
-      print(res);
-      if (res['Result']['ResponseStatus']['IsSuccess']) {
+      var resCheck = await this.pushDown(EntryIds, '');
+      if (resCheck['isBool'] != false) {
+        print(resCheck);
         Map<String, dynamic> submitMap = Map();
         submitMap = {
           "formid": "SAL_RETURNSTOCK",
           "data": {
-            'Ids': res['Result']['ResponseStatus']['SuccessEntitys'][0]['Id']
+            'Ids': resCheck['data']['Model']['FID']
           }
         };
         //提交
@@ -1109,10 +1123,10 @@ class _ReturnGoodsDetailState extends State<ReturnGoodsDetail> {
                         var itemCode = kingDeeCode[j].split("-");
                         codeModel['FID'] = itemCode[0];
                         codeModel['FOwnerID'] = {
-                          "FNUMBER": orderDate[i][20]
+                          "FNUMBER": deptData[1]
                         };
                         codeModel['FStockOrgID'] = {
-                          "FNUMBER": orderDate[i][8]
+                          "FNUMBER": deptData[1]
                         };
                         codeModel['FStockID'] = {
                           "FNUMBER": this.hobby[i][4]['value']['value']
@@ -1171,8 +1185,8 @@ class _ReturnGoodsDetailState extends State<ReturnGoodsDetail> {
       } else {
         setState(() {
           this.isSubmit = false;
-          ToastUtil.errorDialog(context,
-              res['Result']['ResponseStatus']['Errors'][0]['Message']);
+          ToastUtil.errorDialog(
+              context, "下推失败");
         });
       }
     } else {

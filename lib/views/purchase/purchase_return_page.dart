@@ -75,7 +75,7 @@ class _ReturnGoodsPageState extends State<PurchaseReturnPage> {
   getOrderList() async {
     EasyLoading.show(status: 'loading...');
     Map<String, dynamic> userMap = Map();
-    userMap['FilterString'] = "FJoinRetQty>0";
+    userMap['FilterString'] = "FMRQTY>0";
     var scanCode = keyWord.split(",");
     if(this._dateSelectText != ""){
       this.startDate = this._dateSelectText.substring(0,10);

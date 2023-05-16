@@ -80,15 +80,15 @@ class _ReturnGoodsPageState extends State<ReturnGoodsPage> {
     if(this._dateSelectText != ""){
       this.startDate = this._dateSelectText.substring(0,10);
       this.endDate = this._dateSelectText.substring(26,36);
-      userMap['FilterString'] = "FBillCloseStatus ='A' and FDate>= '$startDate' and FDate <= '$endDate'";
+      userMap['FilterString'] = "FDocumentStatus ='C' and FDate>= '$startDate' and FDate <= '$endDate'";
     }
     if(this.isScan){
       if (this.keyWord != '') {
-        userMap['FilterString'] = "FBillNo='"+scanCode[0]+"' and FBillCloseStatus ='A'";
+        userMap['FilterString'] = "FBillNo='"+scanCode[0]+"' and FDocumentStatus ='C'";
       }
     }else{
       if (this.keyWord != '') {
-        userMap['FilterString'] = "FBillNo='"+scanCode[0]+"' and FBillCloseStatus ='A' and FDate>= '$startDate' and FDate <= '$endDate'";
+        userMap['FilterString'] = "FBillNo='"+scanCode[0]+"' and FDocumentStatus ='C' and FDate>= '$startDate' and FDate <= '$endDate'";
       }
     }
     this.isScan = false;

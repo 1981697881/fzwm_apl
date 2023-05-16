@@ -289,7 +289,7 @@ class _ExWarehouseDetailState extends State<ExWarehouseDetail> {
     var deptData = sharedPreferences.getString('menuList');
     var menuList = new Map<dynamic, dynamic>.from(jsonDecode(deptData));
     fBarCodeList = menuList['FBarCodeList'];
-    //if(fBarCodeList == 1){
+    if(fBarCodeList == 1){
       Map<String, dynamic> barcodeMap = Map();
       barcodeMap['FilterString'] = "FBarCodeEn='"+event+"'";
       barcodeMap['FormId'] = 'QDEP_Cust_BarCodeList';
@@ -311,11 +311,11 @@ class _ExWarehouseDetailState extends State<ExWarehouseDetail> {
       }else{
         ToastUtil.showInfo('条码不在条码清单中');
       }
-    /*}else{
+    }else{
       _code = event;
       this.getMaterialList("",_code);
       print("ChannelPage: $event");
-    }*/
+    }
   }
 
   void _onError(Object error) {
