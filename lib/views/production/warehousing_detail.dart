@@ -220,7 +220,7 @@ class _WarehousingDetailState extends State<WarehousingDetail> {
             "title": "良品数量",
             "name": "goodProductNumber",
             "isHide": false,
-            "value": {"label": "1", "value": "1"}
+            "value": {"label": "0", "value": "0"}
           });
           arr.add({
             "title": "良品仓库",
@@ -301,6 +301,9 @@ class _WarehousingDetailState extends State<WarehousingDetail> {
     var deptData = sharedPreferences.getString('menuList');
     var menuList = new Map<dynamic, dynamic>.from(jsonDecode(deptData));
     fBarCodeList = menuList['FBarCodeList'];
+    if(event == ""){
+      return;
+    }
     if (fBarCodeList == 1) {
       Map<String, dynamic> barcodeMap = Map();
       barcodeMap['FilterString'] = "FBarCodeEn='" + event + "'";
@@ -1548,8 +1551,8 @@ class _WarehousingDetailState extends State<WarehousingDetail> {
                   Map<String, dynamic> codeModel = Map();
                   var itemCode = kingDeeCode[j].split("-");
                   codeModel['FID'] = itemCode[0];
-                  codeModel['FOwnerID'] = {"FNUMBER": orderDate[i][21]};
-                  codeModel['FStockOrgID'] = {"FNUMBER": orderDate[i][8]};
+                  codeModel['FOwnerID'] = {"FNUMBER": deptData[1]};
+                  codeModel['FStockOrgID'] = {"FNUMBER": deptData[1]};
                   codeModel['FStockID'] = {
                     "FNUMBER": this.hobby[i][4]['value']['value']
                   };

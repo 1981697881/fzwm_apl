@@ -293,6 +293,9 @@ class _ReturnGoodsDetailState extends State<ReturnGoodsDetail> {
     var deptData = sharedPreferences.getString('menuList');
     var menuList = new Map<dynamic, dynamic>.from(jsonDecode(deptData));
     fBarCodeList = menuList['FBarCodeList'];
+    if(event == ""){
+      return;
+    }
     if (fBarCodeList == 1) {
     Map<String, dynamic> barcodeMap = Map();
     barcodeMap['FilterString'] = "FBarCodeEn='" + event + "'";

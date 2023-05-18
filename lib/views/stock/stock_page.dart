@@ -60,23 +60,23 @@ class _StockPageState extends State<StockPage> {
 
   // 集合
   List hobby = [];
-  getOrderList(keyWord) async {
+  getOrderList(keyWord, batchNo) async {
     EasyLoading.show(status: 'loading...');
       Map<String, dynamic> userMap = Map();
       if(keyWord != ''){
         userMap['FilterString'] =
-        "FMaterialId.FNumber='"+keyWord+"'";
+        "FMaterialId.FNumber='"+keyWord+"' and FLot.FNumber= '"+batchNo+"'";
       }
       userMap['FormId'] = 'STK_Inventory';
       userMap['FieldKeys'] =
-          'FMaterialId.FNumber,FMaterialId.FName,FMaterialId.FSpecification,FStockId.FName,FBaseQty';
+          'FMaterialId.FNumber,FMaterialId.FName,FMaterialId.FSpecification,FStockId.FName,FBaseQty,FLot';
       Map<String, dynamic> dataMap = Map();
       dataMap['data'] = userMap;
       String order = await CurrencyEntity.polling(dataMap);
       orderDate = [];
       orderDate = jsonDecode(order);
       print(orderDate);
-    hobby = [];
+      hobby = [];
     if (orderDate.length > 0) {
         orderDate.forEach((value) {
           List arr = [];
@@ -105,6 +105,11 @@ class _StockPageState extends State<StockPage> {
             "name": "FBaseQty",
             "value": {"label": value[4], "value": value[4]}
           });
+          arr.add({
+            "title": "批号",
+            "name": "FBatchNo",
+            "value": {"label": value[5], "value": value[5]}
+          });
           hobby.add(arr);
         });
         setState(() {
@@ -125,12 +130,15 @@ class _StockPageState extends State<StockPage> {
     var deptData = sharedPreferences.getString('menuList');
     var menuList = new Map<dynamic, dynamic>.from(jsonDecode(deptData));
     fBarCodeList = menuList['FBarCodeList'];
-    //if (fBarCodeList == 1) {
+    if(event == ""){
+      return;
+    }
+    if (fBarCodeList == 1) {
       Map<String, dynamic> barcodeMap = Map();
       barcodeMap['FilterString'] = "FBarCodeEn='" + event + "'";
       barcodeMap['FormId'] = 'QDEP_Cust_BarCodeList';
       barcodeMap['FieldKeys'] =
-      'FID,FInQtyTotal,FOutQtyTotal,FEntity_FEntryId,FRemainQty,FBarCodeQty,FEntryStockID.FName,FEntryStockID.FNumber,FMATERIALID.FNUMBER,FOwnerID.FNumber,FBarCode';
+      'FID,FInQtyTotal,FOutQtyTotal,FEntity_FEntryId,FRemainQty,FBarCodeQty,FEntryStockID.FName,FEntryStockID.FNumber,FMATERIALID.FNUMBER,FOwnerID.FNumber,FBarCode,FBatchNo';
       Map<String, dynamic> dataMap = Map();
       dataMap['data'] = barcodeMap;
       String order = await CurrencyEntity.polling(dataMap);
@@ -138,17 +146,17 @@ class _StockPageState extends State<StockPage> {
       if (barcodeData.length > 0) {
         keyWord = barcodeData[0][8];
         this.controller.text = barcodeData[0][8];
-        await this.getOrderList(barcodeData[0][8]);
+        await this.getOrderList(barcodeData[0][8],barcodeData[0][11]);
       } else {
         ToastUtil.showInfo('条码不在条码清单中');
       }
-    /*} else {
+    } else {
       keyWord = _code;
       this.controller.text = _code;
       _code = event;
-      await this.getOrderList(_code);
+      await this.getOrderList(_code,"");
       print("ChannelPage: $event");
-    }*/
+    }
     EasyLoading.show(status: 'loading...');
   }
   void _onError(Object error) {
@@ -204,7 +212,7 @@ class _StockPageState extends State<StockPage> {
   void getScan(String scan) async {
     keyWord = scan;
     this.controller.text = scan;
-    await getOrderList("");
+    await getOrderList("","");
   }
 
   @override
@@ -269,7 +277,7 @@ class _StockPageState extends State<StockPage> {
                                             onSubmitted: (value) {
                                               setState(() {
                                                 this.keyWord  = value;
-                                                this.getOrderList("");
+                                                this.getOrderList("","");
 
                                               });
                                             },

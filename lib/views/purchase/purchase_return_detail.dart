@@ -293,6 +293,9 @@ class _ReturnGoodsDetailState extends State<PurchaseReturnDetail> {
     var deptData = sharedPreferences.getString('menuList');
     var menuList = new Map<dynamic, dynamic>.from(jsonDecode(deptData));
     fBarCodeList = menuList['FBarCodeList'];
+    if(event == ""){
+      return;
+    }
     if (fBarCodeList == 1) {
     Map<String, dynamic> barcodeMap = Map();
     barcodeMap['FilterString'] = "FBarCodeEn='" + event + "'";
@@ -941,7 +944,7 @@ class _ReturnGoodsDetailState extends State<PurchaseReturnDetail> {
     pushMap['IsEnableDefaultRule'] = "false";
     pushMap['IsDraftWhenSaveFail'] = "false";
     var downData =
-    await SubmitEntity.pushDown({"formid": "PUR_PurchaseOrder", "data": pushMap});
+    await SubmitEntity.pushDown({"formid": "PUR_MRAPP", "data": pushMap});
     var res = jsonDecode(downData);
     print(res);
     //判断成功
@@ -961,11 +964,7 @@ class _ReturnGoodsDetailState extends State<PurchaseReturnDetail> {
       Map<String, dynamic> dataMap = Map();
       dataMap['data'] = inOrderMap;
       Map<String, dynamic> orderMap = Map();
-      orderMap['NeedUpDataFields'] = [
-        'FStockStatusId',
-        'FRealQty',
-        'FInStockType'
-      ];
+      orderMap['NeedUpDataFields'] = [];
       orderMap['IsDeleteEntry'] = false;
       Map<String, dynamic> Model = Map();
       Model['FID'] = res['Result']['ResponseStatus']['SuccessEntitys'][0]['Id'];
@@ -976,12 +975,12 @@ class _ReturnGoodsDetailState extends State<PurchaseReturnDetail> {
               this.hobby[element][0]['value']['value'].toString()) {
             Map<String, dynamic> FEntityItem = Map();
             FEntityItem['FEntryID'] = resData[entity][0];
-            FEntityItem['FStockStatusId'] = {"FNumber": "KCZT01_SYS"};
             FEntityItem['FRMREALQTY'] =
             this.hobby[element][3]['value']['value'];
             FEntityItem['FSTOCKID'] = {
               "FNumber": this.hobby[element][4]['value']['value']
             };
+            FEntityItem['FStockStatusId'] = {"FNumber": "KCZT01_SYS"};
             FEntity.add(FEntityItem);
           }
         }
