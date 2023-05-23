@@ -320,7 +320,7 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
       barcodeMap['FilterString'] = "FBarCodeEn='" + event + "'";
       barcodeMap['FormId'] = 'QDEP_Cust_BarCodeList';
       barcodeMap['FieldKeys'] =
-      'FID,FInQtyTotal,FOutQtyTotal,FEntity_FEntryId,FRemainQty,FBarCodeQty,FEntryStockID.FName,FEntryStockID.FNumber,FMATERIALID.FNUMBER,FOwnerID.FNumber,FBarCode';
+      'FID,FInQtyTotal,FOutQtyTotal,FEntity_FEntryId,FRemainQty,FBarCodeQty,FEntryStockID.FName,FEntryStockID.FNumber,FMATERIALID.FNUMBER,FOwnerID.FNumber,FBarCode,FSN';
       Map<String, dynamic> dataMap = Map();
       dataMap['data'] = barcodeMap;
       String order = await CurrencyEntity.polling(dataMap);
@@ -341,7 +341,7 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
         };
         if(msg ==  ""){
           _code = event;
-          this.getMaterialList(barcodeData, barcodeData[0][10]);
+          this.getMaterialList(barcodeData, barcodeData[0][10], barcodeData[0][11]);
           print("ChannelPage: $event");
         }else{
           ToastUtil.showInfo(msg);
@@ -351,12 +351,12 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
       }
     } else {
       _code = event;
-      this.getMaterialList("", _code);
+      this.getMaterialList("", _code,"");
       print("ChannelPage: $event");
     }
     print("ChannelPage: $event");
   }
-  getMaterialList(barcodeData, code) async {
+  getMaterialList(barcodeData, code, fsn) async {
     Map<String, dynamic> userMap = Map();
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     var menuData = sharedPreferences.getString('MenuPermissions');
@@ -396,7 +396,7 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
                 if(element[0]['value']['scanCode'].indexOf(code) == -1){
                   element[3]['value']['label']=(double.parse(element[3]['value']['label'])+double.parse(barcodeNum)).toString();
                   element[3]['value']['value']=element[3]['value']['label'];
-                  var item = barCodeScan[0].toString()+"-"+barcodeNum;
+                  var item = barCodeScan[0].toString() + "-" + barcodeNum + "-" + fsn;
                   element[0]['value']['kingDeeCode'].add(item);
                   element[0]['value']['scanCode'].add(code);
                   element[10]['value']['label'] = barcodeNum.toString();
@@ -429,7 +429,7 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
                     if(element[0]['value']['scanCode'].indexOf(code) == -1){
                       element[3]['value']['label']=(double.parse(element[3]['value']['label'])+double.parse(barcodeNum)).toString();
                       element[3]['value']['value']=element[3]['value']['label'];
-                      var item = barCodeScan[0].toString()+"-"+barcodeNum;
+                      var item = barCodeScan[0].toString() + "-" + barcodeNum + "-" + fsn;
                       element[10]['value']['label'] =barcodeNum.toString();
                       element[10]['value']['value'] = barcodeNum.toString();
                       element[0]['value']['kingDeeCode'].add(item);
@@ -459,7 +459,7 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
                   }
                   element[3]['value']['label']=(double.parse(element[3]['value']['label'])+double.parse(barcodeNum)).toString();
                   element[3]['value']['value']=element[3]['value']['label'];
-                  var item = barCodeScan[0].toString()+"-"+barcodeNum;
+                  var item = barCodeScan[0].toString() + "-" + barcodeNum + "-" + fsn;
                   element[0]['value']['kingDeeCode'].add(item);
                   element[0]['value']['scanCode'].add(code);
                   element[10]['value']['label'] = barcodeNum.toString();
@@ -493,7 +493,7 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
                       if(element[0]['value']['scanCode'].indexOf(code) == -1){
                         element[3]['value']['label']=(double.parse(element[3]['value']['label'])+double.parse(barcodeNum)).toString();
                         element[3]['value']['value']=element[3]['value']['label'];
-                        var item = barCodeScan[0].toString()+"-"+barcodeNum;
+                        var item = barCodeScan[0].toString() + "-" + barcodeNum + "-" + fsn;
                         element[10]['value']['label'] =barcodeNum.toString();
                         element[10]['value']['value'] = barcodeNum.toString();
                         element[0]['value']['kingDeeCode'].add(item);
@@ -531,7 +531,7 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
                         if(element[0]['value']['scanCode'].indexOf(code) == -1){
                           element[3]['value']['label']=(double.parse(element[3]['value']['label'])+double.parse(barcodeNum)).toString();
                           element[3]['value']['value']=element[3]['value']['label'];
-                          var item = barCodeScan[0].toString()+"-"+barcodeNum;
+                          var item = barCodeScan[0].toString() + "-" + barcodeNum + "-" + fsn;
                           element[10]['value']['label'] =barcodeNum.toString();
                           element[10]['value']['value'] = barcodeNum.toString();
                           element[0]['value']['kingDeeCode'].add(item);
@@ -1038,6 +1038,15 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
             FEntityItem['FStockId'] = {
               "FNumber": this.hobby[element][4]['value']['value']
             };
+            var fSerialSub = [];
+            var kingDeeCode = this.hobby[element][0]['value']['kingDeeCode'];
+            for (int subj = 0; subj < kingDeeCode.length; subj++) {
+              Map<String, dynamic> subObj = Map();
+              var itemCode = kingDeeCode[subj].split("-");
+              subObj['FSerialNo'] = itemCode[2];
+              fSerialSub.add(subObj);
+            }
+            FEntityItem['FSerialSubEntity'] = fSerialSub;
             FEntity.add(FEntityItem);
           }
         }
