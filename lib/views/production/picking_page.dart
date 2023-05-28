@@ -99,17 +99,17 @@ class _PickingPageState extends State<PickingPage> {
     }
     if(this.isScan){
       userMap['FilterString'] =
-      "FStatus in (3) and FNoStockInQty>0";
+      "FStatus in(3,4) and FNoStockInQty>0";
       if(this.keyWord != ''){
         userMap['FilterString'] =
-        "FBillNo='$keyWord' and FStatus in (3) and FNoStockInQty>0";
+        "FBillNo='$keyWord' and FStatus in(3,4) and FNoStockInQty>0";
       }
     }else{
       userMap['FilterString'] =
-      "FStatus in (3) and FNoStockInQty>0 and FDate>= '$startDate' and FDate <= '$endDate'";
+      "FStatus in(3,4) and FNoStockInQty>0 and FDate>= '$startDate' and FDate <= '$endDate'";
       if(this.keyWord != ''){
         userMap['FilterString'] =
-        "FBillNo='$keyWord' and FStatus in (3) and FNoStockInQty>0 and FDate>= '$startDate' and FDate <= '$endDate'";
+        "FBillNo='$keyWord' and FStatus in(3,4) and FNoStockInQty>0 and FDate>= '$startDate' and FDate <= '$endDate'";
       }
     }
     this.isScan = false;

@@ -278,6 +278,7 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
       ToastUtil.showInfo('无数据');
     }
     getStockList();
+    /*_onEvent("mB@CpNDtniREhhqrndaYPT9HiXOipMKs0csC7RJ8y4eJM38mGYHuig==");*/
   }
 
   void _onEvent(event) async {
@@ -293,7 +294,7 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
     barcodeMap['FilterString'] = "FBarCodeEn='" + event + "'";
     barcodeMap['FormId'] = 'QDEP_Cust_BarCodeList';
     barcodeMap['FieldKeys'] =
-    'FID,FInQtyTotal,FOutQtyTotal,FEntity_FEntryId,FRemainQty,FBarCodeQty,FEntryStockID.FName,FEntryStockID.FNumber,FMATERIALID.FNUMBER,FOwnerID.FNumber,FBarCode,FSN';
+    'FID,FInQtyTotal,FOutQtyTotal,FEntity_FEntryId,FRemainQty,FBarCodeQty,FStockID.FName,FStockID.FNumber,FMATERIALID.FNUMBER,FOwnerID.FNumber,FBarCode,FSN';
     Map<String, dynamic> dataMap = Map();
     dataMap['data'] = barcodeMap;
     String order = await CurrencyEntity.polling(dataMap);
@@ -411,7 +412,7 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
                   if(element[0]['value']['scanCode'].indexOf(code) == -1){
                     //判断末尾
                     if(fNumber.lastIndexOf(element[0]['value']['value'].toString()) == (hobbyIndex-1)){
-                      var item = barCodeScan[0].toString()+"-"+residue.toString();
+                      var item = barCodeScan[0].toString()+"-"+residue.toString() + "-" + fsn;
                       element[10]['value']['label'] = residue.toString();
                       element[10]['value']['value'] = residue.toString();
                       element[3]['value']['label']=(double.parse(element[3]['value']['label'])+residue).toString();
@@ -423,7 +424,7 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
                     }else{
                       //判断剩余数量是否大于扫码数量
                       if(element[0]['value']['surplus'] >= residue){
-                        var item = barCodeScan[0].toString()+"-"+residue.toString();
+                        var item = barCodeScan[0].toString()+"-"+residue.toString() + "-" + fsn;
                         element[10]['value']['label'] = residue.toString();
                         element[10]['value']['value'] = residue.toString();
                         element[3]['value']['label']=(double.parse(element[3]['value']['label'])+residue).toString();
@@ -433,7 +434,7 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
                         element[0]['value']['kingDeeCode'].add(item);
                         element[0]['value']['scanCode'].add(code);
                       }else{
-                        var item = barCodeScan[0].toString()+"-"+element[0]['value']['surplus'].toString();
+                        var item = barCodeScan[0].toString()+"-"+element[0]['value']['surplus'].toString() + "-" + fsn;
                         element[10]['value']['label'] = element[0]['value']['surplus'].toString();
                         element[10]['value']['value'] = element[0]['value']['surplus'].toString();
                         element[3]['value']['label']=(element[0]['value']['surplus'] + double.parse(element[3]['value']['label'])).toString();
@@ -509,7 +510,7 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
                           element[0]['value']['kingDeeCode'].add(item);
                           element[0]['value']['scanCode'].add(code);
                         }else{
-                          var item = barCodeScan[0].toString()+"-"+element[0]['value']['surplus'].toString();
+                          var item = barCodeScan[0].toString()+"-"+element[0]['value']['surplus'].toString() + "-" + fsn;
                           element[10]['value']['label'] = element[0]['value']['surplus'].toString();
                           element[10]['value']['value'] = element[0]['value']['surplus'].toString();
                           element[3]['value']['label']=(element[0]['value']['surplus'] + double.parse(element[3]['value']['label'])).toString();
@@ -559,7 +560,7 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
                             element[0]['value']['kingDeeCode'].add(item);
                             element[0]['value']['scanCode'].add(code);
                           }else{
-                            var item = barCodeScan[0].toString()+"-"+element[0]['value']['surplus'].toString();
+                            var item = barCodeScan[0].toString()+"-"+element[0]['value']['surplus'].toString() + "-" + fsn;
                             element[10]['value']['label'] = element[0]['value']['surplus'].toString();
                             element[10]['value']['value'] = element[0]['value']['surplus'].toString();
                             element[3]['value']['label']=(element[0]['value']['surplus'] + double.parse(element[3]['value']['label'])).toString();
@@ -1042,7 +1043,86 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
       print(val);
     });
   }
-
+  pushDown(val, type) async {
+    //下推
+    Map<String, dynamic> pushMap = Map();
+    pushMap['EntryIds'] = val;
+    pushMap['RuleId'] = "DeliveryNotice-OutStock";
+    pushMap['TargetFormId'] = "SAL_OUTSTOCK";
+    pushMap['IsEnableDefaultRule'] = "false";
+    pushMap['IsDraftWhenSaveFail'] = "false";
+    var downData =
+    await SubmitEntity.pushDown({"formid": "SAL_DELIVERYNOTICE", "data": pushMap});
+    var res = jsonDecode(downData);
+    print(res);
+    //判断成功
+    if (res['Result']['ResponseStatus']['IsSuccess']) {
+      //查询入库单
+      var entitysNumber =
+      res['Result']['ResponseStatus']['SuccessEntitys'][0]['Number'];
+      Map<String, dynamic> inOrderMap = Map();
+      inOrderMap['FormId'] = 'SAL_OUTSTOCK';
+      inOrderMap['FilterString'] = "FBillNo='$entitysNumber'";
+      inOrderMap['FieldKeys'] =
+      'FEntity_FEntryId,FMaterialID.FNumber,FMaterialID.FName,FUnitID.FNumber';
+      String order = await CurrencyEntity.polling({'data': inOrderMap});
+      print(order);
+      var resData = jsonDecode(order);
+      //组装数据
+      Map<String, dynamic> dataMap = Map();
+      dataMap['data'] = inOrderMap;
+      Map<String, dynamic> orderMap = Map();
+      orderMap['NeedUpDataFields'] = [
+        'FStockStatusId',
+        'FRealQty',
+        'FInStockType'
+      ];
+      orderMap['IsDeleteEntry'] = false;
+      Map<String, dynamic> Model = Map();
+      Model['FID'] = res['Result']['ResponseStatus']['SuccessEntitys'][0]['Id'];
+      var FEntity = [];
+      for (int entity = 0; entity < resData.length; entity++) {
+        for (int element = 0; element < this.hobby.length; element++) {
+          if (resData[entity][1].toString() ==
+              this.hobby[element][0]['value']['value'].toString()) {
+            Map<String, dynamic> FEntityItem = Map();
+            FEntityItem['FEntryID'] = resData[entity][0];
+            FEntityItem['FStockStatusId'] = {"FNumber": "KCZT01_SYS"};
+            FEntityItem['FRealQty'] =
+            this.hobby[element][3]['value']['value'];
+            FEntityItem['FStockID'] = {
+              "FNumber": this.hobby[element][4]['value']['value']
+            };
+            var fSerialSub = [];
+            var kingDeeCode = this.hobby[element][0]['value']['kingDeeCode'];
+            for (int subj = 0; subj < kingDeeCode.length; subj++) {
+              Map<String, dynamic> subObj = Map();
+              var itemCode = kingDeeCode[subj].split("-");
+              if(itemCode.length>2){
+                subObj['FSerialNo'] = itemCode[2];
+              }
+              fSerialSub.add(subObj);
+            }
+            FEntityItem['FSerialSubEntity'] = fSerialSub;
+            FEntity.add(FEntityItem);
+          }
+        }
+      }
+      Model['FEntity'] = FEntity;
+      orderMap['Model'] = Model;
+      dataMap = {"formid": "SAL_OUTSTOCK", "data": orderMap, "isBool": true};
+      print(jsonEncode(dataMap));
+      //返回保存参数
+      return dataMap;
+    } else {
+      Map<String, dynamic> errorMap = Map();
+      errorMap = {
+        "msg": res['Result']['ResponseStatus']['Errors'][0]['Message'],
+        "isBool": false
+      };
+      return errorMap;
+    }
+  }
   //保存
   saveOrder() async {
     if (this.hobby.length > 0) {
@@ -1090,7 +1170,7 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
           FEntityItem['FTaxPrice'] = orderDate[hobbyIndex][23];
           FEntityItem['FEntryTaxRate'] = orderDate[hobbyIndex][24];
           FEntityItem['FUnitID'] = {"FNumber": element[2]['value']['value']};
-          /*FEntityItem['FReturnType'] = 1;*/
+          FEntityItem['FReturnType'] = 1;
           FEntityItem['FLot'] = {"FNumber": element[5]['value']['value']};
           FEntityItem['FStockID'] = {"FNumber": element[4]['value']['value']};
           FEntityItem['FStockLocId'] = {
@@ -1109,11 +1189,13 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
             }
           ];
           var fSerialSub = [];
-          var kingDeeCode = this.hobby[element][0]['value']['kingDeeCode'];
+          var kingDeeCode = element[0]['value']['kingDeeCode'];
           for (int subj = 0; subj < kingDeeCode.length; subj++) {
             Map<String, dynamic> subObj = Map();
             var itemCode = kingDeeCode[subj].split("-");
-            subObj['FSerialNo'] = itemCode[2];
+            if(itemCode.length>2){
+              subObj['FSerialNo'] = itemCode[2];
+            }
             fSerialSub.add(subObj);
           }
           FEntityItem['FSerialSubEntity'] = fSerialSub;
@@ -1141,6 +1223,31 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
             'Ids': res['Result']['ResponseStatus']['SuccessEntitys'][0]['Id']
           }
         };
+       /* setState(() {
+          this.isSubmit = true;
+        });
+        var hobbyIndex = 0;
+        var EntryIds = '';
+        this.hobby.forEach((element) {
+          if (double.parse(element[3]['value']['value']) > 0) {
+            if (EntryIds == '') {
+              EntryIds = orderDate[hobbyIndex][4].toString();
+            } else {
+              EntryIds = EntryIds + ',' + orderDate[hobbyIndex][4].toString();
+            }
+          }
+          hobbyIndex++;
+        });
+        var resCheck = await this.pushDown(EntryIds, '');
+        if (resCheck['isBool'] != false) {
+          print(resCheck);
+          Map<String, dynamic> submitMap = Map();
+          submitMap = {
+            "formid": "SAL_OUTSTOCK",
+            "data": {
+              'Ids': resCheck['data']['Model']['FID']
+            }
+          };*/
         //提交
         HandlerOrder.orderHandler(context, submitMap, 1, "SAL_OUTSTOCK",
                 SubmitEntity.submit(submitMap))

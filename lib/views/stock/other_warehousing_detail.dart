@@ -109,6 +109,7 @@ class _OtherWarehousingDetailState extends State<OtherWarehousingDetail> {
     /*getTypeList();*/
     getSupplierList();
     getDepartmentList();
+    /*_onEvent("mB@CpNDtniREhhqrndaYPT9HiXOipMKs0csC7RJ8y4eJM38mGYHuig==");*/
   }
   //获取部门
   getDepartmentList() async {
@@ -293,6 +294,7 @@ class _OtherWarehousingDetailState extends State<OtherWarehousingDetail> {
       });
       ToastUtil.showInfo('无数据');
     }
+
   }
 
   void _onEvent(event) async {
@@ -308,7 +310,7 @@ class _OtherWarehousingDetailState extends State<OtherWarehousingDetail> {
       barcodeMap['FilterString'] = "FBarCodeEn='"+event+"'";
       barcodeMap['FormId'] = 'QDEP_Cust_BarCodeList';
       barcodeMap['FieldKeys'] =
-      'FID,FInQtyTotal,FOutQtyTotal,FEntity_FEntryId,FRemainQty,FBarCodeQty,FEntryStockID.FName,FEntryStockID.FNumber,FMATERIALID.FNUMBER,FOwnerID.FNumber,FBarCode,FSN';
+      'FID,FInQtyTotal,FOutQtyTotal,FEntity_FEntryId,FRemainQty,FBarCodeQty,FStockID.FName,FStockID.FNumber,FMATERIALID.FNUMBER,FOwnerID.FNumber,FBarCode,FSN';
       Map<String, dynamic> dataMap = Map();
       dataMap['data'] = barcodeMap;
       String order = await CurrencyEntity.polling(dataMap);
@@ -352,7 +354,7 @@ class _OtherWarehousingDetailState extends State<OtherWarehousingDetail> {
       }else{
         barCodeScan = scanCode;
       }
-      var barcodeNum = scanCode[4];
+      var barcodeNum = scanCode[3];
       var number = 0;
       for (var element in hobby) {
         var residue = 0.0;
@@ -944,15 +946,16 @@ class _OtherWarehousingDetailState extends State<OtherWarehousingDetail> {
       setState(() {
         this.isSubmit = true;
       });
-      if (this.departmentNumber == null) {
+      if (this.departmentNumber == null && this.supplierNumber  == null) {
         this.isSubmit = false;
-        ToastUtil.showInfo('请选择部门');
+        ToastUtil.showInfo('部门和供应商不能全为空');
         return;
-      }if (this.supplierNumber  == null) {
+      }
+      /*if (this.supplierNumber  == null) {
         this.isSubmit = false;
         ToastUtil.showInfo('请选择供应商');
         return;
-      }
+      }*/
       Map<String, dynamic> dataMap = Map();
       dataMap['formid'] = 'STK_MISCELLANEOUS';
       Map<String, dynamic> orderMap = Map();
@@ -967,10 +970,14 @@ class _OtherWarehousingDetailState extends State<OtherWarehousingDetail> {
       var deptData = jsonDecode(menuData)[0];
       Model['FStockOrgId'] = {"FNumber": deptData[1]};
       /*Model['F_ora_Assistant'] = {"FNumber": this.typeNumber};*/
-      Model['FDEPTID'] = {"FNumber": this.departmentNumber};
+      if (this.departmentNumber  != null) {
+        Model['FDEPTID'] = {"FNumber": this.departmentNumber};
+      }
       Model['FOwnerTypeIdHead'] = "BD_OwnerOrg";
       Model['FStockDirect'] = "GENERAL";
-      /*Model['FSUPPLIERID'] = {"FNumber": this.supplierNumber};*/
+      if (this.supplierNumber  != null) {
+        Model['FSUPPLIERID'] = {"FNumber": this.supplierNumber};
+      }
       Model['FOwnerIdHead'] = {"FNumber": deptData[1]};
       Model['FNOTE'] = this._remarkContent.text;
       var FEntity = [];
@@ -1000,11 +1007,13 @@ class _OtherWarehousingDetailState extends State<OtherWarehousingDetail> {
           FEntityItem['FOWNERID'] = {"FNumber": deptData[1]};
           FEntityItem['FLOT'] = {"FNumber": element[5]['value']['value']};
           var fSerialSub = [];
-          var kingDeeCode = this.hobby[element][0]['value']['kingDeeCode'];
+          var kingDeeCode = element[0]['value']['kingDeeCode'];
           for (int subj = 0; subj < kingDeeCode.length; subj++) {
             Map<String, dynamic> subObj = Map();
             var itemCode = kingDeeCode[subj].split("-");
-            subObj['FSerialNo'] = itemCode[2];
+            if(itemCode.length>2){
+              subObj['FSerialNo'] = itemCode[2];
+            }
             fSerialSub.add(subObj);
           }
           FEntityItem['FSerialSubEntity'] = fSerialSub;

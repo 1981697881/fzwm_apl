@@ -297,7 +297,7 @@ class _ExWarehouseDetailState extends State<ExWarehouseDetail> {
       barcodeMap['FilterString'] = "FBarCodeEn='"+event+"'";
       barcodeMap['FormId'] = 'QDEP_Cust_BarCodeList';
       barcodeMap['FieldKeys'] =
-      'FID,FInQtyTotal,FOutQtyTotal,FEntity_FEntryId,FRemainQty,FBarCodeQty,FEntryStockID.FName,FEntryStockID.FNumber,FMATERIALID.FNUMBER,FOwnerID.FNumber,FBarCode,FSN';
+      'FID,FInQtyTotal,FOutQtyTotal,FEntity_FEntryId,FRemainQty,FBarCodeQty,FStockID.FName,FStockID.FNumber,FMATERIALID.FNUMBER,FOwnerID.FNumber,FBarCode,FSN';
       Map<String, dynamic> dataMap = Map();
       dataMap['data'] = barcodeMap;
       String order = await CurrencyEntity.polling(dataMap);
@@ -354,12 +354,12 @@ class _ExWarehouseDetailState extends State<ExWarehouseDetail> {
       }else{
         barCodeScan = scanCode;
       }
-      var barcodeNum = barCodeScan[4];
+      var barcodeNum = scanCode[3];
       for (var element in hobby) {
         var residue = 0.0;
         //判断是否启用批号
         if(element[5]['isHide']){//不启用
-          if(element[0]['value']['value'] == scanCode[0] && element[4]['value']['value'] == barCodeScan[6]){
+          if(element[0]['value']['value'] == scanCode[0] && element[4]['value']['value'] == barCodeScan[7]){
             if(element[0]['value']['barcode'].indexOf(code) == -1){
               //判断是否可重复扫码
               if(scanCode.length>4){
@@ -388,7 +388,11 @@ class _ExWarehouseDetailState extends State<ExWarehouseDetail> {
             }
           }
         }else{//启用批号
-          if(element[0]['value']['value'] == scanCode[0] && element[4]['value']['value'] == barCodeScan[6]){
+          print(element[0]['value']['value'] );
+          print(scanCode[0]);
+          print(element[4]['value']['value']);
+          print(barCodeScan[6]);
+          if(element[0]['value']['value'] == scanCode[0] && element[4]['value']['value'] == barCodeScan[7]){
             if(element[0]['value']['barcode'].indexOf(code) == -1){
               if(element[5]['value']['value'] == scanCode[1]){
                 //判断是否可重复扫码
@@ -942,15 +946,15 @@ class _ExWarehouseDetailState extends State<ExWarehouseDetail> {
       setState(() {
         this.isSubmit = true;
       });
-      if (this.departmentNumber  == null) {
+      if (this.departmentNumber  == null && this.customerNumber  == null) {
         this.isSubmit = false;
-        ToastUtil.showInfo('请选择部门');
+        ToastUtil.showInfo('部门和客户不能全为空');
         return;
-      }if (this.customerNumber  == null) {
+      }/*if (this.customerNumber  == null) {
         this.isSubmit = false;
         ToastUtil.showInfo('请选择客户');
         return;
-      }
+      }*/
       Map<String, dynamic> dataMap = Map();
       dataMap['formid'] = 'STK_MisDelivery';
       Map<String, dynamic> orderMap = Map();
@@ -965,8 +969,12 @@ class _ExWarehouseDetailState extends State<ExWarehouseDetail> {
       var deptData = jsonDecode(menuData)[0];
       Model['FStockOrgId'] = {"FNumber": deptData[1]};
       Model['FPickOrgId'] = {"FNumber": deptData[1]};
-      Model['FDeptId'] = {"FNumber": this.departmentNumber};
-      /*Model['FCustId'] = {"FNumber": this.customerNumber};*/
+      if (this.departmentNumber  != null) {
+        Model['FDeptId'] = {"FNumber": this.departmentNumber};
+      }
+      if (this.customerNumber  != null) {
+        Model['FCustId'] = {"FNumber": this.customerNumber};
+      }
       Model['FOwnerTypeIdHead'] = "BD_OwnerOrg";
       Model['FStockDirect'] = "GENERAL";
       Model['FBizType'] = "0";
@@ -1006,11 +1014,13 @@ class _ExWarehouseDetailState extends State<ExWarehouseDetail> {
           FEntityItem['FKeeperId'] = {"FNumber": deptData[1]};
           FEntityItem['FLot'] = {"FNumber": element[5]['value']['value']};
           var fSerialSub = [];
-          var kingDeeCode = this.hobby[element][0]['value']['kingDeeCode'];
+          var kingDeeCode = element[0]['value']['kingDeeCode'];
           for (int subj = 0; subj < kingDeeCode.length; subj++) {
             Map<String, dynamic> subObj = Map();
             var itemCode = kingDeeCode[subj].split("-");
-            subObj['FSerialNo'] = itemCode[2];
+            if(itemCode.length>2){
+              subObj['FSerialNo'] = itemCode[2];
+            }
             fSerialSub.add(subObj);
           }
           FEntityItem['FSerialSubEntity'] = fSerialSub;

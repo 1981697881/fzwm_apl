@@ -305,40 +305,39 @@ class _WarehousingDetailState extends State<WarehousingDetail> {
       return;
     }
     if (fBarCodeList == 1) {
-      Map<String, dynamic> barcodeMap = Map();
-      barcodeMap['FilterString'] = "FBarCodeEn='" + event + "'";
-      barcodeMap['FormId'] = 'QDEP_Cust_BarCodeList';
-      barcodeMap['FieldKeys'] =
-          'FID,FInQtyTotal,FOutQtyTotal,FEntity_FEntryId,FRemainQty,FBarCodeQty,FEntryStockID.FName,FEntryStockID.FNumber,FMATERIALID.FNUMBER,FOwnerID.FNumber,FBarCode,FSN';
-      Map<String, dynamic> dataMap = Map();
-      dataMap['data'] = barcodeMap;
-      String order = await CurrencyEntity.polling(dataMap);
-      var barcodeData = jsonDecode(order);
-      if (barcodeData.length > 0) {
-        var msg = "";
-        var orderIndex = 0;
-        for (var value in orderDate) {
-          if (value[6] == barcodeData[0][8]) {
-            msg = "";
-            if (fNumber.lastIndexOf(barcodeData[0][8]) == orderIndex) {
-              break;
+        Map<String, dynamic> barcodeMap = Map();
+        barcodeMap['FilterString'] = "FBarCodeEn='" + event + "'";
+        barcodeMap['FormId'] = 'QDEP_Cust_BarCodeList';
+        barcodeMap['FieldKeys'] =
+        'FID,FInQtyTotal,FOutQtyTotal,FEntity_FEntryId,FRemainQty,FBarCodeQty,FStockID.FName,FStockID.FNumber,FMATERIALID.FNUMBER,FOwnerID.FNumber,FBarCode,FSN';
+        Map<String, dynamic> dataMap = Map();
+        dataMap['data'] = barcodeMap;
+        String order = await CurrencyEntity.polling(dataMap);
+        var barcodeData = jsonDecode(order);
+        if (barcodeData.length > 0) {
+          var msg = "";
+          var orderIndex = 0;
+          for (var value in orderDate) {
+            if (value[6] == barcodeData[0][8]) {
+              msg = "";
+              if (fNumber.lastIndexOf(barcodeData[0][8]) == orderIndex) {
+                break;
+              }
+            } else {
+              msg = '条码不在单据物料中';
             }
+            orderIndex++;
+          };
+          if (msg == "") {
+            _code = event;
+            this.getMaterialList(barcodeData, barcodeData[0][10], barcodeData[0][11]);
+            print("ChannelPage: $event");
           } else {
-            msg = '条码不在单据物料中';
+            ToastUtil.showInfo(msg);
           }
-          orderIndex++;
-        }
-        ;
-        if (msg == "") {
-          _code = event;
-          this.getMaterialList(barcodeData, barcodeData[0][10], barcodeData[0][11]);
-          print("ChannelPage: $event");
         } else {
-          ToastUtil.showInfo(msg);
+          ToastUtil.showInfo('条码不在条码清单中');
         }
-      } else {
-        ToastUtil.showInfo('条码不在条码清单中');
-      }
     } else {
       _code = event;
       this.getMaterialList("", _code, '');
@@ -460,7 +459,7 @@ class _WarehousingDetailState extends State<WarehousingDetail> {
                             "-" +
                             (element[9]['value']['label'] -
                                     double.parse(element[3]['value']['label']))
-                                .toString();
+                                .toString() + "-" + fsn;
                         element[10]['value']['label'] = (element[9]['value']
                                     ['label'] -
                                 double.parse(element[3]['value']['label']))
@@ -591,7 +590,7 @@ class _WarehousingDetailState extends State<WarehousingDetail> {
                               (element[9]['value']['label'] -
                                       double.parse(
                                           element[3]['value']['label']))
-                                  .toString();
+                                  .toString() + "-" + fsn;
                           element[10]['value']['label'] = (element[9]['value']
                                       ['label'] -
                                   double.parse(element[3]['value']['label']))
@@ -695,7 +694,7 @@ class _WarehousingDetailState extends State<WarehousingDetail> {
                                 (element[9]['value']['label'] -
                                         double.parse(
                                             element[3]['value']['label']))
-                                    .toString();
+                                    .toString() + "-" + fsn;
                             element[10]['value']['label'] = (element[9]['value']
                                         ['label'] -
                                     double.parse(element[3]['value']['label']))
@@ -1654,17 +1653,24 @@ class _WarehousingDetailState extends State<WarehousingDetail> {
             FEntityItem['FReportType'] = {"FNumber": "HBLX01_SYS"};
             FEntityItem['FInStockType'] = '1';
             FEntityItem['FWorkshipId'] = {"FNumber": "BM00018"};
+            FEntityItem['FFinishQty'] = this.hobby[element][3]['value']['value'];
+            FEntityItem['FQuaQty'] = this.hobby[element][3]['value']['value'];
             FEntityItem['FHrWorkTime'] =
                 this.hobby[element][8]['value']['value'];
             FEntityItem['FStockId'] = {
               "FNumber": this.hobby[element][4]['value']['value']
+            };
+            FEntityItem['FLot'] = {
+              "FNumber": this.hobby[element][5]['value']['value']
             };
             var fSerialSub = [];
             var kingDeeCode = this.hobby[element][0]['value']['kingDeeCode'];
             for (int subj = 0; subj < kingDeeCode.length; subj++) {
               Map<String, dynamic> subObj = Map();
               var itemCode = kingDeeCode[subj].split("-");
-              subObj['FSerialNo'] = itemCode[2];
+              if(itemCode.length>2){
+                subObj['FSerialNo'] = itemCode[2];
+              }
               fSerialSub.add(subObj);
             }
             FEntityItem['FSerialSubEntity'] = fSerialSub;

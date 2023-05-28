@@ -195,7 +195,7 @@ class _MyHomePageState extends State {
         Map<String, dynamic> dataMap = Map();
         dataMap['data'] = userMap;
         String UserEntity = await CurrencyEntity.polling(dataMap);
-        var resUser = jsonDecode(UserEntity);
+        var resUser =jsonDecode(UserEntity);
         print(resUser);
         if (resUser.length > 0) {
           if (resUser[0][2] == 'A') {

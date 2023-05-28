@@ -279,6 +279,9 @@ class _PickingDetailState extends State<PickingDetail> {
       ToastUtil.showInfo('无数据');
       getStockList();
     }
+    /*_onEvent("@XJVZfEm+p8scb8gUJ5GdUX4bjgAdBc4iTucsyAUNYehjg3PoY0yLTWwW97fsKGj");
+    _onEvent("rS4GuhddcEFEvSmlcNFjAivre7CCpUswnKQnOEY84ZaZ2PTOStw@X5EK5QB7mp3W");
+    _onEvent("+jMm0lf+AcNa9wQEoM+AfooanM4bL4d4swxgkvIXh9qwJ1MjtmIX4A==");*/
   }
 
   void _onEvent(event) async {
@@ -294,7 +297,7 @@ class _PickingDetailState extends State<PickingDetail> {
       barcodeMap['FilterString'] = "FBarCodeEn='" + event + "'";
       barcodeMap['FormId'] = 'QDEP_Cust_BarCodeList';
       barcodeMap['FieldKeys'] =
-      'FID,FInQtyTotal,FOutQtyTotal,FEntity_FEntryId,FRemainQty,FBarCodeQty,FEntryStockID.FName,FEntryStockID.FNumber,FMATERIALID.FNUMBER,FOwnerID.FNumber,FBarCode,FSN';
+      'FID,FInQtyTotal,FOutQtyTotal,FEntity_FEntryId,FRemainQty,FBarCodeQty,FStockID.FName,FStockID.FNumber,FMATERIALID.FNUMBER,FOwnerID.FNumber,FBarCode,FSN';
       Map<String, dynamic> dataMap = Map();
       dataMap['data'] = barcodeMap;
       String order = await CurrencyEntity.polling(dataMap);
@@ -431,7 +434,7 @@ class _PickingDetailState extends State<PickingDetail> {
                             "-" +
                             (element[9]['value']['label'] -
                                 double.parse(element[3]['value']['label']))
-                                .toString();
+                                .toString() + "-" + fsn;
                         element[10]['value']['label'] = (element[9]['value']
                         ['label'] -
                             double.parse(element[3]['value']['label']))
@@ -564,7 +567,7 @@ class _PickingDetailState extends State<PickingDetail> {
                               (element[9]['value']['label'] -
                                   double.parse(
                                       element[3]['value']['label']))
-                                  .toString();
+                                  .toString() + "-" + fsn;
                           element[10]['value']['label'] = (element[9]['value']
                           ['label'] -
                               double.parse(element[3]['value']['label']))
@@ -668,7 +671,7 @@ class _PickingDetailState extends State<PickingDetail> {
                                 (element[9]['value']['label'] -
                                     double.parse(
                                         element[3]['value']['label']))
-                                    .toString();
+                                    .toString() + "-" + fsn;
                             element[10]['value']['label'] = (element[9]['value']
                             ['label'] -
                                 double.parse(element[3]['value']['label']))
@@ -919,13 +922,79 @@ class _PickingDetailState extends State<PickingDetail> {
       },
     );
   }
+  //调出弹窗 扫码
+  void scanDialog() {
+    showDialog<Widget>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) => Padding(
+        padding: EdgeInsets.all(16),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            Container(
+              alignment: Alignment.center,
+              color: Colors.white,
+              child: Column(
+                children: <Widget>[
+                  /*  Padding(
+                    padding: EdgeInsets.only(top: 8),
+                    child: Text('输入数量',
+                        style: TextStyle(
+                            fontSize: 16, decoration: TextDecoration.none)),
+                  ),*/
+                  Padding(
+                      padding: EdgeInsets.only(top: 8),
+                      child: Card(
+                          child: Column(children: <Widget>[
+                            TextField(
+                              style: TextStyle(color: Colors.black87),
+                              keyboardType: TextInputType.number,
+                              controller: this._textNumber,
+                              decoration: InputDecoration(hintText: "输入"),
+                              onChanged: (value) {
+                                setState(() {
+                                  this._FNumber = value;
+                                });
+                              },
+                            ),
+                          ]))),
+                  Padding(
+                    padding: EdgeInsets.only(top: 15, bottom: 8),
+                    child: FlatButton(
+                        color: Colors.grey[100],
+                        onPressed: () {
+                          // 关闭 Dialog
+                          Navigator.pop(context);
+                          setState(() {
+                            this.hobby[checkData][checkDataChild]["value"]
+                            ["label"] = _FNumber;
+                            this.hobby[checkData][checkDataChild]['value']
+                            ["value"] = _FNumber;
+                          });
+                        },
+                        child: Text(
+                          '确定',
+                        )),
+                  )
+                ],
+              ),
+            )
+          ],
+        ),
+      ),
+    ).then((val) {
+      print(val);
+    });
+  }
   List<Widget> _getHobby() {
     List<Widget> tempList = [];
     for (int i = 0; i < this.hobby.length; i++) {
       List<Widget> comList = [];
       for (int j = 0; j < this.hobby[i].length; j++) {
         if (!this.hobby[i][j]['isHide']) {
-         /* if (j == 5) {
+          if (j == 5) {
             comList.add(
               Column(children: [
                 Container(
@@ -962,7 +1031,7 @@ class _PickingDetailState extends State<PickingDetail> {
                 divider,
               ]),
             );
-          } else {*/
+          } else
           if (j == 4) {
             comList.add(
               _item('仓库:', stockList, this.hobby[i][j]['value']['label'],
@@ -1002,73 +1071,6 @@ class _PickingDetailState extends State<PickingDetail> {
       );
     }
     return tempList;
-  }
-
-  //调出弹窗 扫码
-  void scanDialog() {
-    showDialog<Widget>(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) => Padding(
-        padding: EdgeInsets.all(16),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: <Widget>[
-            Container(
-              alignment: Alignment.center,
-              color: Colors.white,
-              child: Column(
-                children: <Widget>[
-                  /*  Padding(
-                    padding: EdgeInsets.only(top: 8),
-                    child: Text('输入数量',
-                        style: TextStyle(
-                            fontSize: 16, decoration: TextDecoration.none)),
-                  ),*/
-                  Padding(
-                      padding: EdgeInsets.only(top: 8),
-                      child: Card(
-                          child: Column(children: <Widget>[
-                        TextField(
-                          style: TextStyle(color: Colors.black87),
-                          keyboardType: TextInputType.number,
-                          controller: this._textNumber,
-                          decoration: InputDecoration(hintText: "输入"),
-                          onChanged: (value) {
-                            setState(() {
-                              this._FNumber = value;
-                            });
-                          },
-                        ),
-                      ]))),
-                  Padding(
-                    padding: EdgeInsets.only(top: 15, bottom: 8),
-                    child: FlatButton(
-                        color: Colors.grey[100],
-                        onPressed: () {
-                          // 关闭 Dialog
-                          Navigator.pop(context);
-                          setState(() {
-                            this.hobby[checkData][checkDataChild]["value"]
-                                ["label"] = _FNumber;
-                            this.hobby[checkData][checkDataChild]['value']
-                                ["value"] = _FNumber;
-                          });
-                        },
-                        child: Text(
-                          '确定',
-                        )),
-                  )
-                ],
-              ),
-            )
-          ],
-        ),
-      ),
-    ).then((val) {
-      print(val);
-    });
   }
 
   //修改状态
@@ -1371,15 +1373,21 @@ class _PickingDetailState extends State<PickingDetail> {
               ? 'XBC001'
               : collarOrderDate[hobbyIndex][2]
         };*/
+        FEntityItem['FLot'] = {
+          "FNumber": element[5]['value']['value']
+        };
+        //FEntityItem['FStockStatusId'] = {"FNumber": "KCZT01_SYS"};
         FEntityItem['FStockId'] = {
-          "FNumber": collarOrderDate[hobbyIndex][2]
+          "FNumber": element[4]['value']['value']
         };
         var fSerialSub = [];
-        var kingDeeCode = this.hobby[element][0]['value']['kingDeeCode'];
+        var kingDeeCode = element[0]['value']['kingDeeCode'];
         for (int subj = 0; subj < kingDeeCode.length; subj++) {
           Map<String, dynamic> subObj = Map();
           var itemCode = kingDeeCode[subj].split("-");
-          subObj['FSerialNo'] = itemCode[2];
+          if(itemCode.length>2){
+            subObj['FSerialNo'] = itemCode[2];
+          }
           fSerialSub.add(subObj);
         }
         FEntityItem['FSerialSubEntity'] = fSerialSub;
@@ -1433,7 +1441,7 @@ class _PickingDetailState extends State<PickingDetail> {
       //下推
       Map<String, dynamic> pushMap = Map();
       pushMap['Ids'] = orderDate[0][13];
-      pushMap['RuleId'] = "PRD_IssueMtrl2PickMtrl";
+      pushMap['RuleId'] = "PRD_PPBOM2PICKMTRL_NORMAL";
       pushMap['TargetFormId'] = "PRD_PickMtrl";
       print(pushMap);
       var downData =
@@ -1442,7 +1450,7 @@ class _PickingDetailState extends State<PickingDetail> {
       var res = jsonDecode(downData);
       //判断成功
       if (res['Result']['ResponseStatus']['IsSuccess']) {
-        //查询生产领料单
+        //查询生产领料
         var entitysNumber = res['Result']['ResponseStatus']['SuccessEntitys'][0]['Id'];
         Map<String, dynamic> OrderMap = Map();
         OrderMap['FormId'] = 'PRD_PickMtrl';
