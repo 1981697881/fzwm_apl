@@ -648,7 +648,7 @@ class _OtherWarehousingDetailState extends State<OtherWarehousingDetail> {
           }else{
             setState(() {
           hobby['value']['label'] = p;
-        });;
+        });
             var elementIndex = 0;
             data.forEach((element) {
               if (element == p) {

@@ -1548,7 +1548,7 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
             .then((submitResult) {
           if (submitResult) {
             //审核
-            HandlerOrder.orderHandler(
+            HandlerOrder. orderHandler(
                 context,
                 submitMap,
                 1,
