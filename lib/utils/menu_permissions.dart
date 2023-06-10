@@ -1,11 +1,11 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:fzwm_apl/views/production/picking_detail.dart';
+import 'package:fzwm_apl/views/production/picking_out_sourcing_page.dart';
 import 'package:fzwm_apl/views/production/picking_page.dart';
-import 'package:fzwm_apl/views/production/replenishment_page.dart';
-import 'package:fzwm_apl/views/production/return_page.dart';
 import 'package:fzwm_apl/views/production/warehousing_detail.dart';
 import 'package:fzwm_apl/views/production/warehousing_page.dart';
+import 'package:fzwm_apl/views/purchase/purchase_out_sourcing_page.dart';
 import 'package:fzwm_apl/views/purchase/purchase_return_page.dart';
 import 'package:fzwm_apl/views/purchase/purchase_warehousing_detail.dart';
 import 'package:fzwm_apl/views/purchase/purchase_warehousing_page.dart';
@@ -15,17 +15,12 @@ import 'package:fzwm_apl/views/sale/return_goods_detail.dart';
 import 'package:fzwm_apl/views/sale/return_goods_page.dart';
 import 'package:fzwm_apl/views/stock/Inventory_detail.dart';
 import 'package:fzwm_apl/views/stock/Inventory_page.dart';
-import 'package:fzwm_apl/views/stock/allocation_page.dart';
 import 'package:fzwm_apl/views/stock/ex_warehouse_detail.dart';
 import 'package:fzwm_apl/views/stock/ex_warehouse_page.dart';
 import 'package:fzwm_apl/views/stock/grounding_page.dart';
-import 'package:fzwm_apl/views/stock/offline_Inventory_detail.dart';
-import 'package:fzwm_apl/views/stock/other_Inventory_detail.dart';
 import 'package:fzwm_apl/views/stock/other_warehousing_detail.dart';
 import 'package:fzwm_apl/views/stock/other_warehousing_page.dart';
-import 'package:fzwm_apl/views/stock/scheme_Inventory_detail.dart';
 import 'package:fzwm_apl/views/stock/stock_page.dart';
-import 'package:fzwm_apl/views/stock/substep_allocation_page.dart';
 import 'package:fzwm_apl/views/stock/undercarriage_page.dart';
 import 'package:fzwm_apl/views/workshop/dispatch_detail.dart';
 import 'package:fzwm_apl/views/workshop/dispatch_page.dart';
@@ -279,6 +274,13 @@ class MenuPermissions {
       "color": Colors.pink.withOpacity(0.7),
       "router": PickingPage(),
       "source": '',
+    });menu.add({
+      "icon": Icons.loupe,
+      "text": "委外领料",
+      "parentId": 1,
+      "color": Colors.pink.withOpacity(0.7),
+      "router": PickingOutSourcingPage(),
+      "source": '',
     }); menu.add({
       "icon": Icons.loupe,
       "text": "销售出库",
@@ -299,6 +301,13 @@ class MenuPermissions {
       "parentId": 5,
       "color": Colors.pink.withOpacity(0.7),
       "router": PurchaseWarehousingPage(),
+      "source": '',
+    });menu.add({
+      "icon": Icons.loupe,
+      "text": "委外入库",
+      "parentId": 5,
+      "color": Colors.pink.withOpacity(0.7),
+      "router": PurchaseOutSourcingPage(),
       "source": '',
     });menu.add({
       "icon": Icons.loupe,
