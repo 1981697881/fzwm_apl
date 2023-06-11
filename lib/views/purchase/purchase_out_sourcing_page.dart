@@ -75,23 +75,23 @@ class _PurchaseOutSourcingPageState extends State<PurchaseOutSourcingPage> {
   getOrderList() async {
     EasyLoading.show(status: 'loading...');
     Map<String, dynamic> userMap = Map();
-    userMap['FilterString'] = "FRemainStockINQty >0 and FBillTypeID.FNUMBER ='CGDD02_SYS'";
+    userMap['FilterString'] = "FRemainReceiveQty >0 and FCloseStatus = 'A' and FBillTypeID.FNUMBER ='CGDD02_SYS'";
     var scanCode = keyWord.split(",");
     if (this._dateSelectText != "") {
       this.startDate = this._dateSelectText.substring(0, 10);
       this.endDate = this._dateSelectText.substring(26, 36);
       userMap['FilterString'] =
-      "FDate>= '$startDate' and FCloseStatus = 'A' and FDate <= '$endDate' and FBillTypeID.FNUMBER ='CGDD02_SYS'";
+      "FDate>= '$startDate' and FCloseStatus = 'A' and FRemainReceiveQty>0 and FDate <= '$endDate' and FBillTypeID.FNUMBER ='CGDD02_SYS'";
     }
     if(this.isScan){
       if (this.keyWord != '') {
-        userMap['FilterString'] =/*and FRemainStockINQty>0*/
-        "FBillNo='"+scanCode[0]+"' and FCloseStatus = 'A' and FRemainStockINQty>0 and FBillTypeID.FNUMBER ='CGDD02_SYS'";
+        userMap['FilterString'] =/*and FRemainReceiveQty>0*/
+        "FBillNo='"+scanCode[0]+"' and FCloseStatus = 'A' and FRemainReceiveQty>0 and FBillTypeID.FNUMBER ='CGDD02_SYS'";
       }
     }else{
       if (this.keyWord != '') {
-        userMap['FilterString'] =/*and FRemainStockINQty>0*/
-        "FBillNo='"+scanCode[0]+"' and FCloseStatus = 'A' and FDate>= '$startDate' and FDate <= '$endDate' and FRemainStockINQty>0 and FBillTypeID.FNUMBER ='CGDD02_SYS'";
+        userMap['FilterString'] =/*and FRemainReceiveQty>0*/
+        "FBillNo='"+scanCode[0]+"' and FCloseStatus = 'A' and FDate>= '$startDate' and FDate <= '$endDate' and FRemainReceiveQty>0 and FBillTypeID.FNUMBER ='CGDD02_SYS'";
       }
     }
     this.isScan = false;
@@ -115,7 +115,7 @@ class _PurchaseOutSourcingPageState extends State<PurchaseOutSourcingPage> {
           "value": {"label": value[0], "value": value[0]}
         });
         arr.add({
-          "title": "采购组织",
+          "title": "委外组织",
           "name": "FPurchaseOrgId",
           "isHide": false,
           "value": {"label": value[9], "value": value[8]}

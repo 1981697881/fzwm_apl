@@ -74,30 +74,30 @@ class _PickingOutSourcingPageState extends State<PickingOutSourcingPage> {
   getOrderList() async {
     EasyLoading.show(status: 'loading...');
     Map<String, dynamic> userMap = Map();
-    userMap['FilterString'] = "FNoStockInQty >0";
+    userMap['FilterString'] = "FPickMtrlStatus in(1,2) and FNoStockInQty>0";
     var scanCode = keyWord.split(",");
     if (this._dateSelectText != "") {
       this.startDate = this._dateSelectText.substring(0, 10);
       this.endDate = this._dateSelectText.substring(26, 36);
       userMap['FilterString'] =
-      "FDate>= '$startDate' and FDocumentStatus = 'C' and FDate <= '$endDate'";
+      "FDate>= '$startDate' and FPickMtrlStatus in(1,2) and FNoStockInQty>0 and FDate <= '$endDate'";
     }
     if(this.isScan){
       if (this.keyWord != '') {
         userMap['FilterString'] =/*and FNoStockInQty>0*/
-        "FBillNo='"+scanCode[0]+"' and FDocumentStatus = 'C' and FNoStockInQty>0 ";
+        "FBillNo='"+scanCode[0]+"' and FPickMtrlStatus in(1,2) and FNoStockInQty>0 ";
       }
     }else{
       if (this.keyWord != '') {
         userMap['FilterString'] =/*and FNoStockInQty>0*/
-        "FBillNo='"+scanCode[0]+"' and FDocumentStatus = 'C' and FDate>= '$startDate' and FDate <= '$endDate' and FNoStockInQty>0";
+        "FBillNo='"+scanCode[0]+"' and FPickMtrlStatus in(1,2) and FNoStockInQty>0 and FDate>= '$startDate' and FDate <= '$endDate'";
       }
     }
     this.isScan = false;
     userMap['FormId'] = 'SUB_SUBREQORDER';
     userMap['OrderString'] = 'FBillNo ASC,FMaterialId.FNumber ASC';
     userMap['FieldKeys'] =
-    'FBillNo,FSupplierId.FNumber,FSupplierId.FName,FDate,FTreeEntity_FEntryId,FMaterialId.FNumber,FMaterialId.FName,FMaterialId.FSpecification,FSubOrgId.FNumber,FSubOrgId.FName,FUnitId.FNumber,FUnitId.FName,FQty,FSrcBillNo,FID';
+    'FBillNo,FSupplierId.FNumber,FSupplierId.FName,FDate,FTreeEntity_FEntryId,FMaterialId.FNumber,FMaterialId.FName,FMaterialId.FSpecification,FSubOrgId.FNumber,FSubOrgId.FName,FUnitId.FNumber,FUnitId.FName,FQty,FSrcBillNo,FID,FPickMtrlStatus';
     Map<String, dynamic> dataMap = Map();
     dataMap['data'] = userMap;
     String order = await CurrencyEntity.polling(dataMap);
@@ -114,7 +114,7 @@ class _PickingOutSourcingPageState extends State<PickingOutSourcingPage> {
           "value": {"label": value[0], "value": value[0]}
         });
         arr.add({
-          "title": "采购组织",
+          "title": "委外组织",
           "name": "FPurchaseOrgId",
           "isHide": false,
           "value": {"label": value[9], "value": value[8]}
@@ -314,7 +314,7 @@ class _PickingOutSourcingPageState extends State<PickingOutSourcingPage> {
               icon: Icon(Icons.arrow_back),
               onPressed: () => Navigator.of(context).pop(),
             ),*/
-            title: Text("委外采购"),
+            title: Text("委外领料"),
             centerTitle: true,
           ),
           body: CustomScrollView(

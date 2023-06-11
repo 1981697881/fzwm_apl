@@ -1285,7 +1285,7 @@ class _PurchaseOutSourcingDetailState extends State<PurchaseOutSourcingDetail> {
       setState(() {
         this.isSubmit = true;
       });
-      /*var hobbyIndex = 0;
+      var hobbyIndex = 0;
       var EntryIds = '';
       this.hobby.forEach((element) {
             if (double.parse(element[3]['value']['value']) > 0) {
@@ -1411,8 +1411,8 @@ class _PurchaseOutSourcingDetailState extends State<PurchaseOutSourcingDetail> {
           ToastUtil.errorDialog(
               context, "下推失败");
         });
-      }*/
-      Map<String, dynamic> dataMap = Map();
+      }
+      /*Map<String, dynamic> dataMap = Map();
       dataMap['formid'] = 'PUR_ReceiveBill';
       Map<String, dynamic> orderMap = Map();
       orderMap['NeedReturnFields'] = [];
@@ -1455,7 +1455,7 @@ class _PurchaseOutSourcingDetailState extends State<PurchaseOutSourcingDetail> {
           FEntityItem['FMaterialId'] = {
             "FNumber": element[0]['value']['value']
           };
-          FEntityItem['FSrcFormId'] = 'CGDD02_SYS';
+          FEntityItem['FSrcFormId'] = 'PUR_PurchaseOrder';
           FEntityItem['FSrcBillNo'] = orderDate[hobbyIndex][0];
           FEntityItem['FUnitId'] = {
             "FNumber": element[2]['value']['value']
@@ -1491,7 +1491,7 @@ class _PurchaseOutSourcingDetailState extends State<PurchaseOutSourcingDetail> {
             fSerialSub.add(subObj);
           }
           FEntityItem['FSerialSubEntity'] = fSerialSub;
-          /*FEntityItem['FOwnerTypeId'] = "BD_OwnerOrg";*/
+          *//*FEntityItem['FOwnerTypeId'] = "BD_OwnerOrg";*//*
           FEntityItem['FTaxPrice'] = orderDate[hobbyIndex][18];
           FEntityItem['FEntryTaxRate'] = orderDate[hobbyIndex][19];
           FEntityItem['FOwnerId'] = {"FNumber": this.fOrgID};
@@ -1524,7 +1524,7 @@ class _PurchaseOutSourcingDetailState extends State<PurchaseOutSourcingDetail> {
       };
       Model['FinanceEntity'] = FinanceEntity;
       Model['FDetailEntity'] = FEntity;
-      /*Model['FDescription'] = this._remarkContent.text;*/
+      *//*Model['FDescription'] = this._remarkContent.text;*//*
       orderMap['Model'] = Model;
       dataMap['data'] = orderMap;
       print(jsonEncode(dataMap));
@@ -1645,7 +1645,7 @@ class _PurchaseOutSourcingDetailState extends State<PurchaseOutSourcingDetail> {
           ToastUtil.errorDialog(
               context, res['Result']['ResponseStatus']['Errors'][0]['Message']);
         });
-      }
+      }*/
     } else {
       ToastUtil.showInfo('无提交数据');
     }

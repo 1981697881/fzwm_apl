@@ -208,7 +208,7 @@ class _PickingOutSourcingDetailState extends State<PickingOutSourcingDetail> {
     userMap['FormId'] = 'SUB_SUBREQORDER';
     userMap['OrderString'] = 'FMaterialId.FNumber ASC';
     userMap['FieldKeys'] =
-    'FBillNo,FSupplierId.FNumber,FSupplierId.FName,FDate,FTreeEntity_FEntryId,FMaterialId.FNumber,FMaterialId.FName,FMaterialId.FSpecification,FSubOrgId.FNumber,FSubOrgId.FName,FUnitId.FNumber,FUnitId.FName,FQty,FSrcBillNo,FID,FMaterialId.FIsBatchManage,FRequestOrgId.FNumber,FBaseUnitId.FNumber,FPlanStartDate,FPlanFinishDate';
+    'FBillNo,FSupplierId.FNumber,FSupplierId.FName,FDate,FTreeEntity_FEntryId,FMaterialId.FNumber,FMaterialId.FName,FMaterialId.FSpecification,FSubOrgId.FNumber,FSubOrgId.FName,FUnitId.FNumber,FUnitId.FName,FQty,FSrcBillNo,FID,FMaterialId.FIsBatchManage,FRequestOrgId.FNumber,FBaseUnitId.FNumber,FPlanStartDate,FPlanFinishDate,FBomId.FNumber';
     Map<String, dynamic> dataMap = Map();
     dataMap['data'] = userMap;
     String order = await CurrencyEntity.polling(dataMap);
@@ -1199,12 +1199,12 @@ class _PickingOutSourcingDetailState extends State<PickingOutSourcingDetail> {
     //下推
     Map<String, dynamic> pushMap = Map();
     pushMap['EntryIds'] = val;
-    pushMap['RuleId'] = "PUR_PurchaseOrder-SUB_PrepareMtrl";
+    pushMap['RuleId'] = "SUB_Req2PrepareMtrl";
     pushMap['TargetFormId'] = "SUB_PrepareMtrl";
     pushMap['IsEnableDefaultRule'] = "false";
     pushMap['IsDraftWhenSaveFail'] = "false";
     var downData =
-    await SubmitEntity.pushDown({"formid": "PUR_PurchaseOrder", "data": pushMap});
+    await SubmitEntity.pushDown({"formid": "SUB_SUBREQORDER", "data": pushMap});
     var res = jsonDecode(downData);
     print(res);
     //判断成功
@@ -1216,7 +1216,7 @@ class _PickingOutSourcingDetailState extends State<PickingOutSourcingDetail> {
       inOrderMap['FormId'] = 'SUB_PrepareMtrl';
       inOrderMap['FilterString'] = "FBillNo='$entitysNumber'";
       inOrderMap['FieldKeys'] =
-      'FDetailEntity_FEntryId,FMaterialId.FNumber,FMaterialId.FName,FUnitId.FNumber';
+      'FEntity_FEntryId,FMaterialId.FNumber,FMaterialId.FName,FUnitID.FNumber';
       String order = await CurrencyEntity.polling({'data': inOrderMap});
       print(order);
       var resData = jsonDecode(order);
@@ -1224,11 +1224,7 @@ class _PickingOutSourcingDetailState extends State<PickingOutSourcingDetail> {
       Map<String, dynamic> dataMap = Map();
       dataMap['data'] = inOrderMap;
       Map<String, dynamic> orderMap = Map();
-      orderMap['NeedUpDataFields'] = [
-        'FStockStatusId',
-        'FRealQty',
-        'FInStockType'
-      ];
+      orderMap['NeedUpDataFields'] = [];
       orderMap['IsDeleteEntry'] = false;
       Map<String, dynamic> Model = Map();
       Model['FID'] = res['Result']['ResponseStatus']['SuccessEntitys'][0]['Id'];
@@ -1285,7 +1281,7 @@ class _PickingOutSourcingDetailState extends State<PickingOutSourcingDetail> {
       setState(() {
         this.isSubmit = true;
       });
-      /*var hobbyIndex = 0;
+      var hobbyIndex = 0;
       var EntryIds = '';
       this.hobby.forEach((element) {
             if (double.parse(element[3]['value']['value']) > 0) {
@@ -1307,7 +1303,7 @@ class _PickingOutSourcingDetailState extends State<PickingOutSourcingDetail> {
             'Ids': resCheck['data']['Model']['FID']
           }
         };
-        //提交
+       /* //提交
         HandlerOrder.orderHandler(
             context,
             submitMap,
@@ -1404,6 +1400,65 @@ class _PickingOutSourcingDetailState extends State<PickingOutSourcingDetail> {
           } else {
             this.isSubmit = false;
           }
+        });*/
+        var errorMsg = "";
+        if(fBarCodeList == 1){
+          for (int i = 0; i < this.hobby.length; i++) {
+            if (this.hobby[i][3]['value']['value'] != '0' &&
+                this.hobby[i][4]['value']['value'] != '') {
+              var kingDeeCode = this.hobby[i][0]['value']['kingDeeCode'];
+              for(int j = 0;j<kingDeeCode.length;j++){
+                Map<String, dynamic> dataCodeMap = Map();
+                dataCodeMap['formid'] = 'QDEP_Cust_BarCodeList';
+                Map<String, dynamic> orderCodeMap = Map();
+                orderCodeMap['NeedReturnFields'] = [];
+                orderCodeMap['IsDeleteEntry'] = false;
+                Map<String, dynamic> codeModel = Map();
+                var itemCode = kingDeeCode[j].split("-");
+                codeModel['FID'] = itemCode[0];
+                codeModel['FOwnerID'] = {
+                  "FNUMBER": deptData[1]
+                };
+                codeModel['FStockOrgID'] = {
+                  "FNUMBER": deptData[1]
+                };
+                codeModel['FStockID'] = {
+                  "FNUMBER": this.hobby[i][4]['value']['value']
+                };
+                Map<String, dynamic> codeFEntityItem = Map();
+                codeFEntityItem['FBillDate'] = FDate;
+                codeFEntityItem['FInQty'] = itemCode[1];
+                codeFEntityItem['FEntryBillNo'] = orderDate[i][0];
+                codeFEntityItem['FEntryStockID'] ={
+                  "FNUMBER": this.hobby[i][4]['value']['value']
+                };
+                var codeFEntity = [codeFEntityItem];
+                codeModel['FEntity'] = codeFEntity;
+                orderCodeMap['Model'] = codeModel;
+                dataCodeMap['data'] = orderCodeMap;
+                print(dataCodeMap);
+                String codeRes = await SubmitEntity.save(dataCodeMap);
+                var barcodeRes = jsonDecode(codeRes);
+                if(!barcodeRes['Result']['ResponseStatus']['IsSuccess']){
+                  errorMsg +="错误反馈："+itemCode[1]+":"+barcodeRes['Result']['ResponseStatus']['Errors'][0]['Message'];
+                }
+                print(codeRes);
+              }
+            }
+          }
+        }
+        if(errorMsg !=""){
+          ToastUtil.errorDialog(context,
+              errorMsg);
+          this.isSubmit = false;
+        }
+        //提交清空页面
+        setState(() {
+          this.hobby = [];
+          this.orderDate = [];
+          this.FBillNo = '';
+          ToastUtil.showInfo('提交成功');
+          Navigator.of(context).pop("refresh");
         });
       } else {
         setState(() {
@@ -1411,8 +1466,8 @@ class _PickingOutSourcingDetailState extends State<PickingOutSourcingDetail> {
           ToastUtil.errorDialog(
               context, "下推失败");
         });
-      }*/
-      Map<String, dynamic> dataMap = Map();
+      }
+      /*Map<String, dynamic> dataMap = Map();
       dataMap['formid'] = 'SUB_PrepareMtrl';
       Map<String, dynamic> orderMap = Map();
       orderMap['NeedReturnFields'] = [];
@@ -1446,11 +1501,13 @@ class _PickingOutSourcingDetailState extends State<PickingOutSourcingDetail> {
         Model['FStockOrgId'] = {"FNumber": this.fOrgID};
       }
       var FEntity = [];
+      var FPrepareMatrlPPbomlEntity = [];
       var hobbyIndex = 0;
       this.hobby.forEach((element) {
-        if (element[3]['value']['value'] != '0'/* &&
-            element[4]['value']['value'] != ''*/) {
+        if (element[3]['value']['value'] != '0'*//* &&
+            element[4]['value']['value'] != ''*//*) {
           Map<String, dynamic> FEntityItem = Map();
+          Map<String, dynamic> FPrepareMatrlPPbomlEntityItem = Map();
 
           FEntityItem['FMaterialId'] = {
             "FNumber": element[0]['value']['value']
@@ -1458,20 +1515,12 @@ class _PickingOutSourcingDetailState extends State<PickingOutSourcingDetail> {
           FEntityItem['FUnitID'] = {
             "FNumber": element[2]['value']['value']
           };
+          FEntityItem['FOrderBomId'] = {
+            "FNUMBER": orderDate[hobbyIndex][20]
+          };
           FEntityItem['FStatus'] = '1';
           FEntityItem['FPlanStartDate'] = orderDate[hobbyIndex][18];
           FEntityItem['FPlanFinishDate'] = orderDate[hobbyIndex][19];
-          /*FEntityItem['FStockId'] = {
-            "FNumber": element[4]['value']['value']
-          };
-          FEntityItem['FLot'] = {
-            "FNumber": element[5]['value']['value']
-          };
-          FEntityItem['FStockLocId'] = {
-            "FSTOCKLOCID__FF100011": {
-              "FNumber": element[6]['value']['value']
-            }
-          };*/
           var fSerialSub = [];
           var kingDeeCode = element[0]['value']['kingDeeCode'];
           for (int subj = 0; subj < kingDeeCode.length; subj++) {
@@ -1483,11 +1532,11 @@ class _PickingOutSourcingDetailState extends State<PickingOutSourcingDetail> {
             fSerialSub.add(subObj);
           }
           FEntityItem['FSerialSubEntity'] = fSerialSub;
-          /*FEntityItem['FOwnerTypeId'] = "BD_OwnerOrg";
-          FEntityItem['FTaxPrice'] = orderDate[hobbyIndex][18];
-          FEntityItem['FEntryTaxRate'] = orderDate[hobbyIndex][19];
-          FEntityItem['FOwnerId'] = {"FNumber": this.fOrgID};*/
           FEntityItem['FMatchQty'] = element[3]['value']['value'];
+          FPrepareMatrlPPbomlEntityItem['FStockReadyQtySub'] = element[3]['value']['value'];
+          FPrepareMatrlPPbomlEntityItem['FBOMIDSUB'] = {
+            "FNUMBER": orderDate[hobbyIndex][20]
+          };
           FEntityItem['FEntity_Link'] = [
             {
               "FEntity_Link_FRuleId": "SUB_Req2PrepareMtrl",
@@ -1498,6 +1547,7 @@ class _PickingOutSourcingDetailState extends State<PickingOutSourcingDetail> {
             }
           ];
           FEntity.add(FEntityItem);
+          FPrepareMatrlPPbomlEntity.add(FPrepareMatrlPPbomlEntityItem);
 
         }
         hobbyIndex++;
@@ -1515,10 +1565,12 @@ class _PickingOutSourcingDetailState extends State<PickingOutSourcingDetail> {
       };
       Model['FinanceEntity'] = FinanceEntity;
       Model['FEntity'] = FEntity;
-      /*Model['FDescription'] = this._remarkContent.text;*/
+      Model['FPrepareMatrlPPbomlEntity'] = FPrepareMatrlPPbomlEntity;
+      Model['FDescription'] = this._remarkContent.text;
       orderMap['Model'] = Model;
       dataMap['data'] = orderMap;
       print(jsonEncode(dataMap));
+      var savaList = jsonEncode(dataMap);
       ToastUtil.showInfo('保存');
       String order = await SubmitEntity.save(dataMap);
       var res = jsonDecode(order);
@@ -1635,7 +1687,7 @@ class _PickingOutSourcingDetailState extends State<PickingOutSourcingDetail> {
           ToastUtil.errorDialog(
               context, res['Result']['ResponseStatus']['Errors'][0]['Message']);
         });
-      }
+      }*/
     } else {
       ToastUtil.showInfo('无提交数据');
     }
