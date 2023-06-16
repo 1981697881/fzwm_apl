@@ -87,7 +87,7 @@ class _RetrievalPageState extends State<AllocationPage> {
     }
     if (this.keyWord != '') {
       userMap['FilterString'] =
-          "FBillNo='"+scanCode[0]+"' and FCLOSESTATUS='A' and FRemainOutQty>0 and FDate>= '$startDate' and FDate <= '$endDate'";
+          "FBillNo like '%"+keyWord+"%' and FCLOSESTATUS='A' and FRemainOutQty>0 and FDate>= '$startDate' and FDate <= '$endDate'";
     }
     userMap['FormId'] = 'SAL_DELIVERYNOTICE';
     userMap['OrderString'] = 'FBillNo ASC,FMaterialId.FNumber ASC';

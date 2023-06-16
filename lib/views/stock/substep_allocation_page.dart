@@ -82,7 +82,7 @@ class _AllocationAffirmPageState extends State<SubstepAllocationPage> {
     }
     if (this.keyWord != '') {
       userMap['FilterString'] =/*and FInStockQty>0*/
-      "FBillNo='"+scanCode[0]+"' and FDocumentStatus = 'C' and FDate>= '$startDate' and FDate <= '$endDate'";
+      "FBillNo like '%"+keyWord+"%' and FDocumentStatus = 'C' and FDate>= '$startDate' and FDate <= '$endDate'";
     }
     userMap['FormId'] = 'STK_TRANSFEROUT';
     userMap['OrderString'] = 'FBillNo ASC,FMaterialId.FNumber ASC';

@@ -65,9 +65,10 @@ class _StockPageState extends State<StockPage> {
       Map<String, dynamic> userMap = Map();
       if(keyWord != ''){
         userMap['FilterString'] =
-        "FMaterialId.FNumber='"+keyWord+"' and FLot.FNumber= '"+batchNo+"'";
+        "FMaterialId.FNumber='"+this.keyWord+"' and FLot.FNumber= '"+batchNo+"'";
       }
       userMap['FormId'] = 'STK_Inventory';
+      userMap['Limit'] = '50';
       userMap['FieldKeys'] =
           'FMaterialId.FNumber,FMaterialId.FName,FMaterialId.FSpecification,FStockId.FName,FBaseQty,FLot.FNumber';
       Map<String, dynamic> dataMap = Map();
@@ -276,7 +277,7 @@ class _StockPageState extends State<StockPage> {
                                                 border: InputBorder.none),
                                             onSubmitted: (value) {
                                               setState(() {
-                                                this.keyWord  = value;
+                                                this.keyWord = value;
                                                 this.getOrderList("","");
 
                                               });

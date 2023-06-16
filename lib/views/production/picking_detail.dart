@@ -30,6 +30,7 @@ class PickingDetail extends StatefulWidget {
   var FID;
   var FProdOrder;
   var FBarcode;
+  var FMemoItem;
 
   PickingDetail(
       {Key ?key,
@@ -38,12 +39,13 @@ class PickingDetail extends StatefulWidget {
       @required this.FEntryId,
       @required this.FID,
       @required this.FBarcode,
-      @required this.FProdOrder})
+      @required this.FProdOrder,
+      @required this.FMemoItem})
       : super(key: key);
 
   @override
   _PickingDetailState createState() =>
-      _PickingDetailState(FBillNo, FSeq, FEntryId, FID, FProdOrder,FBarcode);
+      _PickingDetailState(FBillNo, FSeq, FEntryId, FID, FProdOrder,FBarcode,FMemoItem);
 }
 class _PickingDetailState extends State<PickingDetail> {
   GlobalKey<TextWidgetState> textKey = GlobalKey();
@@ -90,16 +92,18 @@ class _PickingDetailState extends State<PickingDetail> {
   var fEntryId;
   var fid;
   var FProdOrder;
+  var FMemoItem;
   var FBarcode;
   var fOrgID;
 
-  _PickingDetailState(fBillNo, FSeq, fEntryId, fid, FProdOrder,FBarcode) {
+  _PickingDetailState(fBillNo, FSeq, fEntryId, fid, FProdOrder,FBarcode,FMemoItem) {
     this.fBillNo = fBillNo['value'];
     this.FSeq = FSeq['value'];
     this.fEntryId = fEntryId['value'];
     this.fid = fid['value'];
     this.FProdOrder = FProdOrder['value'];
     this.FBarcode = FBarcode;
+    this.FMemoItem = FMemoItem['value'];
     this.getOrderList();
   }
 
@@ -1356,7 +1360,8 @@ class _PickingDetailState extends State<PickingDetail> {
     Map<String, dynamic> dataMap = Map();
     dataMap['formid'] = 'PRD_PickMtrl';
     Map<String, dynamic> orderMap = Map();
-    orderMap['NeedReturnFields'] = [];
+    orderMap['NeedUpDataFields'] = ['FEntity','FSerialSubEntity','FSerialNo'];
+    orderMap['NeedReturnFields'] = ['FEntity','FSerialSubEntity','FSerialNo'];
     orderMap['IsDeleteEntry'] = true;
     Map<String, dynamic> Model = Map();
     Model['FID'] = collarOrderDate[0][0];
@@ -1365,20 +1370,20 @@ class _PickingDetailState extends State<PickingDetail> {
     this.hobby.forEach((element) {
       if (element[3]['value']['value'] != '0') {
         Map<String, dynamic> FEntityItem = Map();
-        FEntityItem['FActualQty'] = element[3]['value']['value'];
         FEntityItem['FEntryID'] = collarOrderDate[hobbyIndex][1];
+        FEntityItem['FActualQty'] = element[3]['value']['value'];
        /* FEntityItem['FUnitId'] = {"FNumber": element[2]['value']['value']};*/
        /* FEntityItem['FStockId'] = {
           "FNumber": fBillNo.substring(0, 2) == "FO"
               ? 'XBC001'
               : collarOrderDate[hobbyIndex][2]
         };*/
-        FEntityItem['FLot'] = {
-          "FNumber": element[5]['value']['value']
-        };
         //FEntityItem['FStockStatusId'] = {"FNumber": "KCZT01_SYS"};
         FEntityItem['FStockId'] = {
           "FNumber": element[4]['value']['value']
+        };
+        FEntityItem['FLot'] = {
+          "FNumber": element[5]['value']['value']
         };
         var fSerialSub = [];
         var kingDeeCode = element[0]['value']['kingDeeCode'];
@@ -1403,7 +1408,7 @@ class _PickingDetailState extends State<PickingDetail> {
     Model['FEntity'] = FEntity;
     orderMap['Model'] = Model;
     dataMap['data'] = orderMap;
-    print(jsonEncode(dataMap));
+    var dataParams = jsonEncode(dataMap);
     String order = await SubmitEntity.save(dataMap);
     var res = jsonDecode(order);
     print(res);
@@ -1442,8 +1447,18 @@ class _PickingDetailState extends State<PickingDetail> {
       Map<String, dynamic> pushMap = Map();
       pushMap['Ids'] = orderDate[0][13];
       pushMap['RuleId'] = "PRD_PPBOM2PICKMTRL_NORMAL";
+      var entryId = [];
+      var hobbyIndex = 0;
+      this.hobby.forEach((element) {
+        if (element[3]['value']['value'] != '0') {
+          entryId.add(orderDate[hobbyIndex][5]);
+          }
+        hobbyIndex++;
+      });
+      pushMap['EntryIds'] = entryId;
       pushMap['TargetFormId'] = "PRD_PickMtrl";
       print(pushMap);
+      var datass = jsonEncode(pushMap);
       var downData =
       await SubmitEntity.pushDown({"formid": "PRD_PPBOM", "data": pushMap});
       print(downData);
@@ -1524,18 +1539,18 @@ class _PickingDetailState extends State<PickingDetail> {
                       divider,
                     ],
                   ),
-                  /* Column(
+                   Column(
                     children: [
                       Container(
                         color: Colors.white,
                         child: ListTile(
-                          title: Text("日期：$FDate"),
+                          title: Text("备注：$FMemoItem"),
                         ),
                       ),
                       divider,
                     ],
                   ),
-                  _item('仓库:', stockList, selectStock),*/
+                  /* _item('仓库:', stockList, selectStock),*/
                   Column(
                     children: this._getHobby(),
                   ),

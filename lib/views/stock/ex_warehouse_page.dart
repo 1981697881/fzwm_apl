@@ -52,6 +52,7 @@ class _ExWarehousePageState extends State<ExWarehousePage> {
     }
   }
   _initState() {
+    isScan = false;
     this.getOrderList();
     /// 开启监听
     _subscription = scannerPlugin
@@ -89,6 +90,9 @@ class _ExWarehousePageState extends State<ExWarehousePage> {
       }
     }else{
       if (this.keyWord != '') {
+        userMap['FilterString'] =
+        "FMaterialId.FNumber='$keyWord' and FInStockQty>0";
+      }else{
         userMap['FilterString'] =
         "FMaterialId.FNumber='$keyWord' and FInStockQty>0 and FDate>= '$startDate' and FDate <= '$endDate'";
       }

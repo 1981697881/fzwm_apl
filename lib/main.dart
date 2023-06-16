@@ -91,6 +91,7 @@ class _MyHomePageState extends State {
   var username = "";
   var password = "";
   var message = "";
+  var isLogin = false;
 
   @override
   void initState() {
@@ -178,7 +179,7 @@ class _MyHomePageState extends State {
     if (validateUserName(_getaname) &&
         validatePassWord(_getpsw) &&
         validateUserName(username) &&
-        validatePassWord(password)) {
+        validatePassWord(password) && isLogin) {
       Map<String, dynamic> map = Map();
       map['username'] = _getaname;
       map['acctID'] =  sharedPreferences.getString('acctId');

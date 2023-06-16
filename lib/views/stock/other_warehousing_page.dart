@@ -51,6 +51,7 @@ class _OtherWarehousingPageState extends State<OtherWarehousingPage> {
     }
   }
   _initState() {
+    isScan = false;
     this.getOrderList();
     /// 开启监听
     _subscription = scannerPlugin
@@ -88,6 +89,9 @@ class _OtherWarehousingPageState extends State<OtherWarehousingPage> {
       }
     }else{
       if (this.keyWord != '') {
+        userMap['FilterString'] =
+        "FMaterialId.FNumber='$keyWord' and FInStockQty>0";
+      }else{
         userMap['FilterString'] =
         "FMaterialId.FNumber='$keyWord' and FInStockQty>0 and FDate>= '$startDate' and FDate <= '$endDate'";
       }

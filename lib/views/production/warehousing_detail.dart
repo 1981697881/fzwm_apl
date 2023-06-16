@@ -31,6 +31,7 @@ class WarehousingDetail extends StatefulWidget {
   var FID;
   var FProdOrder;
   var FBarcode;
+  var FMemoItem;
 
   WarehousingDetail(
       {Key? key,
@@ -39,12 +40,13 @@ class WarehousingDetail extends StatefulWidget {
       @required this.FEntryId,
       @required this.FID,
       @required this.FBarcode,
-      @required this.FProdOrder})
+      @required this.FProdOrder,
+      @required this.FMemoItem})
       : super(key: key);
 
   @override
   _WarehousingDetailState createState() => _WarehousingDetailState(
-      FBillNo, FSeq, FEntryId, FID, FProdOrder, FBarcode);
+      FBillNo, FSeq, FEntryId, FID, FProdOrder, FBarcode, FMemoItem);
 }
 
 class _WarehousingDetailState extends State<WarehousingDetail> {
@@ -91,14 +93,16 @@ class _WarehousingDetailState extends State<WarehousingDetail> {
   var fid;
   var FProdOrder;
   var FBarcode;
+  var FMemoItem;
   var fBarCodeList;
 
-  _WarehousingDetailState(fBillNo, FSeq, fEntryId, fid, FProdOrder, FBarcode) {
+  _WarehousingDetailState(fBillNo, FSeq, fEntryId, fid, FProdOrder, FBarcode, FMemoItem) {
     this.FBillNo = fBillNo['value'];
     this.FSeq = FSeq['value'];
     this.fEntryId = fEntryId['value'];
     this.fid = fid['value'];
     this.FProdOrder = FProdOrder['value'];
+    this.FMemoItem = FMemoItem['value'];
     this.FBarcode = FBarcode;
     this.getOrderList();
   }
@@ -268,6 +272,8 @@ class _WarehousingDetailState extends State<WarehousingDetail> {
           hobby.add(arr);
         });
         checkItem = '';
+        /*hobby[1][3]["value"]["value"] = "18";
+        hobby[1][3]["value"]["label"] = "18";*/
         setState(() {
           EasyLoading.dismiss();
           this._getHobby();
@@ -1801,8 +1807,9 @@ class _WarehousingDetailState extends State<WarehousingDetail> {
       Map<String, dynamic> dataMap = Map();
       dataMap['data'] = inOrderMap;
       Map<String, dynamic> orderMap = Map();
-      orderMap['NeedUpDataFields'] = [];
-      orderMap['IsDeleteEntry'] = false;
+      orderMap['NeedUpDataFields'] = ['FEntity','FSerialSubEntity','FSerialNo'];
+      orderMap['NeedReturnFields'] = ['FEntity','FSerialSubEntity','FSerialNo'];
+      orderMap['IsDeleteEntry'] = true;
       Map<String, dynamic> Model = Map();
       Model['FID'] = res['Result']['ResponseStatus']['SuccessEntitys'][0]['Id'];
       // ignore: non_constant_identifier_names
@@ -1833,9 +1840,20 @@ class _WarehousingDetailState extends State<WarehousingDetail> {
             var kingDeeCode = this.hobby[element][0]['value']['kingDeeCode'];
             for (int subj = 0; subj < kingDeeCode.length; subj++) {
               Map<String, dynamic> subObj = Map();
-              var itemCode = kingDeeCode[subj].split("-");
-              if (itemCode.length > 2) {
-                subObj['FSerialNo'] = itemCode[2];
+              if(kingDeeCode[subj].split("-").length>2){
+                var itemCode = kingDeeCode[subj].split("-");
+                if(itemCode.length>2){
+                 /* Map<String, dynamic> serialNoMap = Map();
+                  serialNoMap['FormId'] = 'PRD_MORPT';
+                  serialNoMap['FilterString'] = "FSerialSubEntity.FSerialNo='"+itemCode[2]+"'";
+                  serialNoMap['FieldKeys'] =
+                  'FDetailID,FSerialNo';
+                  String serialNoData = await CurrencyEntity.polling({'data': serialNoMap});
+                  var resSerialNoData = jsonDecode(order);*/
+                  subObj['FSerialNo'] = itemCode[2];
+                }
+              }else{
+                subObj['FSerialNo'] = kingDeeCode[subj];
               }
               fSerialSub.add(subObj);
             }
@@ -1901,17 +1919,26 @@ class _WarehousingDetailState extends State<WarehousingDetail> {
     }
     if (this.hobby.length > 0) {
       var gsNumber = 0;
+      var scNumber = 0;
       this.hobby.forEach((element) {
-        print(element[8]['value']['value'] != "0");
-        print(element[8]['value']['value'] != null);
-        if(element[8]['value']['value'] == "0" || element[8]['value']['value'] == null){
-          gsNumber++;
+        if(double.parse(element[3]['value']['value']) > 0){
+
+          if(element[8]['value']['value'] == "0" || element[8]['value']['value'] == null){
+            gsNumber++;
+          }
+          if(element[9]['value']['label'] > double.parse(element[3]['value']['label'])){
+            scNumber++;
+          }
         }
       });
       if(gsNumber != 0){
         ToastUtil.showInfo('请输入工时');
         return;
       }
+      /*if(scNumber != 0){
+        ToastUtil.showInfo('入库数量需等于订单数量');
+        return;
+      }*/
       setState(() {
         this.isSubmit = true;
       });
@@ -1977,7 +2004,11 @@ class _WarehousingDetailState extends State<WarehousingDetail> {
             checkList.add(EntryIds1);
             print(EntryIds1);
             var resCheck = await this.pushDown(EntryIds1, 'defective');
+            var dataList = jsonEncode(resCheck);
             if (resCheck['isBool'] != false) {
+              setState(() {
+                this.isSubmit = false;
+              });
               var subData = await SubmitEntity.save(resCheck);
               var res = jsonDecode(subData);
               if (res != null) {
@@ -2013,6 +2044,9 @@ class _WarehousingDetailState extends State<WarehousingDetail> {
             checkList.add(EntryIds2);
             var resCheck = await this.pushDown(EntryIds2, 'nonDefective');
             if (resCheck['isBool'] != false) {
+              setState(() {
+                this.isSubmit = false;
+              });
               var subData = await SubmitEntity.save(resCheck);
               print(subData);
               var res = jsonDecode(subData);
@@ -2143,6 +2177,16 @@ class _WarehousingDetailState extends State<WarehousingDetail> {
                                 MyText('',
                                     color: Colors.grey, rightpadding: 18),
                               ]),
+                        ),
+                      ),
+                      divider,
+                    ],
+                  ),Column(
+                    children: [
+                      Container(
+                        color: Colors.white,
+                        child: ListTile(
+                          title: Text("备注：$FMemoItem"),
                         ),
                       ),
                       divider,

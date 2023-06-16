@@ -11,6 +11,7 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:fzwm_apl/views/sale/retrieval_detail.dart';
 import 'package:qrscan/qrscan.dart' as scanner;
+import 'package:shared_preferences/shared_preferences.dart';
 
 final String _fontFamily = Platform.isWindows ? "Roboto" : "";
 
@@ -54,6 +55,7 @@ class _RetrievalPageState extends State<RetrievalPage> {
     EasyLoading.dismiss();
   }
   _initState() {
+    isScan = false;
     this.getOrderList();
     /// 开启监听
     _subscription = scannerPlugin
@@ -88,12 +90,15 @@ class _RetrievalPageState extends State<RetrievalPage> {
     if(this.isScan){
       if (this.keyWord != '') {
         userMap['FilterString'] =
-            "FBillNo='"+scanCode[0]+"' and FCLOSESTATUS='A' and FRemainOutQty>0";
+            "FBillNo like '%"+keyWord+"%' and FCLOSESTATUS='A' and FRemainOutQty>0";
       }
     }else{
       if (this.keyWord != '') {
         userMap['FilterString'] =
-            "FBillNo='"+scanCode[0]+"' and FCLOSESTATUS='A' and FRemainOutQty>0 and FDate>= '$startDate' and FDate <= '$endDate'";
+            "FBillNo like '%"+keyWord+"%' and FCLOSESTATUS='A' and FRemainOutQty>0";
+      }else{
+        userMap['FilterString'] =
+            "FBillNo like '%"+keyWord+"%' and FCLOSESTATUS='A' and FRemainOutQty>0 and FDate>= '$startDate' and FDate <= '$endDate'";
       }
     }
     this.isScan = false;
@@ -187,14 +192,40 @@ class _RetrievalPageState extends State<RetrievalPage> {
   }
 
   void _onEvent(event) async {
-    /*  setState(() {*/
-    _code = event;
-    this.isScan = true;
     EasyLoading.show(status: 'loading...');
-    keyWord = _code;
-    this.controller.text = _code;
-    await getOrderList();
-    /*});*/
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    var deptData = sharedPreferences.getString('menuList');
+    var menuList = new Map<dynamic, dynamic>.from(jsonDecode(deptData));
+    var fBarCodeList = menuList['FBarCodeList'];
+    if(event == ""){
+      return;
+    }
+    if (fBarCodeList == 1) {
+      Map<String, dynamic> barcodeMap = Map();
+      barcodeMap['FilterString'] = "FBarCodeEn='" + event + "'";
+      barcodeMap['FormId'] = 'QDEP_Cust_BarCodeList';
+      barcodeMap['FieldKeys'] =
+      'FSrcBillNo';
+      Map<String, dynamic> dataMap = Map();
+      dataMap['data'] = barcodeMap;
+      String order = await CurrencyEntity.polling(dataMap);
+      var barcodeData = jsonDecode(order);
+      if (barcodeData.length > 0) {
+        keyWord = barcodeData[0][0];
+        this.controller.text = barcodeData[0][0];
+        this.isScan = true;
+        await this.getOrderList();
+      } else {
+        ToastUtil.showInfo('条码不在条码清单中');
+      }
+    } else {
+      keyWord = _code;
+      this.controller.text = _code;
+      _code = event;
+      await this.getOrderList();
+      print("ChannelPage: $event");
+    }
+    EasyLoading.dismiss();
   }
 
   void _onError(Object error) {

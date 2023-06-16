@@ -453,7 +453,7 @@ class _OtherWarehousingDetailState extends State<OtherWarehousingDetail> {
             "title": "物料名称",
             "name": "FMaterial",
             "isHide": false,
-            "value": {"label": value[1] + "- (" + value[2] + ")", "value": value[2],"barcode": [code],"kingDeeCode": [barCodeScan[0].toString()+"-"+scanCode[3]],"scanCode": [barCodeScan[0].toString()+"-"+scanCode[3]]}
+            "value": {"label": value[1] + "- (" + value[2] + ")", "value": value[2],"barcode": [code],"kingDeeCode": [barCodeScan[0].toString()+"-"+scanCode[3]+"-"+fsn],"scanCode": [barCodeScan[0].toString()+"-"+scanCode[3]]}
           });
           arr.add({
             "title": "规格型号",
@@ -959,8 +959,9 @@ class _OtherWarehousingDetailState extends State<OtherWarehousingDetail> {
       Map<String, dynamic> dataMap = Map();
       dataMap['formid'] = 'STK_MISCELLANEOUS';
       Map<String, dynamic> orderMap = Map();
-      orderMap['NeedReturnFields'] = [];
-      orderMap['IsDeleteEntry'] = false;
+      orderMap['NeedUpDataFields'] = ['FEntity','FSerialSubEntity','FSerialNo'];
+      orderMap['NeedReturnFields'] = ['FEntity','FSerialSubEntity','FSerialNo'];
+      orderMap['IsDeleteEntry'] = true;
       Map<String, dynamic> Model = Map();
       Model['FID'] = 0;
       Model['FBillType'] = {"FNUMBER": "QTRKD01_SYS"};

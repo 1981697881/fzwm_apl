@@ -105,7 +105,7 @@ class _ReplenishmentPageState extends State<ReplenishmentPage> {
     "FStatus in (4) and FNoStockInQty>0 and FDate>= '$startDate' and FDate <= '$endDate'";
     if(this.keyWord != ''){
       userMap['FilterString'] =
-      "FBillNo='$keyWord' and FStatus in (4) and FNoStockInQty>0 and FDate>= '$startDate' and FDate <= '$endDate'";
+      "FBillNo like '%"+keyWord+"%' and FStatus in (4) and FNoStockInQty>0 and FDate>= '$startDate' and FDate <= '$endDate'";
     }
     userMap['FormId'] = 'PRD_MO';
       userMap['OrderString'] = 'FBillNo ASC,FMaterialId.FNumber ASC';

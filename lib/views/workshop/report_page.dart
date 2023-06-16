@@ -88,7 +88,7 @@ class _ReportPageState extends State<ReportPage> {
     }
     if (this.keyWord != '') {
       userMap['FilterString'] =
-      "FBillNo='$keyWord' and FUnSubmitQty>0 and FDate>= '$startDate' and FDate <= '$endDate'";
+      "FBillNo like '%"+keyWord+"%' and FUnSubmitQty>0 and FDate>= '$startDate' and FDate <= '$endDate'";
     }
     userMap['FormId'] = 'kb7752aa5c53c4c9ea2f02a290942ac61';
     userMap['OrderString'] = 'FBillNo ASC,FMaterialId.FNumber ASC';

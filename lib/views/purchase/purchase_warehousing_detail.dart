@@ -208,7 +208,7 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
     userMap['FormId'] = 'PUR_PurchaseOrder';
     userMap['OrderString'] = 'FMaterialId.FNumber ASC';
     userMap['FieldKeys'] =
-    'FBillNo,FSupplierId.FNumber,FSupplierId.FName,FDate,FPOOrderEntry_FEntryId,FMaterialId.FNumber,FMaterialId.FName,FMaterialId.FSpecification,FPurchaseOrgId.FNumber,FPurchaseOrgId.FName,FUnitId.FNumber,FUnitId.FName,FQty,FSrcBillNo,FID,FMaterialId.FIsBatchManage,FCorrespondOrgId.FNumber,FStockUnitID.FNumber,FTaxPrice,FEntryTaxRate';
+    'FBillNo,FSupplierId.FNumber,FSupplierId.FName,FDate,FPOOrderEntry_FEntryId,FMaterialId.FNumber,FMaterialId.FName,FMaterialId.FSpecification,FPurchaseOrgId.FNumber,FPurchaseOrgId.FName,FUnitId.FNumber,FUnitId.FName,FQty,FSrcBillNo,FID,FMaterialId.FIsBatchManage,FCorrespondOrgId.FNumber,FStockUnitID.FNumber,FTaxPrice,FEntryTaxRate,FPrice';
     Map<String, dynamic> dataMap = Map();
     dataMap['data'] = userMap;
     String order = await CurrencyEntity.polling(dataMap);
@@ -319,7 +319,7 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
     }
     if (fBarCodeList == 1) {
       if(event.split('-').length>1){
-        getMaterialListT(orderDate[0][1].toString(),orderDate[0][5],event);
+        getMaterialListT(orderDate[0][1].toString(),orderDate[0][5],event,event.split('-')[2]);
       }else{
         Map<String, dynamic> barcodeMap = Map();
         barcodeMap['FilterString'] = "FBarCodeEn='" + event + "'";
@@ -644,7 +644,7 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
     }
   }
 
-  getMaterialListT(fUyepGys,fWLNumber, code) async {
+  getMaterialListT(fUyepGys,fWLNumber, code, fsn) async {
     Map<String, dynamic> userMap = Map();
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     var menuData = sharedPreferences.getString('MenuPermissions');
@@ -695,6 +695,7 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
                   element[3]['value']['label']=(double.parse(element[3]['value']['label'])+double.parse(barcodeNum)).toString();
                   element[3]['value']['value']=element[3]['value']['label'];
                   element[0]['value']['scanCode'].add(code);
+                  element[0]['value']['kingDeeCode'].add(fsn);
                   element[10]['value']['label'] = barcodeNum.toString();
                   element[10]['value']['value'] = barcodeNum.toString();
                   barcodeNum = (double.parse(barcodeNum) - double.parse(barcodeNum)).toString();
@@ -717,6 +718,7 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
                       element[3]['value']['value']=element[3]['value']['label'];
                       residue = element[9]['value']['rateValue'] - double.parse(element[3]['value']['label']);
                       element[0]['value']['scanCode'].add(code);
+                      element[0]['value']['kingDeeCode'].add(fsn);
                     }
                   }else{//数量不超出
                     //判断条码是否重复
@@ -726,6 +728,7 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
                       element[10]['value']['label'] =barcodeNum.toString();
                       element[10]['value']['value'] = barcodeNum.toString();
                       element[0]['value']['scanCode'].add(code);
+                      element[0]['value']['kingDeeCode'].add(fsn);
                       barcodeNum = (double.parse(barcodeNum) - double.parse(barcodeNum)).toString();
                     }
                   }
@@ -752,6 +755,7 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
                   element[3]['value']['label']=(double.parse(element[3]['value']['label'])+double.parse(barcodeNum)).toString();
                   element[3]['value']['value']=element[3]['value']['label'];
                   element[0]['value']['scanCode'].add(code);
+                  element[0]['value']['kingDeeCode'].add(fsn);
                   element[10]['value']['label'] = barcodeNum.toString();
                   element[10]['value']['value'] = barcodeNum.toString();
                   barcodeNum = (double.parse(barcodeNum) - double.parse(barcodeNum)).toString();
@@ -775,6 +779,7 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
                         element[3]['value']['value']=element[3]['value']['label'];
                         residue = element[9]['value']['rateValue'] - double.parse(element[3]['value']['label']);
                         element[0]['value']['scanCode'].add(code);
+                        element[0]['value']['kingDeeCode'].add(fsn);
                       }
                     }else{//数量不超出
                       //判断条码是否重复
@@ -784,6 +789,7 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
                         element[10]['value']['label'] =barcodeNum.toString();
                         element[10]['value']['value'] = barcodeNum.toString();
                         element[0]['value']['scanCode'].add(code);
+                        element[0]['value']['kingDeeCode'].add(fsn);
                         barcodeNum = (double.parse(barcodeNum) - double.parse(barcodeNum)).toString();
                       }
                     }
@@ -809,6 +815,7 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
                           element[3]['value']['value']=element[3]['value']['label'];
                           residue = element[9]['value']['rateValue'] - double.parse(element[3]['value']['label']);
                           element[0]['value']['scanCode'].add(code);
+                          element[0]['value']['kingDeeCode'].add(fsn);
                         }
                       }else{//数量不超出
                         //判断条码是否重复
@@ -818,6 +825,7 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
                           element[10]['value']['label'] =barcodeNum.toString();
                           element[10]['value']['value'] = barcodeNum.toString();
                           element[0]['value']['scanCode'].add(code);
+                          element[0]['value']['kingDeeCode'].add(fsn);
                           barcodeNum = (double.parse(barcodeNum) - double.parse(barcodeNum)).toString();
                         }
                       }
@@ -1415,11 +1423,14 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
       Map<String, dynamic> dataMap = Map();
       dataMap['formid'] = 'PUR_ReceiveBill';
       Map<String, dynamic> orderMap = Map();
-      orderMap['NeedReturnFields'] = [];
-      orderMap['IsDeleteEntry'] = false;
+      orderMap['NeedUpDataFields'] = ['FDetailEntity','FSerialSubEntity','FSerialNo'];
+      orderMap['NeedReturnFields'] = ['FDetailEntity','FSerialSubEntity','FSerialNo'];
+      orderMap['IsDeleteEntry'] = true;
       Map<String, dynamic> Model = Map();
       Model['FID'] = 0;
       Model['FBillTypeID'] = {"FNUMBER": "SLD01_SYS"};
+      Model['FBusinessType'] = "CG";
+      Model['F_UYEP_TEXT'] = "PDA-";
       Model['FDate'] = FDate;
       //判断有源单 无源单
       if(this.isScanWork){
@@ -1465,7 +1476,7 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
             "FNumber": element[2]['value']['value']
           };
           FEntityItem['FSettleOrgId'] = {
-            "FNumber": element[2]['value']['value']
+            "FNumber": this.fOrgID
           };
           FEntityItem['FStockId'] = {
             "FNumber": element[4]['value']['value']
@@ -1482,18 +1493,23 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
           var kingDeeCode = element[0]['value']['kingDeeCode'];
           for (int subj = 0; subj < kingDeeCode.length; subj++) {
             Map<String, dynamic> subObj = Map();
-            var itemCode = kingDeeCode[subj].split("-");
-            if(itemCode.length>2){
-              subObj['FSerialNo'] = itemCode[2];
+            if(kingDeeCode[subj].split("-").length>2){
+              var itemCode = kingDeeCode[subj].split("-");
+              if(itemCode.length>2){
+                subObj['FSerialNo'] = itemCode[2];
+              }
+            }else{
+              subObj['FSerialNo'] = kingDeeCode[subj];
             }
             fSerialSub.add(subObj);
           }
+          FEntityItem['FOwnerId'] = {"FNumber": this.fOrgID};
+          FEntityItem['FActReceiveQty'] = element[3]['value']['value'];
           FEntityItem['FSerialSubEntity'] = fSerialSub;
           /*FEntityItem['FOwnerTypeId'] = "BD_OwnerOrg";*/
           FEntityItem['FTaxPrice'] = orderDate[hobbyIndex][18];
           FEntityItem['FEntryTaxRate'] = orderDate[hobbyIndex][19];
-          FEntityItem['FOwnerId'] = {"FNumber": this.fOrgID};
-          FEntityItem['FActReceiveQty'] = element[3]['value']['value'];
+          /*FEntityItem['FPrice'] = orderDate[hobbyIndex][20];*/
           FEntityItem['FDetailEntity_Link'] = [
             {
               "FDetailEntity_Link_FRuleId": "PUR_PurchaseOrder-PUR_ReceiveBill",
@@ -1526,6 +1542,7 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
       orderMap['Model'] = Model;
       dataMap['data'] = orderMap;
       print(jsonEncode(dataMap));
+      var saveData = jsonEncode(dataMap);
       ToastUtil.showInfo('保存');
       String order = await SubmitEntity.save(dataMap);
       var res = jsonDecode(order);
@@ -1570,34 +1587,36 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
                         orderCodeMap['IsDeleteEntry'] = false;
                         Map<String, dynamic> codeModel = Map();
                         var itemCode = kingDeeCode[j].split("-");
-                        codeModel['FID'] = itemCode[0];
-                        codeModel['FOwnerID'] = {
-                          "FNUMBER": deptData[1]
-                        };
-                        codeModel['FStockOrgID'] = {
-                          "FNUMBER": deptData[1]
-                        };
-                        codeModel['FStockID'] = {
-                          "FNUMBER": this.hobby[i][4]['value']['value']
-                        };
-                        Map<String, dynamic> codeFEntityItem = Map();
-                        codeFEntityItem['FBillDate'] = FDate;
-                        codeFEntityItem['FInQty'] = itemCode[1];
-                        codeFEntityItem['FEntryBillNo'] = orderDate[i][0];
-                        codeFEntityItem['FEntryStockID'] ={
-                          "FNUMBER": this.hobby[i][4]['value']['value']
-                        };
-                        var codeFEntity = [codeFEntityItem];
-                        codeModel['FEntity'] = codeFEntity;
-                        orderCodeMap['Model'] = codeModel;
-                        dataCodeMap['data'] = orderCodeMap;
-                        print(dataCodeMap);
-                        String codeRes = await SubmitEntity.save(dataCodeMap);
-                        var barcodeRes = jsonDecode(codeRes);
-                        if(!barcodeRes['Result']['ResponseStatus']['IsSuccess']){
-                          errorMsg +="错误反馈："+itemCode[1]+":"+barcodeRes['Result']['ResponseStatus']['Errors'][0]['Message'];
+                        if(itemCode.length>1){
+                          codeModel['FID'] = itemCode[0];
+                          codeModel['FOwnerID'] = {
+                            "FNUMBER": deptData[1]
+                          };
+                          codeModel['FStockOrgID'] = {
+                            "FNUMBER": deptData[1]
+                          };
+                          codeModel['FStockID'] = {
+                            "FNUMBER": this.hobby[i][4]['value']['value']
+                          };
+                          Map<String, dynamic> codeFEntityItem = Map();
+                          codeFEntityItem['FBillDate'] = FDate;
+                          codeFEntityItem['FInQty'] = itemCode[1];
+                          codeFEntityItem['FEntryBillNo'] = orderDate[i][0];
+                          codeFEntityItem['FEntryStockID'] ={
+                            "FNUMBER": this.hobby[i][4]['value']['value']
+                          };
+                          var codeFEntity = [codeFEntityItem];
+                          codeModel['FEntity'] = codeFEntity;
+                          orderCodeMap['Model'] = codeModel;
+                          dataCodeMap['data'] = orderCodeMap;
+                          print(dataCodeMap);
+                          String codeRes = await SubmitEntity.save(dataCodeMap);
+                          var barcodeRes = jsonDecode(codeRes);
+                          if(!barcodeRes['Result']['ResponseStatus']['IsSuccess']){
+                            errorMsg +="错误反馈："+itemCode[1]+":"+barcodeRes['Result']['ResponseStatus']['Errors'][0]['Message'];
+                          }
+                          print(codeRes);
                         }
-                        print(codeRes);
                       }
                     }
                   }

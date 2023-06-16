@@ -56,6 +56,7 @@ class _PickingPageState extends State<PickingPage> {
     }
   }
   _initState() {
+    isScan = false;
     this.getOrderList();
     /// 开启监听
     _subscription = scannerPlugin
@@ -102,22 +103,22 @@ class _PickingPageState extends State<PickingPage> {
       "FStatus in(3,4) and FNoStockInQty>0";
       if(this.keyWord != ''){
         userMap['FilterString'] =
-        "FBillNo='$keyWord' and FStatus in(3,4) and FNoStockInQty>0";
+        "FBillNo like '%"+keyWord+"%' and FStatus in(3,4) and FNoStockInQty>0";
       }
     }else{
-      userMap['FilterString'] =
-      "FStatus in(3,4) and FNoStockInQty>0 and FDate>= '$startDate' and FDate <= '$endDate'";
       if(this.keyWord != ''){
         userMap['FilterString'] =
-        "FBillNo='$keyWord' and FStatus in(3,4) and FNoStockInQty>0 and FDate>= '$startDate' and FDate <= '$endDate'";
+        "FBillNo like '%"+keyWord+"%' and FStatus in(3,4) and FNoStockInQty>0";
+      }else{
+        userMap['FilterString'] =
+        "FStatus in(3,4) and FNoStockInQty>0 and FDate>= '$startDate' and FDate <= '$endDate'";
       }
     }
     this.isScan = false;
     userMap['FormId'] = 'PRD_MO';
     userMap['OrderString'] = 'FBillNo ASC,FMaterialId.FNumber ASC';
     userMap['FieldKeys'] =
-    'FBillNo,FPrdOrgId.FNumber,FPrdOrgId.FName,FDate,FTreeEntity_FEntryId,FMaterialId.FNumber,FMaterialId.FName,FMaterialId.FSpecification,FWorkShopID.FNumber,FWorkShopID.FName,FUnitId.FNumber,FUnitId.FName,FQty,FPlanStartDate,FPlanFinishDate,FSrcBillNo,FNoStockInQty,FID,FTreeEntity_FSeq,FStatus';
-
+    'FBillNo,FPrdOrgId.FNumber,FPrdOrgId.FName,FDate,FTreeEntity_FEntryId,FMaterialId.FNumber,FMaterialId.FName,FMaterialId.FSpecification,FWorkShopID.FNumber,FWorkShopID.FName,FUnitId.FNumber,FUnitId.FName,FQty,FPlanStartDate,FPlanFinishDate,FSrcBillNo,FNoStockInQty,FID,FTreeEntity_FSeq,FStatus,FMemoItem';
     Map<String, dynamic> dataMap = Map();
     dataMap['data'] = userMap;
     String order = await CurrencyEntity.polling(dataMap);
@@ -252,6 +253,15 @@ class _PickingPageState extends State<PickingPage> {
             "value": orderDate[value][17]
           }
         });
+        arr.add({
+          "title": "备注",
+          "name": "FID",
+          "isHide": false,
+          "value": {
+            "label": orderDate[value][20] == null?"":orderDate[value][20],
+            "value": orderDate[value][20] == null?"":orderDate[value][20],
+          }
+        });
         /* arr.add({
           "title": "状态",
           "name": "FStatus",
@@ -294,7 +304,6 @@ class _PickingPageState extends State<PickingPage> {
         hobby.add(arr);
       }
       /*)*/;
-      print(hobby);
       setState(() {
         EasyLoading.dismiss();
         this._getHobby();
@@ -309,14 +318,40 @@ class _PickingPageState extends State<PickingPage> {
   }
 
   void _onEvent(event) async {
-    /*  setState(() {*/
-    _code = event;
-    this.isScan = true;
     EasyLoading.show(status: 'loading...');
-    keyWord = _code;
-    this.controller.text = _code;
-    await getOrderList();
-    /*});*/
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    var deptData = sharedPreferences.getString('menuList');
+    var menuList = new Map<dynamic, dynamic>.from(jsonDecode(deptData));
+    var fBarCodeList = menuList['FBarCodeList'];
+    if(event == ""){
+      return;
+    }
+    if (fBarCodeList == 1) {
+      Map<String, dynamic> barcodeMap = Map();
+      barcodeMap['FilterString'] = "FBarCodeEn='" + event + "'";
+      barcodeMap['FormId'] = 'QDEP_Cust_BarCodeList';
+      barcodeMap['FieldKeys'] =
+      'FSrcBillNo';
+      Map<String, dynamic> dataMap = Map();
+      dataMap['data'] = barcodeMap;
+      String order = await CurrencyEntity.polling(dataMap);
+      var barcodeData = jsonDecode(order);
+      if (barcodeData.length > 0) {
+        keyWord = barcodeData[0][0];
+        this.controller.text = barcodeData[0][0];
+        this.isScan = true;
+        await this.getOrderList();
+      } else {
+        ToastUtil.showInfo('条码不在条码清单中');
+      }
+    } else {
+      keyWord = _code;
+      this.controller.text = _code;
+      _code = event;
+      await this.getOrderList();
+      print("ChannelPage: $event");
+    }
+    EasyLoading.dismiss();
   }
 
   void _onError(Object error) {
@@ -346,11 +381,10 @@ class _PickingPageState extends State<PickingPage> {
                                   .hobby[i][0]['value'],
                               FBarcode: _code,
                               FSeq: this.hobby[i][10]['value'],
-                              FEntryId: this.hobby[i][11]
-                              ['value'],
+                              FEntryId: this.hobby[i][11]['value'],
                               FID: this.hobby[i][12]['value'],
-                              FProdOrder: this
-                                  .hobby[i][7]['value'],
+                              FProdOrder: this.hobby[i][7]['value'],
+                              FMemoItem: this.hobby[i][13]['value'],
                               // 路由参数
                             );
                           },

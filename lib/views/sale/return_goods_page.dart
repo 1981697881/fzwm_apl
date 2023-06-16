@@ -11,6 +11,7 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:fzwm_apl/views/sale/return_goods_detail.dart';
 import 'package:qrscan/qrscan.dart' as scanner;
+import 'package:shared_preferences/shared_preferences.dart';
 
 final String _fontFamily = Platform.isWindows ? "Roboto" : "";
 
@@ -53,6 +54,7 @@ class _ReturnGoodsPageState extends State<ReturnGoodsPage> {
     }
   }
   _initState() {
+    isScan = false;
     this.getOrderList();
     /// 开启监听
     _subscription = scannerPlugin
@@ -84,11 +86,13 @@ class _ReturnGoodsPageState extends State<ReturnGoodsPage> {
     }
     if(this.isScan){
       if (this.keyWord != '') {
-        userMap['FilterString'] = "FBillNo='"+scanCode[0]+"' and FDocumentStatus ='C' and FBillCloseStatus='A'";
+        userMap['FilterString'] = "FBillNo like '%"+keyWord+"%' and FDocumentStatus ='C' and FBillCloseStatus='A'";
       }
     }else{
       if (this.keyWord != '') {
-        userMap['FilterString'] = "FBillNo='"+scanCode[0]+"' and FDocumentStatus ='C' and FBillCloseStatus='A' and FDate>= '$startDate' and FDate <= '$endDate'";
+        userMap['FilterString'] = "FBillNo like '%"+keyWord+"%' and FDocumentStatus ='C' and FBillCloseStatus='A'";
+      }else{
+        userMap['FilterString'] = "FBillNo like '%"+keyWord+"%' and FDocumentStatus ='C' and FBillCloseStatus='A' and FDate>= '$startDate' and FDate <= '$endDate'";
       }
     }
     this.isScan = false;
@@ -182,14 +186,40 @@ class _ReturnGoodsPageState extends State<ReturnGoodsPage> {
   }
 
   void _onEvent(event) async {
-    /*  setState(() {*/
-    _code = event;
     EasyLoading.show(status: 'loading...');
-    keyWord = _code;
-    this.isScan = true;
-    this.controller.text = _code;
-    await getOrderList();
-    /*});*/
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    var deptData = sharedPreferences.getString('menuList');
+    var menuList = new Map<dynamic, dynamic>.from(jsonDecode(deptData));
+    var fBarCodeList = menuList['FBarCodeList'];
+    if(event == ""){
+      return;
+    }
+    if (fBarCodeList == 1) {
+      Map<String, dynamic> barcodeMap = Map();
+      barcodeMap['FilterString'] = "FBarCodeEn='" + event + "'";
+      barcodeMap['FormId'] = 'QDEP_Cust_BarCodeList';
+      barcodeMap['FieldKeys'] =
+      'FSrcBillNo';
+      Map<String, dynamic> dataMap = Map();
+      dataMap['data'] = barcodeMap;
+      String order = await CurrencyEntity.polling(dataMap);
+      var barcodeData = jsonDecode(order);
+      if (barcodeData.length > 0) {
+        keyWord = barcodeData[0][0];
+        this.controller.text = barcodeData[0][0];
+        this.isScan = true;
+        await this.getOrderList();
+      } else {
+        ToastUtil.showInfo('条码不在条码清单中');
+      }
+    } else {
+      keyWord = _code;
+      this.controller.text = _code;
+      _code = event;
+      await this.getOrderList();
+      print("ChannelPage: $event");
+    }
+    EasyLoading.dismiss();
   }
   void _onError(Object error) {
     setState(() {

@@ -88,7 +88,7 @@ class _DispatchPageState extends State<DispatchPage> {
     }
     if (this.keyWord != '') {
       userMap['FilterString'] =
-      "FBillNo='$keyWord' and FUnOrderQty >0 and FDate>= '$startDate' and FDate <= '$endDate'";
+      "FBillNo like '%"+keyWord+"%' and FUnOrderQty >0 and FDate>= '$startDate' and FDate <= '$endDate'";
     }
     userMap['FormId'] = 'k9917093a9fd147b7a68c76f6780b8593';
     userMap['OrderString'] = 'FBillNo ASC,FMaterialId.FNumber ASC';

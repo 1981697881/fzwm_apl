@@ -24,16 +24,16 @@ import 'package:fzwm_apl/components/my_text.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class ExWarehouseDetail extends StatefulWidget {
+class BindSNPage extends StatefulWidget {
   var FBillNo;
 
-  ExWarehouseDetail({Key ?key, @required this.FBillNo}) : super(key: key);
+  BindSNPage({Key ?key, @required this.FBillNo}) : super(key: key);
 
   @override
-  _ExWarehouseDetailState createState() => _ExWarehouseDetailState(FBillNo);
+  _BindSNPageState createState() => _BindSNPageState(FBillNo);
 }
 
-class _ExWarehouseDetailState extends State<ExWarehouseDetail> {
+class _BindSNPageState extends State<BindSNPage> {
   var _remarkContent = new TextEditingController();
   GlobalKey<TextWidgetState> textKey = GlobalKey();
   GlobalKey<PartRefreshWidgetState> globalKey = GlobalKey();
@@ -75,13 +75,13 @@ class _ExWarehouseDetailState extends State<ExWarehouseDetail> {
   final scanIcon = Icon(Icons.filter_center_focus);
   static const scannerPlugin =
   const EventChannel('com.shinow.pda_scanner/plugin');
-   StreamSubscription ?_subscription;
+  StreamSubscription ?_subscription;
   var _code;
   var _FNumber;
   var fBillNo;
   var fBarCodeList;
 
-  _ExWarehouseDetailState(FBillNo) {
+  _BindSNPageState(FBillNo) {
     if (FBillNo != null) {
       this.fBillNo = FBillNo['value'];
       this.getOrderList();
@@ -105,7 +105,7 @@ class _ExWarehouseDetailState extends State<ExWarehouseDetail> {
     }
     /*getWorkShop();*/
     getStockList();
-   /* getTypeList();*/
+    /* getTypeList();*/
     getCustomer();
     getDepartmentList();
   }
@@ -646,8 +646,8 @@ class _ExWarehouseDetailState extends State<ExWarehouseDetail> {
           }else{
             setState(() {
               setState(() {
-          hobby['value']['label'] = p;
-        });;
+                hobby['value']['label'] = p;
+              });;
             });
             print(hobby['value']['label']);
             var elementIndex = 0;
@@ -911,15 +911,15 @@ class _ExWarehouseDetailState extends State<ExWarehouseDetail> {
                                 });
                                 realQty = realQty - double.parse(this.hobby[checkData][10]["value"]["label"]);
                                 realQty = realQty + double.parse(_FNumber);
-                                  this.hobby[checkData][3]["value"]
-                                  ["value"] = realQty.toString();
-                                  this.hobby[checkData][3]["value"]
-                                  ["label"] = realQty.toString();
-                                  this.hobby[checkData][checkDataChild]["value"]
-                                  ["label"] = _FNumber;
-                                  this.hobby[checkData][checkDataChild]['value']
-                                  ["value"] = _FNumber;
-                                  this.hobby[checkData][0]['value']['kingDeeCode'][this.hobby[checkData][0]['value']['kingDeeCode'].length-1] = kingDeeCode[0]+"-"+_FNumber;
+                                this.hobby[checkData][3]["value"]
+                                ["value"] = realQty.toString();
+                                this.hobby[checkData][3]["value"]
+                                ["label"] = realQty.toString();
+                                this.hobby[checkData][checkDataChild]["value"]
+                                ["label"] = _FNumber;
+                                this.hobby[checkData][checkDataChild]['value']
+                                ["value"] = _FNumber;
+                                this.hobby[checkData][0]['value']['kingDeeCode'][this.hobby[checkData][0]['value']['kingDeeCode'].length-1] = kingDeeCode[0]+"-"+_FNumber;
                               }else{
                                 ToastUtil.showInfo('无条码信息，输入失败');
                               }
@@ -1191,7 +1191,7 @@ class _ExWarehouseDetailState extends State<ExWarehouseDetail> {
     return FlutterEasyLoading(
       child: Scaffold(
           appBar: AppBar(
-            title: Text("其他出库"),
+            title: Text("SN绑定"),
             centerTitle: true,
             leading: IconButton(icon: Icon(Icons.arrow_back), onPressed: (){
               Navigator.of(context).pop();
@@ -1220,7 +1220,7 @@ class _ExWarehouseDetailState extends State<ExWarehouseDetail> {
                       'department'),
                   /*_item('类别', this.typeList, this.typeName,
                       'type'),*/
-                 Column(
+                  Column(
                     children: [
                       Container(
                         color: Colors.white,
@@ -1238,10 +1238,10 @@ class _ExWarehouseDetailState extends State<ExWarehouseDetail> {
                             onChanged: (value) {
                               setState(() {
                                 _remarkContent.value = TextEditingValue(
-                                  text: value,
-                                  selection: TextSelection.fromPosition(TextPosition(
-                                      affinity: TextAffinity.downstream,
-                                      offset: value.length)));
+                                    text: value,
+                                    selection: TextSelection.fromPosition(TextPosition(
+                                        affinity: TextAffinity.downstream,
+                                        offset: value.length)));
                               });
                             },
                           ),

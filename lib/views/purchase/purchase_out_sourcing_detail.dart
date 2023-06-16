@@ -319,7 +319,7 @@ class _PurchaseOutSourcingDetailState extends State<PurchaseOutSourcingDetail> {
     }
     if (fBarCodeList == 1) {
       if(event.split('-').length>1){
-        getMaterialListT(orderDate[0][1].toString(),orderDate[0][5],event);
+        getMaterialListT(orderDate[0][1].toString(),orderDate[0][5],event,event.split('-')[2]);
       }else{
         Map<String, dynamic> barcodeMap = Map();
         barcodeMap['FilterString'] = "FBarCodeEn='" + event + "'";
@@ -644,7 +644,7 @@ class _PurchaseOutSourcingDetailState extends State<PurchaseOutSourcingDetail> {
     }
   }
 
-  getMaterialListT(fUyepGys,fWLNumber, code) async {
+  getMaterialListT(fUyepGys,fWLNumber, code, fsn) async {
     Map<String, dynamic> userMap = Map();
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     var menuData = sharedPreferences.getString('MenuPermissions');
@@ -695,6 +695,7 @@ class _PurchaseOutSourcingDetailState extends State<PurchaseOutSourcingDetail> {
                   element[3]['value']['label']=(double.parse(element[3]['value']['label'])+double.parse(barcodeNum)).toString();
                   element[3]['value']['value']=element[3]['value']['label'];
                   element[0]['value']['scanCode'].add(code);
+                  element[0]['value']['kingDeeCode'].add(fsn);
                   element[10]['value']['label'] = barcodeNum.toString();
                   element[10]['value']['value'] = barcodeNum.toString();
                   barcodeNum = (double.parse(barcodeNum) - double.parse(barcodeNum)).toString();
@@ -717,6 +718,7 @@ class _PurchaseOutSourcingDetailState extends State<PurchaseOutSourcingDetail> {
                       element[3]['value']['value']=element[3]['value']['label'];
                       residue = element[9]['value']['rateValue'] - double.parse(element[3]['value']['label']);
                       element[0]['value']['scanCode'].add(code);
+                      element[0]['value']['kingDeeCode'].add(fsn);
                     }
                   }else{//数量不超出
                     //判断条码是否重复
@@ -726,6 +728,7 @@ class _PurchaseOutSourcingDetailState extends State<PurchaseOutSourcingDetail> {
                       element[10]['value']['label'] =barcodeNum.toString();
                       element[10]['value']['value'] = barcodeNum.toString();
                       element[0]['value']['scanCode'].add(code);
+                      element[0]['value']['kingDeeCode'].add(fsn);
                       barcodeNum = (double.parse(barcodeNum) - double.parse(barcodeNum)).toString();
                     }
                   }
@@ -752,6 +755,7 @@ class _PurchaseOutSourcingDetailState extends State<PurchaseOutSourcingDetail> {
                   element[3]['value']['label']=(double.parse(element[3]['value']['label'])+double.parse(barcodeNum)).toString();
                   element[3]['value']['value']=element[3]['value']['label'];
                   element[0]['value']['scanCode'].add(code);
+                  element[0]['value']['kingDeeCode'].add(fsn);
                   element[10]['value']['label'] = barcodeNum.toString();
                   element[10]['value']['value'] = barcodeNum.toString();
                   barcodeNum = (double.parse(barcodeNum) - double.parse(barcodeNum)).toString();
@@ -775,6 +779,7 @@ class _PurchaseOutSourcingDetailState extends State<PurchaseOutSourcingDetail> {
                         element[3]['value']['value']=element[3]['value']['label'];
                         residue = element[9]['value']['rateValue'] - double.parse(element[3]['value']['label']);
                         element[0]['value']['scanCode'].add(code);
+                        element[0]['value']['kingDeeCode'].add(fsn);
                       }
                     }else{//数量不超出
                       //判断条码是否重复
@@ -784,6 +789,7 @@ class _PurchaseOutSourcingDetailState extends State<PurchaseOutSourcingDetail> {
                         element[10]['value']['label'] =barcodeNum.toString();
                         element[10]['value']['value'] = barcodeNum.toString();
                         element[0]['value']['scanCode'].add(code);
+                        element[0]['value']['kingDeeCode'].add(fsn);
                         barcodeNum = (double.parse(barcodeNum) - double.parse(barcodeNum)).toString();
                       }
                     }
@@ -809,6 +815,7 @@ class _PurchaseOutSourcingDetailState extends State<PurchaseOutSourcingDetail> {
                           element[3]['value']['value']=element[3]['value']['label'];
                           residue = element[9]['value']['rateValue'] - double.parse(element[3]['value']['label']);
                           element[0]['value']['scanCode'].add(code);
+                          element[0]['value']['kingDeeCode'].add(fsn);
                         }
                       }else{//数量不超出
                         //判断条码是否重复
@@ -818,6 +825,7 @@ class _PurchaseOutSourcingDetailState extends State<PurchaseOutSourcingDetail> {
                           element[10]['value']['label'] =barcodeNum.toString();
                           element[10]['value']['value'] = barcodeNum.toString();
                           element[0]['value']['scanCode'].add(code);
+                          element[0]['value']['kingDeeCode'].add(fsn);
                           barcodeNum = (double.parse(barcodeNum) - double.parse(barcodeNum)).toString();
                         }
                       }
@@ -1224,12 +1232,9 @@ class _PurchaseOutSourcingDetailState extends State<PurchaseOutSourcingDetail> {
       Map<String, dynamic> dataMap = Map();
       dataMap['data'] = inOrderMap;
       Map<String, dynamic> orderMap = Map();
-      orderMap['NeedUpDataFields'] = [
-        'FStockStatusId',
-        'FRealQty',
-        'FInStockType'
-      ];
-      orderMap['IsDeleteEntry'] = false;
+      orderMap['NeedUpDataFields'] = ['FEntity','FSerialSubEntity','FSerialNo'];
+      orderMap['NeedReturnFields'] = ['FEntity','FSerialSubEntity','FSerialNo'];
+      orderMap['IsDeleteEntry'] = true;
       Map<String, dynamic> Model = Map();
       Model['FID'] = res['Result']['ResponseStatus']['SuccessEntitys'][0]['Id'];
       var FEntity = [];
@@ -1249,9 +1254,13 @@ class _PurchaseOutSourcingDetailState extends State<PurchaseOutSourcingDetail> {
             var kingDeeCode = this.hobby[element][0]['value']['kingDeeCode'];
             for (int subj = 0; subj < kingDeeCode.length; subj++) {
               Map<String, dynamic> subObj = Map();
-              var itemCode = kingDeeCode[subj].split("-");
-              if(itemCode.length>2){
-                subObj['FSerialNo'] = itemCode[2];
+              if(kingDeeCode[subj].split("-").length>2){
+                var itemCode = kingDeeCode[subj].split("-");
+                if(itemCode.length>2){
+                  subObj['FSerialNo'] = itemCode[2];
+                }
+              }else{
+                subObj['FSerialNo'] = kingDeeCode[subj];
               }
               fSerialSub.add(subObj);
             }

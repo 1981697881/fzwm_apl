@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:fzwm_apl/views/production/bind_SN_page.dart';
 import 'package:fzwm_apl/views/production/picking_detail.dart';
 import 'package:fzwm_apl/views/production/picking_out_sourcing_page.dart';
 import 'package:fzwm_apl/views/production/picking_page.dart';
@@ -276,8 +277,15 @@ class MenuPermissions {
       "source": '',
     });menu.add({
       "icon": Icons.loupe,
-      "text": "委外领料",
+      "text": "SN绑定",
       "parentId": 1,
+      "color": Colors.pink.withOpacity(0.7),
+      "router": BindSNPage(),
+      "source": '',
+    });menu.add({
+      "icon": Icons.loupe,
+      "text": "委外领料",
+      "parentId": 6,
       "color": Colors.pink.withOpacity(0.7),
       "router": PickingOutSourcingPage(),
       "source": '',
@@ -305,7 +313,7 @@ class MenuPermissions {
     });menu.add({
       "icon": Icons.loupe,
       "text": "委外入库",
-      "parentId": 5,
+      "parentId": 6,
       "color": Colors.pink.withOpacity(0.7),
       "router": PurchaseOutSourcingPage(),
       "source": '',

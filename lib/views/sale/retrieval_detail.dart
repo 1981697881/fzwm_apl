@@ -1334,8 +1334,9 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
       Map<String, dynamic> dataMap = Map();
       dataMap['formid'] = 'SAL_OUTSTOCK';
       Map<String, dynamic> orderMap = Map();
-      orderMap['NeedReturnFields'] = [];
-      orderMap['IsDeleteEntry'] = false;
+      orderMap['NeedUpDataFields'] = ['FEntity','FSerialSubEntity','FSerialNo'];
+      orderMap['NeedReturnFields'] = ['FEntity','FSerialSubEntity','FSerialNo'];
+      orderMap['IsDeleteEntry'] = true;
       Map<String, dynamic> Model = Map();
       Model['FID'] = 0;
       Model['FBillType'] = {"FNUMBER": "CKD01_SYS"};
