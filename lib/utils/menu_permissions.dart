@@ -263,6 +263,14 @@ class MenuPermissions {
     }
     menu.add({
       "icon": Icons.loupe,
+      "text": "SN绑定",
+      "parentId": 1,
+      "color": Colors.pink.withOpacity(0.7),
+      "router": BindSNPage(),
+      "source": '',
+    });
+    menu.add({
+      "icon": Icons.loupe,
       "text": "生产入库",
       "parentId": 1,
       "color": Colors.pink.withOpacity(0.7),
@@ -274,13 +282,6 @@ class MenuPermissions {
       "parentId": 1,
       "color": Colors.pink.withOpacity(0.7),
       "router": PickingPage(),
-      "source": '',
-    });menu.add({
-      "icon": Icons.loupe,
-      "text": "SN绑定",
-      "parentId": 1,
-      "color": Colors.pink.withOpacity(0.7),
-      "router": BindSNPage(),
       "source": '',
     });menu.add({
       "icon": Icons.loupe,

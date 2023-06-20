@@ -93,10 +93,10 @@ class _PurchaseOutSourcingPageState extends State<PurchaseOutSourcingPage> {
     }else{
       if (this.keyWord != '') {
         userMap['FilterString'] =/*and FRemainReceiveQty>0*/
-        "FBillNo like '%"+keyWord+"%' and FCloseStatus = 'A' and FDate>= '$startDate' and FDate <= '$endDate' and FRemainReceiveQty>0 and FBillTypeID.FNUMBER ='CGDD02_SYS'";
+        "FBillNo like '%"+keyWord+"%' and FCloseStatus = 'A' and FRemainReceiveQty>0 and FBillTypeID.FNUMBER ='CGDD02_SYS'";
       }else{
         userMap['FilterString'] =/*and FRemainReceiveQty>0*/
-        "FBillNo like '%"+keyWord+"%' and FCloseStatus = 'A' and FRemainReceiveQty>0 and FBillTypeID.FNUMBER ='CGDD02_SYS'";
+        "FCloseStatus = 'A' and FDate>= '$startDate' and FDate <= '$endDate' and FRemainReceiveQty>0 and FBillTypeID.FNUMBER ='CGDD02_SYS'";
       }
     }
     this.isScan = false;
@@ -290,9 +290,7 @@ class _PurchaseOutSourcingPageState extends State<PurchaseOutSourcingPage> {
 
 //用于验证数据(也可以在控制台直接打印，但模拟器体验不好)
   void getScan(String scan) async {
-    keyWord = scan;
-    this.controller.text = scan;
-    await getOrderList();
+    _onEvent(scan);
   }
 
   String _dateSelectText = "";

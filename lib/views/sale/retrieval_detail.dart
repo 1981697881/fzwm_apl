@@ -21,7 +21,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:fzwm_apl/components/my_text.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
+import 'package:qrscan/qrscan.dart' as scanner;
 final String _fontFamily = Platform.isWindows ? "Roboto" : "";
 
 class RetrievalDetail extends StatefulWidget {
@@ -235,15 +235,16 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
           "title": "仓库",
           "name": "FStockId",
           "isHide": false,
-          "value": {"label": value[18], "value": value[19]}
+          /*"value": {"label": value[18], "value": value[19]}*/
+          "value": {"label": "", "value": ""}
         });
         arr.add({
           "title": "批号",
           "name": "FLot",
           "isHide": value[22] != true,
           "value": {
-            "label": value[20] == null ? "" : value[20],
-            "value": value[20] == null ? "" : value[20]
+            "label": "",
+            "value": ""
           }
         });
         arr.add({
@@ -1341,6 +1342,7 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
       Model['FID'] = 0;
       Model['FBillType'] = {"FNUMBER": "CKD01_SYS"};
       Model['FDate'] = FDate;
+      Model['F_UYEP_TEXT'] = "PDA-";
       //获取登录信息
       SharedPreferences sharedPreferences =
           await SharedPreferences.getInstance();
@@ -1619,11 +1621,26 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
           );
         });
   }
+//扫码函数,最简单的那种
+  Future scan() async {
+    String cameraScanResult = await scanner.scan(); //通过扫码获取二维码中的数据
+    getScan(cameraScanResult); //将获取到的参数通过HTTP请求发送到服务器
+    print(cameraScanResult); //在控制台打印
+  }
 
+//用于验证数据(也可以在控制台直接打印，但模拟器体验不好)
+  void getScan(String scan) async {
+    _onEvent(scan);
+  }
   @override
   Widget build(BuildContext context) {
     return FlutterEasyLoading(
       child: Scaffold(
+          floatingActionButton: FloatingActionButton(
+            onPressed: scan,
+            tooltip: 'Increment',
+            child: Icon(Icons.filter_center_focus),
+          ),
           appBar: AppBar(
             title: Text("销售出库"),
             centerTitle: true,

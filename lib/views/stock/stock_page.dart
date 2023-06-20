@@ -10,7 +10,7 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:qrscan/qrscan.dart' as scanner;
 import 'package:shared_preferences/shared_preferences.dart';
-
+import 'package:qrscan/qrscan.dart' as scanner;
 final String _fontFamily = Platform.isWindows ? "Roboto" : "";
 
 class StockPage extends StatefulWidget {
@@ -45,6 +45,7 @@ class _StockPageState extends State<StockPage> {
           .listen(_onEvent, onError: _onError);
     }
     EasyLoading.dismiss();
+    /*_onEvent("68051080058-20230612-202306120006");*/
   }
 
   @override
@@ -65,7 +66,11 @@ class _StockPageState extends State<StockPage> {
       Map<String, dynamic> userMap = Map();
       if(keyWord != ''){
         userMap['FilterString'] =
-        "FMaterialId.FNumber='"+this.keyWord+"' and FLot.FNumber= '"+batchNo+"'";
+        "FMaterialId.FNumber='"+this.keyWord+"' and FBaseQty >0";
+        if(batchNo != ''){
+          userMap['FilterString'] =
+              "FMaterialId.FNumber='"+this.keyWord+"'  and FBaseQty >0";  /*and FLot.FNumber= '"+batchNo+"'*/
+        }
       }
       userMap['FormId'] = 'STK_Inventory';
       userMap['Limit'] = '50';
@@ -135,21 +140,43 @@ class _StockPageState extends State<StockPage> {
       return;
     }
     if (fBarCodeList == 1) {
-      Map<String, dynamic> barcodeMap = Map();
-      barcodeMap['FilterString'] = "FBarCodeEn='" + event + "'";
-      barcodeMap['FormId'] = 'QDEP_Cust_BarCodeList';
-      barcodeMap['FieldKeys'] =
-      'FID,FInQtyTotal,FOutQtyTotal,FEntity_FEntryId,FRemainQty,FBarCodeQty,FStockID.FName,FStockID.FNumber,FMATERIALID.FNUMBER,FOwnerID.FNumber,FBarCode,FBatchNo';
-      Map<String, dynamic> dataMap = Map();
-      dataMap['data'] = barcodeMap;
-      String order = await CurrencyEntity.polling(dataMap);
-      var barcodeData = jsonDecode(order);
-      if (barcodeData.length > 0) {
-        keyWord = barcodeData[0][8];
-        this.controller.text = barcodeData[0][8];
-        await this.getOrderList(barcodeData[0][8],barcodeData[0][11]);
-      } else {
-        ToastUtil.showInfo('条码不在条码清单中');
+      if(event.split('-').length>1){
+        Map<String, dynamic> userMap = Map();
+        SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+        var menuData = sharedPreferences.getString('MenuPermissions');
+        var deptData = jsonDecode(menuData)[0];
+        userMap['FilterString'] = "F_UYEP_GYSTM='"+event.split('-')[0]+"' and FForbidStatus = 'A' and FUseOrgId.FNumber = '"+deptData[1]+"'";
+        userMap['FormId'] = 'BD_MATERIAL';
+        userMap['FieldKeys'] =
+        'FMATERIALID,FName,FNumber,FSpecification,FBaseUnitId.FName,FBaseUnitId.FNumber,FIsBatchManage';/*,SubHeadEntity1.FStoreUnitID.FNumber*/
+        Map<String, dynamic> dataMap = Map();
+        dataMap['data'] = userMap;
+        String order = await CurrencyEntity.polling(dataMap);
+        var barcodeData = jsonDecode(order);
+        if (barcodeData.length > 0) {
+          keyWord = barcodeData[0][2];
+          this.controller.text = barcodeData[0][2];
+          await this.getOrderList(barcodeData[0][2],"");
+        } else {
+          ToastUtil.showInfo('条码不存在');
+        }
+      }else{
+        Map<String, dynamic> barcodeMap = Map();
+        barcodeMap['FilterString'] = "FBarCodeEn='" + event + "'";
+        barcodeMap['FormId'] = 'QDEP_Cust_BarCodeList';
+        barcodeMap['FieldKeys'] =
+        'FID,FInQtyTotal,FOutQtyTotal,FEntity_FEntryId,FRemainQty,FBarCodeQty,FStockID.FName,FStockID.FNumber,FMATERIALID.FNUMBER,FOwnerID.FNumber,FBarCode,FBatchNo';
+        Map<String, dynamic> dataMap = Map();
+        dataMap['data'] = barcodeMap;
+        String order = await CurrencyEntity.polling(dataMap);
+        var barcodeData = jsonDecode(order);
+        if (barcodeData.length > 0) {
+          keyWord = barcodeData[0][8];
+          this.controller.text = barcodeData[0][8];
+          await this.getOrderList(barcodeData[0][8],barcodeData[0][11]);
+        } else {
+          ToastUtil.showInfo('条码不在条码清单中');
+        }
       }
     } else {
       keyWord = _code;
@@ -211,9 +238,7 @@ class _StockPageState extends State<StockPage> {
 
 //用于验证数据(也可以在控制台直接打印，但模拟器体验不好)
   void getScan(String scan) async {
-    keyWord = scan;
-    this.controller.text = scan;
-    await getOrderList("","");
+    _onEvent(scan);
   }
 
   @override
@@ -278,7 +303,7 @@ class _StockPageState extends State<StockPage> {
                                             onSubmitted: (value) {
                                               setState(() {
                                                 this.keyWord = value;
-                                                this.getOrderList("","");
+                                                this.getOrderList(this.keyWord,"");
 
                                               });
                                             },

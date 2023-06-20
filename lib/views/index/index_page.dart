@@ -278,6 +278,7 @@ class _IndexPageState extends State<IndexPage> {
     var menuList = new Map<dynamic, dynamic>.from(jsonDecode(deptData));
     var fAuthList = menuList['FAuthList'].split(",");
     var menu = <Map<String, dynamic>>[];
+
     for (var i in fAuthList) {
       switch (i) {
         case "1":
@@ -332,7 +333,7 @@ class _IndexPageState extends State<IndexPage> {
           break;
           case "6":
           var obj = {
-            "icon": Icons.shopping_cart,
+            "icon": Icons.ballot,
             "text": "委外管理",
             "id": 6,
             "color": Colors.pink.withOpacity(0.7),
@@ -342,6 +343,14 @@ class _IndexPageState extends State<IndexPage> {
           break;
       }
     };
+    var obj = {
+      "icon": Icons.ballot,
+      "text": "委外管理",
+      "id": 6,
+      "color": Colors.pink.withOpacity(0.7),
+      "router": MiddleLayerPage(menuId: 6, menuTitle: "委外管理")
+    };
+    menu.add(obj);
     return Wrap(
         /*mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,*/

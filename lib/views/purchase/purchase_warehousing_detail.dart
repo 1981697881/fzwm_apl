@@ -23,6 +23,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:fzwm_apl/components/my_text.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:qrscan/qrscan.dart' as scanner;
 
 class PurchaseWarehousingDetail extends StatefulWidget {
   var FBillNo;
@@ -319,7 +320,7 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
     }
     if (fBarCodeList == 1) {
       if(event.split('-').length>1){
-        getMaterialListT(orderDate[0][1].toString(),orderDate[0][5],event,event.split('-')[2]);
+        getMaterialListT(event,event.split('-')[2]);
       }else{
         Map<String, dynamic> barcodeMap = Map();
         barcodeMap['FilterString'] = "FBarCodeEn='" + event + "'";
@@ -644,13 +645,13 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
     }
   }
 
-  getMaterialListT(fUyepGys,fWLNumber, code, fsn) async {
+  getMaterialListT(code, fsn) async {
     Map<String, dynamic> userMap = Map();
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     var menuData = sharedPreferences.getString('MenuPermissions');
     var deptData = jsonDecode(menuData)[0];
-    var scanCode = [fWLNumber,code.split("-")[1],"","","","N"];
-    userMap['FilterString'] = "F_UYEP_GYS.FNUMBER='"+fUyepGys+"' and F_UYEP_GYSTM='"+code.split('-')[0]+"' and FForbidStatus = 'A' and FUseOrgId.FNumber = '"+deptData[1]+"'";
+
+    userMap['FilterString'] = "F_UYEP_GYSTM='"+code.split('-')[0]+"' and FForbidStatus = 'A' and FUseOrgId.FNumber = '"+deptData[1]+"'";
     userMap['FormId'] = 'BD_MATERIAL';
     userMap['FieldKeys'] =
     'FMATERIALID,FName,FNumber,FSpecification,FBaseUnitId.FName,FBaseUnitId.FNumber,FIsBatchManage';/*,SubHeadEntity1.FStoreUnitID.FNumber*/
@@ -659,6 +660,7 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
     String order = await CurrencyEntity.polling(dataMap);
     materialDate = [];
     materialDate = jsonDecode(order);
+    var scanCode = [materialDate[0][2],code.split("-")[1],"","","","N"];
     FDate = formatDate(DateTime.now(), [yyyy, "-", mm, "-", dd,]);
     selectData[DateMode.YMD] = formatDate(DateTime.now(), [yyyy, "-", mm, "-", dd,]);
     if (materialDate.length > 0) {
@@ -1692,10 +1694,26 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
           );
         });
   }
+  //扫码函数,最简单的那种
+  Future scan() async {
+    String cameraScanResult = await scanner.scan(); //通过扫码获取二维码中的数据
+    getScan(cameraScanResult); //将获取到的参数通过HTTP请求发送到服务器
+    print(cameraScanResult); //在控制台打印
+  }
+
+//用于验证数据(也可以在控制台直接打印，但模拟器体验不好)
+  void getScan(String scan) async {
+    _onEvent(scan);
+  }
   @override
   Widget build(BuildContext context) {
     return FlutterEasyLoading(
       child: Scaffold(
+          floatingActionButton: FloatingActionButton(
+            onPressed: scan,
+            tooltip: 'Increment',
+            child: Icon(Icons.filter_center_focus),
+          ),
           appBar: AppBar(
             title: Text("采购入库"),
             centerTitle: true,

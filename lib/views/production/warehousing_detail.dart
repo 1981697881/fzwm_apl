@@ -21,7 +21,7 @@ import 'package:flutter_pickers/utils/check.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:fzwm_apl/components/my_text.dart';
-
+import 'package:qrscan/qrscan.dart' as scanner;
 final String _fontFamily = Platform.isWindows ? "Roboto" : "";
 
 class WarehousingDetail extends StatefulWidget {
@@ -196,7 +196,7 @@ class _WarehousingDetailState extends State<WarehousingDetail> {
         hobby = [];
         orderDate.forEach((value) {
           List arr = [];
-          fNumber.add(value[5]);
+          fNumber.add(value[6]);
           arr.add({
             "title": "物料子码",
             "name": "FMaterialId",
@@ -300,6 +300,8 @@ class _WarehousingDetailState extends State<WarehousingDetail> {
       getStockList();
       scanDialog();
     }
+   /* _onEvent("u+zeGAN0HjGOOOh3LfNGcSst+0RCbFmsR1G63psT2kLVkcuIIRcQDSTcpqu63ZW7");
+    _onEvent("u+zeGAN0HjGOOOh3LfNGcSst+0RCbFmsR1G63psT2kLVkcuIIRcQDXt3X7AnjnOD");*/
   }
 
   void _onEvent(event) async {
@@ -1626,6 +1628,8 @@ class _WarehousingDetailState extends State<WarehousingDetail> {
         if (errorMsg != "") {
           ToastUtil.errorDialog(context, errorMsg);
         }
+
+
         /*this.handlerStatus();*/
         setState(() {
           this.hobby = [];
@@ -1694,6 +1698,31 @@ class _WarehousingDetailState extends State<WarehousingDetail> {
               if (errorMsg != "") {
                 ToastUtil.errorDialog(context, errorMsg);
               }
+
+              Map<String, dynamic> inStockMap = Map();
+              inStockMap['FilterString'] = "FSrcBillNo='"+res['Result']['ResponseStatus']['SuccessEntitys'][0]['Number']+"'";
+              inStockMap['FormId'] = 'PRD_INSTOCK';
+              inStockMap['FieldKeys'] =
+              'FID';
+              Map<String, dynamic> inStockDataMap = Map();
+              inStockDataMap['data'] = inStockMap;
+              String inStockMapOrder = await CurrencyEntity.polling(inStockDataMap);
+              var inStockOrderRes = jsonDecode(inStockMapOrder);
+              if (inStockOrderRes.length>0) {
+                Map<String, dynamic> submitMap = Map();
+                submitMap = {
+                  "formid": "PRD_INSTOCK",
+                  "data": {
+                    'Ids': inStockOrderRes[0][0]
+                  }
+                };
+                var submitData = await SubmitEntity.submit(submitMap);
+                await SubmitEntity.audit(submitMap);
+                var resSubmit = jsonDecode(submitData);
+                if (resSubmit['Result']['ResponseStatus']['IsSuccess']) {
+                  ToastUtil.showInfo('提交入库成功');
+                }
+              }
               /*this.handlerStatus();*/
               setState(() {
                 this.hobby = [];
@@ -1754,6 +1783,30 @@ class _WarehousingDetailState extends State<WarehousingDetail> {
             if (errorMsg != "") {
               ToastUtil.errorDialog(context, errorMsg);
             }
+            Map<String, dynamic> inStockMap = Map();
+            inStockMap['FilterString'] = "FSrcBillNo='"+res['Result']['ResponseStatus']['SuccessEntitys'][0]['Number']+"'";
+            inStockMap['FormId'] = 'PRD_INSTOCK';
+            inStockMap['FieldKeys'] =
+            'FID';
+            Map<String, dynamic> inStockDataMap = Map();
+            inStockDataMap['data'] = inStockMap;
+            String inStockMapOrder = await CurrencyEntity.polling(inStockDataMap);
+            var inStockOrderRes = jsonDecode(inStockMapOrder);
+            if (inStockOrderRes.length>0) {
+              Map<String, dynamic> submitMap = Map();
+              submitMap = {
+                "formid": "PRD_INSTOCK",
+                "data": {
+                  'Ids': inStockOrderRes[0][0]
+                }
+              };
+              var submitData = await SubmitEntity.submit(submitMap);
+              await SubmitEntity.audit(submitMap);
+              var resSubmit = jsonDecode(submitData);
+              if (resSubmit['Result']['ResponseStatus']['IsSuccess']) {
+                ToastUtil.showInfo('提交入库成功');
+              }
+            }
             /*this.handlerStatus();*/
             setState(() {
               this.hobby = [];
@@ -1807,7 +1860,7 @@ class _WarehousingDetailState extends State<WarehousingDetail> {
       Map<String, dynamic> dataMap = Map();
       dataMap['data'] = inOrderMap;
       Map<String, dynamic> orderMap = Map();
-      orderMap['NeedUpDataFields'] = ['FEntity','FSerialSubEntity','FSerialNo'];
+      orderMap['NeedUpDataFields'] = ['FEntity',"FHrWorkTime","FFinishQty","FQuaQty",'FSerialSubEntity','FSerialNo'];
       orderMap['NeedReturnFields'] = ['FEntity','FSerialSubEntity','FSerialNo'];
       orderMap['IsDeleteEntry'] = true;
       Map<String, dynamic> Model = Map();
@@ -1824,12 +1877,11 @@ class _WarehousingDetailState extends State<WarehousingDetail> {
             FEntityItem['FEntryID'] = resData[entity][0];
             FEntityItem['FReportType'] = {"FNumber": "HBLX01_SYS"};
             FEntityItem['FInStockType'] = '1';
-            FEntityItem['FWorkshipId'] = {"FNumber": "BM00018"};
+            /*FEntityItem['FWorkshipId'] = {"FNumber": "BM00018"};*/
             FEntityItem['FFinishQty'] =
                 this.hobby[element][3]['value']['value'];
             FEntityItem['FQuaQty'] = this.hobby[element][3]['value']['value'];
-            FEntityItem['FHrWorkTime'] =
-                this.hobby[element][8]['value']['value'];
+
             FEntityItem['FStockId'] = {
               "FNumber": this.hobby[element][4]['value']['value']
             };
@@ -1858,6 +1910,8 @@ class _WarehousingDetailState extends State<WarehousingDetail> {
               fSerialSub.add(subObj);
             }
             FEntityItem['FSerialSubEntity'] = fSerialSub;
+            FEntityItem['FHrWorkTime'] =
+            this.hobby[element][8]['value']['value'];
             FEntity.add(FEntityItem);
           }
         }
@@ -2024,13 +2078,13 @@ class _WarehousingDetailState extends State<WarehousingDetail> {
                   };
                   await auditOrder(auditMap, i, EntryIds2 != '');
                 } else {
-                  Map<String, dynamic> deleteMap = Map();
+                  /*Map<String, dynamic> deleteMap = Map();
                   deleteMap = {
                     "formid": "PRD_MORPT",
                     "data": {'Ids': resCheck['data']["Model"]["FID"]}
                   };
                   deleteOrder(deleteMap,
-                      res['Result']['ResponseStatus']['Errors'][0]['Message']);
+                      res['Result']['ResponseStatus']['Errors'][0]['Message']);*/
                 }
               }
             } else {
@@ -2117,11 +2171,26 @@ class _WarehousingDetailState extends State<WarehousingDetail> {
           );
         });
   }
+//扫码函数,最简单的那种
+  Future scan() async {
+    String cameraScanResult = await scanner.scan(); //通过扫码获取二维码中的数据
+    getScan(cameraScanResult); //将获取到的参数通过HTTP请求发送到服务器
+    print(cameraScanResult); //在控制台打印
+  }
 
+//用于验证数据(也可以在控制台直接打印，但模拟器体验不好)
+  void getScan(String scan) async {
+    _onEvent(scan);
+  }
   @override
   Widget build(BuildContext context) {
     return FlutterEasyLoading(
       child: Scaffold(
+          floatingActionButton: FloatingActionButton(
+            onPressed: scan,
+            tooltip: 'Increment',
+            child: Icon(Icons.filter_center_focus),
+          ),
           appBar: AppBar(
             title: Text("入库"),
             centerTitle: true,
