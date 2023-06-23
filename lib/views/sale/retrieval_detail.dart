@@ -22,6 +22,7 @@ import 'package:fzwm_apl/components/my_text.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:qrscan/qrscan.dart' as scanner;
+
 final String _fontFamily = Platform.isWindows ? "Roboto" : "";
 
 class RetrievalDetail extends StatefulWidget {
@@ -45,6 +46,9 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
   String FName = '';
   String FNumber = '';
   String FDate = '';
+  String FLinkMan = '';
+  String FHeadLocId = '';
+  String FLinkPhone = '';
   var customerName;
   var customerNumber;
   var isSubmit = false;
@@ -171,7 +175,7 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
     userMap['FormId'] = 'SAL_DELIVERYNOTICE';
     userMap['OrderString'] = 'FMaterialId.FNumber ASC';
     userMap['FieldKeys'] =
-        'FBillNo,FSaleOrgId.FNumber,FSaleOrgId.FName,FDate,FEntity_FEntryId,FMaterialId.FNumber,FMaterialId.FName,FMaterialId.FSpecification,FDeliveryOrgID.FNumber,FDeliveryOrgID.FName,FUnitId.FNumber,FUnitId.FName,FQty,FDeliveryDate,FRemainOutQty,FID,FCustomerID.FNumber,FCustomerID.FName,FStockID.FName,FStockID.FNumber,FLot.FNumber,FStockID.FIsOpenLocation,FMaterialId.FIsBatchManage,FTaxPrice,FEntryTaxRate,FAllAmount';
+        'FBillNo,FSaleOrgId.FNumber,FSaleOrgId.FName,FDate,FEntity_FEntryId,FMaterialId.FNumber,FMaterialId.FName,FMaterialId.FSpecification,FDeliveryOrgID.FNumber,FDeliveryOrgID.FName,FUnitId.FNumber,FUnitId.FName,FQty,FDeliveryDate,FRemainOutQty,FID,FCustomerID.FNumber,FCustomerID.FName,FStockID.FName,FStockID.FNumber,FLot.FNumber,FStockID.FIsOpenLocation,FMaterialId.FIsBatchManage,FTaxPrice,FEntryTaxRate,FAllAmount,FLinkMan,FHeadLocId.FName,FLinkPhone';
     Map<String, dynamic> dataMap = Map();
     dataMap['data'] = userMap;
     String order = await CurrencyEntity.polling(dataMap);
@@ -196,6 +200,9 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
       this.FBillNo = orderDate[0][0];
       this.cusName = orderDate[0][17];
       this.fOrgID = orderDate[0][8];
+      this.FLinkMan = orderDate[0][26];
+      this.FHeadLocId = orderDate[0][27];
+      this.FLinkPhone = orderDate[0][28];
       hobby = [];
       orderDate.forEach((value) {
         fNumber.add(value[5]);
@@ -242,10 +249,7 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
           "title": "批号",
           "name": "FLot",
           "isHide": value[22] != true,
-          "value": {
-            "label": "",
-            "value": ""
-          }
+          "value": {"label": "", "value": ""}
         });
         arr.add({
           "title": "仓位",
@@ -1335,8 +1339,16 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
       Map<String, dynamic> dataMap = Map();
       dataMap['formid'] = 'SAL_OUTSTOCK';
       Map<String, dynamic> orderMap = Map();
-      orderMap['NeedUpDataFields'] = ['FEntity','FSerialSubEntity','FSerialNo'];
-      orderMap['NeedReturnFields'] = ['FEntity','FSerialSubEntity','FSerialNo'];
+      orderMap['NeedUpDataFields'] = [
+        'FEntity',
+        'FSerialSubEntity',
+        'FSerialNo'
+      ];
+      orderMap['NeedReturnFields'] = [
+        'FEntity',
+        'FSerialSubEntity',
+        'FSerialNo'
+      ];
       orderMap['IsDeleteEntry'] = true;
       Map<String, dynamic> Model = Map();
       Model['FID'] = 0;
@@ -1621,6 +1633,7 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
           );
         });
   }
+
 //扫码函数,最简单的那种
   Future scan() async {
     String cameraScanResult = await scanner.scan(); //通过扫码获取二维码中的数据
@@ -1632,6 +1645,7 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
   void getScan(String scan) async {
     _onEvent(scan);
   }
+
   @override
   Widget build(BuildContext context) {
     return FlutterEasyLoading(
@@ -1683,7 +1697,7 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
                       ],
                     ),
                   ),
-                  _dateItem('日期：', DateMode.YMD),
+                  /* _dateItem('日期：', DateMode.YMD),*/
                   Visibility(
                     maintainSize: false,
                     maintainState: false,
@@ -1691,6 +1705,39 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
                     visible: !isScanWork,
                     child: _item('客户:', this.customerList, this.customerName,
                         'customer'),
+                  ),
+                  Column(
+                    children: [
+                      Container(
+                        color: Colors.white,
+                        child: ListTile(
+                          title: Text("收件人：$FLinkMan"),
+                        ),
+                      ),
+                      divider,
+                    ],
+                  ),
+                  Column(
+                    children: [
+                      Container(
+                        color: Colors.white,
+                        child: ListTile(
+                          title: Text("收件电话：$FLinkPhone"),
+                        ),
+                      ),
+                      divider,
+                    ],
+                  ),
+                  Column(
+                    children: [
+                      Container(
+                        color: Colors.white,
+                        child: ListTile(
+                          title: Text("收件地址：$FHeadLocId"),
+                        ),
+                      ),
+                      divider,
+                    ],
                   ),
                   Column(
                     children: [

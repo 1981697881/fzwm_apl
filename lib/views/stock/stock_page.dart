@@ -45,7 +45,7 @@ class _StockPageState extends State<StockPage> {
           .listen(_onEvent, onError: _onError);
     }
     EasyLoading.dismiss();
-    /*_onEvent("68051080058-20230612-202306120006");*/
+    //_onEvent("247230329291267");
   }
 
   @override
@@ -161,21 +161,43 @@ class _StockPageState extends State<StockPage> {
           ToastUtil.showInfo('条码不存在');
         }
       }else{
-        Map<String, dynamic> barcodeMap = Map();
-        barcodeMap['FilterString'] = "FBarCodeEn='" + event + "'";
-        barcodeMap['FormId'] = 'QDEP_Cust_BarCodeList';
-        barcodeMap['FieldKeys'] =
-        'FID,FInQtyTotal,FOutQtyTotal,FEntity_FEntryId,FRemainQty,FBarCodeQty,FStockID.FName,FStockID.FNumber,FMATERIALID.FNUMBER,FOwnerID.FNumber,FBarCode,FBatchNo';
-        Map<String, dynamic> dataMap = Map();
-        dataMap['data'] = barcodeMap;
-        String order = await CurrencyEntity.polling(dataMap);
-        var barcodeData = jsonDecode(order);
-        if (barcodeData.length > 0) {
-          keyWord = barcodeData[0][8];
-          this.controller.text = barcodeData[0][8];
-          await this.getOrderList(barcodeData[0][8],barcodeData[0][11]);
-        } else {
-          ToastUtil.showInfo('条码不在条码清单中');
+        if(event.length>15){
+          Map<String, dynamic> barcodeMap = Map();
+          barcodeMap['FilterString'] = "FBarCodeEn='" + event + "'";
+          barcodeMap['FormId'] = 'QDEP_Cust_BarCodeList';
+          barcodeMap['FieldKeys'] =
+          'FID,FInQtyTotal,FOutQtyTotal,FEntity_FEntryId,FRemainQty,FBarCodeQty,FStockID.FName,FStockID.FNumber,FMATERIALID.FNUMBER,FOwnerID.FNumber,FBarCode,FBatchNo';
+          Map<String, dynamic> dataMap = Map();
+          dataMap['data'] = barcodeMap;
+          String order = await CurrencyEntity.polling(dataMap);
+          var barcodeData = jsonDecode(order);
+          if (barcodeData.length > 0) {
+            keyWord = barcodeData[0][8];
+            this.controller.text = barcodeData[0][8];
+            await this.getOrderList(barcodeData[0][8],barcodeData[0][11]);
+          } else {
+            ToastUtil.showInfo('条码不在条码清单中');
+          }
+        }else{
+          Map<String, dynamic> userMap = Map();
+          SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+          var menuData = sharedPreferences.getString('MenuPermissions');
+          var deptData = jsonDecode(menuData)[0];
+          userMap['FilterString'] = "F_UYEP_GYSTM='"+event.substring(0,3)+"' and FForbidStatus = 'A' and FUseOrgId.FNumber = '"+deptData[1]+"'";
+          userMap['FormId'] = 'BD_MATERIAL';
+          userMap['FieldKeys'] =
+          'FMATERIALID,FName,FNumber,FSpecification,FBaseUnitId.FName,FBaseUnitId.FNumber,FIsBatchManage';/*,SubHeadEntity1.FStoreUnitID.FNumber*/
+          Map<String, dynamic> dataMap = Map();
+          dataMap['data'] = userMap;
+          String order = await CurrencyEntity.polling(dataMap);
+          var barcodeData = jsonDecode(order);
+          if (barcodeData.length > 0) {
+            keyWord = barcodeData[0][2];
+            this.controller.text = barcodeData[0][2];
+            await this.getOrderList(barcodeData[0][2],"");
+          } else {
+            ToastUtil.showInfo('条码不存在');
+          }
         }
       }
     } else {
@@ -185,7 +207,6 @@ class _StockPageState extends State<StockPage> {
       await this.getOrderList(_code,"");
       print("ChannelPage: $event");
     }
-    EasyLoading.show(status: 'loading...');
   }
   void _onError(Object error) {
     setState(() {

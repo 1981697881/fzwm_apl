@@ -126,6 +126,7 @@ class _BindSNPageState extends State<BindSNPage> {
       "-",
       dd,
     ]);
+    /*_onEvent("247230329291267");*/
    /* _onEvent("34TI4lY5kQMeeeRftiNVZbNeM4@GyjUf9huSIkwn@km8QDmVaYtheQ==");
     Future.delayed(Duration(milliseconds: 5000), () {
       _onEvent(
@@ -625,159 +626,44 @@ class _BindSNPageState extends State<BindSNPage> {
           ToastUtil.showInfo('条码不存在');
         }
       }else{
-        Map<String, dynamic> barcodeMap = Map();
-        barcodeMap['FilterString'] = "FBarCodeEn='" + event + "'";
-        barcodeMap['FormId'] = 'QDEP_Cust_BarCodeList';
-        barcodeMap['FieldKeys'] =
-        'FID,FMATERIALID.FNUMBER,FBarCode,FSN,FSrcBillNo,FMaterialName,FMaterialSpec,FBatchNo';
-        Map<String, dynamic> dataMap = Map();
-        dataMap['data'] = barcodeMap;
-        String order = await CurrencyEntity.polling(dataMap);
-        var barcodeData = jsonDecode(order);
-        if (barcodeData.length > 0) {
-          if (barcodeData[0][4][0] == "W") {
-            if (this.FNumber != "") {
-              Map<String, dynamic> snMapT = Map();
-              snMapT['FilterString'] =
-                  "FEntryBarcodeEn='" + event + "' and FDocumentStatus in ('A','D')";
-              snMapT['FormId'] = 'QDEP_PDA_SNBind';
-              snMapT['FieldKeys'] =
-              'FID,FBillNo,FDocumentStatus,FBindDate,FMATERIALID.FNUMBER,FMaterialName,FMaterialSpec,FMOBillNo,FEntity_FEntryId,FEntryBindDate,FEntryMoBillNo,FBindQty,FEntryMaterialID.FNUMBER,FEntryMaterialName,FEntryMaterialSpec,FEntryBatchNo,FEntrySN,FEntryBarcodeEn';
-              Map<String, dynamic> datasnMapT = Map();
-              datasnMapT['data'] = snMapT;
-              String orderSnT = await CurrencyEntity.polling(datasnMapT);
-              var snDataT = jsonDecode(orderSnT);
-              if (snDataT.length > 0) {
-                Map<String, dynamic> snMap = Map();
-                snMap['FilterString'] =
-                    "FBillNo='" + snDataT[0][1] + "' and FDocumentStatus in ('A','D')";
-                snMap['FormId'] = 'QDEP_PDA_SNBind';
-                snMap['FieldKeys'] =
+        if(event.length>15){
+          Map<String, dynamic> barcodeMap = Map();
+          barcodeMap['FilterString'] = "FBarCodeEn='" + event + "'";
+          barcodeMap['FormId'] = 'QDEP_Cust_BarCodeList';
+          barcodeMap['FieldKeys'] =
+          'FID,FMATERIALID.FNUMBER,FBarCode,FSN,FSrcBillNo,FMaterialName,FMaterialSpec,FBatchNo';
+          Map<String, dynamic> dataMap = Map();
+          dataMap['data'] = barcodeMap;
+          String order = await CurrencyEntity.polling(dataMap);
+          var barcodeData = jsonDecode(order);
+          if (barcodeData.length > 0) {
+            if (barcodeData[0][4][0] == "W") {
+              if (this.FNumber != "") {
+                Map<String, dynamic> snMapT = Map();
+                snMapT['FilterString'] =
+                    "FEntryBarcodeEn='" + event + "' and FDocumentStatus in ('A','D')";
+                snMapT['FormId'] = 'QDEP_PDA_SNBind';
+                snMapT['FieldKeys'] =
                 'FID,FBillNo,FDocumentStatus,FBindDate,FMATERIALID.FNUMBER,FMaterialName,FMaterialSpec,FMOBillNo,FEntity_FEntryId,FEntryBindDate,FEntryMoBillNo,FBindQty,FEntryMaterialID.FNUMBER,FEntryMaterialName,FEntryMaterialSpec,FEntryBatchNo,FEntrySN,FEntryBarcodeEn';
-                Map<String, dynamic> dataSnMap = Map();
-                dataSnMap['data'] = snMap;
-                String orderSn = await CurrencyEntity.polling(dataSnMap);
-                var snData = jsonDecode(orderSn);
-                if (snData.length > 0 ) {
-                  var number = 0;
-                  for (var snItem in snData) {
-                    for (var element in hobby) {
-                        if (element[0]['value']['barcode'].indexOf(snItem[17]) != -1) {
-                          ToastUtil.showInfo('某一行数据已存在，将不读取该行');
-                          number++;
-                          break;
-                        }
-                    }
-                  }
-                  if (number == 0) {
-                    _showInventoryDialog(snData);
-                  }
-                }
-              } else {
-                var number = 0;
-                for (var element in hobby) {
-                    if (element[0]['value']['barcode'].indexOf(event) != -1) {
-                      ToastUtil.showInfo('该标签已扫描');
-                      number++;
-                      break;
-                  }
-                }
-                if (number == 0) {
-                  List arr = [];
-                  arr.add({
-                    "title": "物料名称",
-                    "name": "FMaterial",
-                    "isHide": false,
-                    "value": {
-                      "label":
-                      barcodeData[0][5] + "- (" + barcodeData[0][1] + ")",
-                      "value": barcodeData[0][1],
-                      "barcode": [event]
-                    }
-                  });
-                  arr.add({
-                    "title": "规格型号",
-                    "isHide": false,
-                    "name": "FMaterialIdFSpecification",
-                    "value": {
-                      "label": barcodeData[0][6],
-                      "value": barcodeData[0][6]
-                    }
-                  });
-                  arr.add({
-                    "title": "数量",
-                    "name": "FRealQty",
-                    "isHide": false,
-                    "value": {"label": "1", "value": "1"}
-                  });
-                  arr.add({
-                    "title": "批号",
-                    "name": "FLot",
-                    "isHide": false,
-                    "value": {
-                      "label": barcodeData[0][7],
-                      "value": barcodeData[0][7]
-                    }
-                  });
-                  arr.add({
-                    "title": "SN",
-                    "name": "SN",
-                    "isHide": false,
-                    "value": {
-                      "label": barcodeData[0][3],
-                      "value": barcodeData[0][3]
-                    }
-                  });
-                  arr.add({
-                    "title": "生产订单号",
-                    "name": "",
-                    "isHide": false,
-                    "value": {
-                      "label": barcodeData[0][4],
-                      "value": barcodeData[0][4]
-                    }
-                  });
-                  hobby.add(arr);
-                }
-                setState(() {
-                  EasyLoading.dismiss();
-                  this._getHobby();
-                });
-              }
-
-            } else {
-              Map<String, dynamic> snMapT = Map();
-              snMapT['FilterString'] =
-                  "FEntryBarcodeEn='" + event + "' and FDocumentStatus in ('A','D')";
-              snMapT['FormId'] = 'QDEP_PDA_SNBind';
-              snMapT['FieldKeys'] =
-              'FID,FBillNo,FDocumentStatus,FBindDate,FMATERIALID.FNUMBER,FMaterialName,FMaterialSpec,FMOBillNo,FEntity_FEntryId,FEntryBindDate,FEntryMoBillNo,FBindQty,FEntryMaterialID.FNUMBER,FEntryMaterialName,FEntryMaterialSpec,FEntryBatchNo,FEntrySN,FEntryBarcodeEn';
-              Map<String, dynamic> datasnMapT = Map();
-              datasnMapT['data'] = snMapT;
-              String orderSnT = await CurrencyEntity.polling(datasnMapT);
-              var snDataT = jsonDecode(orderSnT);
-              if (snDataT.length > 0) {
-                Map<String, dynamic> snMap = Map();
-                snMap['FilterString'] =
-                    "FBillNo='" + snDataT[0][1] + "' and FDocumentStatus in ('A','D')";
-                snMap['FormId'] = 'QDEP_PDA_SNBind';
-                snMap['FieldKeys'] =
-                'FID,FBillNo,FDocumentStatus,FBindDate,FMATERIALID.FNUMBER,FMaterialName,FMaterialSpec,FMOBillNo,FEntity_FEntryId,FEntryBindDate,FEntryMoBillNo,FBindQty,FEntryMaterialID.FNUMBER,FEntryMaterialName,FEntryMaterialSpec,FEntryBatchNo,FEntrySN,FEntryBarcodeEn';
-                Map<String, dynamic> dataSnMap = Map();
-                dataSnMap['data'] = snMap;
-                String orderSn = await CurrencyEntity.polling(dataSnMap);
-                var snData = jsonDecode(orderSn);
-                if (snData.length > 0) {
-                  this.fBillNo = snData[0][1];
-                  this.FNumber = snData[0][4];
-                  this.FName = snData[0][5];
-                  this.FPcs = snData[0][4];
-                  this.FSn = snData[0][3];
-                  this.FID = snData[0][0];
-                  var number = 0;
-                  for (var snItem in snData) {
-                    for (var element in hobby) {
-                      if (element[0]['value']['value'] == snItem[12]) {
+                Map<String, dynamic> datasnMapT = Map();
+                datasnMapT['data'] = snMapT;
+                String orderSnT = await CurrencyEntity.polling(datasnMapT);
+                var snDataT = jsonDecode(orderSnT);
+                if (snDataT.length > 0) {
+                  Map<String, dynamic> snMap = Map();
+                  snMap['FilterString'] =
+                      "FBillNo='" + snDataT[0][1] + "' and FDocumentStatus in ('A','D')";
+                  snMap['FormId'] = 'QDEP_PDA_SNBind';
+                  snMap['FieldKeys'] =
+                  'FID,FBillNo,FDocumentStatus,FBindDate,FMATERIALID.FNUMBER,FMaterialName,FMaterialSpec,FMOBillNo,FEntity_FEntryId,FEntryBindDate,FEntryMoBillNo,FBindQty,FEntryMaterialID.FNUMBER,FEntryMaterialName,FEntryMaterialSpec,FEntryBatchNo,FEntrySN,FEntryBarcodeEn';
+                  Map<String, dynamic> dataSnMap = Map();
+                  dataSnMap['data'] = snMap;
+                  String orderSn = await CurrencyEntity.polling(dataSnMap);
+                  var snData = jsonDecode(orderSn);
+                  if (snData.length > 0 ) {
+                    var number = 0;
+                    for (var snItem in snData) {
+                      for (var element in hobby) {
                         if (element[0]['value']['barcode'].indexOf(snItem[17]) != -1) {
                           ToastUtil.showInfo('某一行数据已存在，将不读取该行');
                           number++;
@@ -785,140 +671,442 @@ class _BindSNPageState extends State<BindSNPage> {
                         }
                       }
                     }
+                    if (number == 0) {
+                      _showInventoryDialog(snData);
+                    }
+                  }
+                } else {
+                  var number = 0;
+                  for (var element in hobby) {
+                    if (element[0]['value']['barcode'].indexOf(event) != -1) {
+                      ToastUtil.showInfo('该标签已扫描');
+                      number++;
+                      break;
+                    }
                   }
                   if (number == 0) {
-                    snData.forEach((value) {
-                      List arr = [];
-                      arr.add({
-                        "title": "物料名称",
-                        "name": "FMaterial",
-                        "isHide": false,
-                        "value": {
-                          "label": value[13] + "- (" + value[12] + ")",
-                          "value": value[12],
-                          "barcode": [value[17]]
-                        }
-                      });
-                      arr.add({
-                        "title": "规格型号",
-                        "isHide": false,
-                        "name": "FMaterialIdFSpecification",
-                        "value": {"label": value[14], "value": value[14]}
-                      });
-                      arr.add({
-                        "title": "数量",
-                        "name": "FRealQty",
-                        "isHide": false,
-                        "value": {"label": "1", "value": "1"}
-                      });
-                      arr.add({
-                        "title": "批号",
-                        "name": "FLot",
-                        "isHide": false,
-                        "value": {"label": value[15], "value": value[15]}
-                      });
-                      arr.add({
-                        "title": "SN",
-                        "name": "SN",
-                        "isHide": false,
-                        "value": {"label": value[16], "value": value[16]}
-                      });
-                      arr.add({
-                        "title": "生产订单号",
-                        "name": "",
-                        "isHide": false,
-                        "value": {"label": value[10], "value": value[10]}
-                      });
-                      hobby.add(arr);
+                    List arr = [];
+                    arr.add({
+                      "title": "物料名称",
+                      "name": "FMaterial",
+                      "isHide": false,
+                      "value": {
+                        "label":
+                        barcodeData[0][5] + "- (" + barcodeData[0][1] + ")",
+                        "value": barcodeData[0][1],
+                        "barcode": [event]
+                      }
                     });
+                    arr.add({
+                      "title": "规格型号",
+                      "isHide": false,
+                      "name": "FMaterialIdFSpecification",
+                      "value": {
+                        "label": barcodeData[0][6],
+                        "value": barcodeData[0][6]
+                      }
+                    });
+                    arr.add({
+                      "title": "数量",
+                      "name": "FRealQty",
+                      "isHide": false,
+                      "value": {"label": "1", "value": "1"}
+                    });
+                    arr.add({
+                      "title": "批号",
+                      "name": "FLot",
+                      "isHide": false,
+                      "value": {
+                        "label": barcodeData[0][7],
+                        "value": barcodeData[0][7]
+                      }
+                    });
+                    arr.add({
+                      "title": "SN",
+                      "name": "SN",
+                      "isHide": false,
+                      "value": {
+                        "label": barcodeData[0][3],
+                        "value": barcodeData[0][3]
+                      }
+                    });
+                    arr.add({
+                      "title": "生产订单号",
+                      "name": "",
+                      "isHide": false,
+                      "value": {
+                        "label": barcodeData[0][4],
+                        "value": barcodeData[0][4]
+                      }
+                    });
+                    hobby.add(arr);
                   }
                   setState(() {
                     EasyLoading.dismiss();
                     this._getHobby();
                   });
                 }
-              }else {
-                var number = 0;
-                for (var element in hobby) {
+              } else {
+                Map<String, dynamic> snMapT = Map();
+                snMapT['FilterString'] =
+                    "FEntryBarcodeEn='" + event + "' and FDocumentStatus in ('A','D')";
+                snMapT['FormId'] = 'QDEP_PDA_SNBind';
+                snMapT['FieldKeys'] =
+                'FID,FBillNo,FDocumentStatus,FBindDate,FMATERIALID.FNUMBER,FMaterialName,FMaterialSpec,FMOBillNo,FEntity_FEntryId,FEntryBindDate,FEntryMoBillNo,FBindQty,FEntryMaterialID.FNUMBER,FEntryMaterialName,FEntryMaterialSpec,FEntryBatchNo,FEntrySN,FEntryBarcodeEn';
+                Map<String, dynamic> datasnMapT = Map();
+                datasnMapT['data'] = snMapT;
+                String orderSnT = await CurrencyEntity.polling(datasnMapT);
+                var snDataT = jsonDecode(orderSnT);
+                if (snDataT.length > 0) {
+                  Map<String, dynamic> snMap = Map();
+                  snMap['FilterString'] =
+                      "FBillNo='" + snDataT[0][1] + "' and FDocumentStatus in ('A','D')";
+                  snMap['FormId'] = 'QDEP_PDA_SNBind';
+                  snMap['FieldKeys'] =
+                  'FID,FBillNo,FDocumentStatus,FBindDate,FMATERIALID.FNUMBER,FMaterialName,FMaterialSpec,FMOBillNo,FEntity_FEntryId,FEntryBindDate,FEntryMoBillNo,FBindQty,FEntryMaterialID.FNUMBER,FEntryMaterialName,FEntryMaterialSpec,FEntryBatchNo,FEntrySN,FEntryBarcodeEn';
+                  Map<String, dynamic> dataSnMap = Map();
+                  dataSnMap['data'] = snMap;
+                  String orderSn = await CurrencyEntity.polling(dataSnMap);
+                  var snData = jsonDecode(orderSn);
+                  if (snData.length > 0) {
+                    this.fBillNo = snData[0][1];
+                    this.FNumber = snData[0][4];
+                    this.FName = snData[0][5];
+                    this.FPcs = snData[0][4];
+                    this.FSn = snData[0][3];
+                    this.FID = snData[0][0];
+                    var number = 0;
+                    for (var snItem in snData) {
+                      for (var element in hobby) {
+                        if (element[0]['value']['value'] == snItem[12]) {
+                          if (element[0]['value']['barcode'].indexOf(snItem[17]) != -1) {
+                            ToastUtil.showInfo('某一行数据已存在，将不读取该行');
+                            number++;
+                            break;
+                          }
+                        }
+                      }
+                    }
+                    if (number == 0) {
+                      snData.forEach((value) {
+                        List arr = [];
+                        arr.add({
+                          "title": "物料名称",
+                          "name": "FMaterial",
+                          "isHide": false,
+                          "value": {
+                            "label": value[13] + "- (" + value[12] + ")",
+                            "value": value[12],
+                            "barcode": [value[17]]
+                          }
+                        });
+                        arr.add({
+                          "title": "规格型号",
+                          "isHide": false,
+                          "name": "FMaterialIdFSpecification",
+                          "value": {"label": value[14], "value": value[14]}
+                        });
+                        arr.add({
+                          "title": "数量",
+                          "name": "FRealQty",
+                          "isHide": false,
+                          "value": {"label": "1", "value": "1"}
+                        });
+                        arr.add({
+                          "title": "批号",
+                          "name": "FLot",
+                          "isHide": false,
+                          "value": {"label": value[15], "value": value[15]}
+                        });
+                        arr.add({
+                          "title": "SN",
+                          "name": "SN",
+                          "isHide": false,
+                          "value": {"label": value[16], "value": value[16]}
+                        });
+                        arr.add({
+                          "title": "生产订单号",
+                          "name": "",
+                          "isHide": false,
+                          "value": {"label": value[10], "value": value[10]}
+                        });
+                        hobby.add(arr);
+                      });
+                    }
+                    setState(() {
+                      EasyLoading.dismiss();
+                      this._getHobby();
+                    });
+                  }
+                }else {
+                  var number = 0;
+                  for (var element in hobby) {
                     if (element[0]['value']['barcode'].indexOf(event) != -1) {
                       ToastUtil.showInfo('该标签已扫描');
                       number++;
                       break;
+                    }
+                  }
+                  if (number == 0) {
+                    this.FNumber = barcodeData[0][1];
+                    this.FName = barcodeData[0][5];
+                    this.FPcs = barcodeData[0][6];
+                    this.FSn = barcodeData[0][7];
+                    this.FID = 0;
+                    List arr = [];
+                    arr.add({
+                      "title": "物料名称",
+                      "name": "FMaterial",
+                      "isHide": false,
+                      "value": {
+                        "label":
+                        barcodeData[0][5] + "- (" + barcodeData[0][1] + ")",
+                        "value": barcodeData[0][1],
+                        "barcode": [event]
+                      }
+                    });
+                    arr.add({
+                      "title": "规格型号",
+                      "isHide": false,
+                      "name": "FMaterialIdFSpecification",
+                      "value": {
+                        "label": barcodeData[0][6],
+                        "value": barcodeData[0][6]
+                      }
+                    });
+                    arr.add({
+                      "title": "数量",
+                      "name": "FRealQty",
+                      "isHide": false,
+                      "value": {"label": "1", "value": "1"}
+                    });
+                    arr.add({
+                      "title": "批号",
+                      "name": "FLot",
+                      "isHide": false,
+                      "value": {
+                        "label": barcodeData[0][7],
+                        "value": barcodeData[0][7]
+                      }
+                    });
+                    arr.add({
+                      "title": "SN",
+                      "name": "SN",
+                      "isHide": false,
+                      "value": {
+                        "label": barcodeData[0][3],
+                        "value": barcodeData[0][3]
+                      }
+                    });
+                    arr.add({
+                      "title": "生产订单号",
+                      "name": "",
+                      "isHide": false,
+                      "value": {
+                        "label": barcodeData[0][4],
+                        "value": barcodeData[0][4]
+                      }
+                    });
+                    hobby.add(arr);
+                  }
+                  setState(() {
+                    this._getHobby();
+                    EasyLoading.dismiss();
+                  });
+                }
+              }
+            } else {
+              ToastUtil.showInfo('请扫描半成品或成品');
+            }
+          } else {
+            ToastUtil.showInfo('条码不在条码清单中');
+          }
+        }else{
+          Map<String, dynamic> userMap = Map();
+          SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+          var menuData = sharedPreferences.getString('MenuPermissions');
+          var deptData = jsonDecode(menuData)[0];
+          userMap['FilterString'] = "F_UYEP_GYSTM='"+event.substring(0,3)+"' and FForbidStatus = 'A' and FUseOrgId.FNumber = '"+deptData[1]+"'";
+          userMap['FormId'] = 'BD_MATERIAL';
+          userMap['FieldKeys'] =
+          'FMATERIALID,FName,FNumber,FSpecification,FBaseUnitId.FName,FBaseUnitId.FNumber,FIsBatchManage';/*,SubHeadEntity1.FStoreUnitID.FNumber*/
+          Map<String, dynamic> dataMap = Map();
+          dataMap['data'] = userMap;
+          String order = await CurrencyEntity.polling(dataMap);
+          var barcodeData = jsonDecode(order);
+          if (barcodeData.length > 0) {
+            Map<String, dynamic> snMapT = Map();
+            snMapT['FilterString'] =
+                "FEntryBarcodeEn='" + event + "' and FDocumentStatus in ('A','D')";
+            snMapT['FormId'] = 'QDEP_PDA_SNBind';
+            snMapT['FieldKeys'] =
+            'FID,FBillNo,FDocumentStatus,FBindDate,FMATERIALID.FNUMBER,FMaterialName,FMaterialSpec,FMOBillNo,FEntity_FEntryId,FEntryBindDate,FEntryMoBillNo,FBindQty,FEntryMaterialID.FNUMBER,FEntryMaterialName,FEntryMaterialSpec,FEntryBatchNo,FEntrySN,FEntryBarcodeEn';
+            Map<String, dynamic> datasnMapT = Map();
+            datasnMapT['data'] = snMapT;
+            String orderSnT = await CurrencyEntity.polling(datasnMapT);
+            var snDataT = jsonDecode(orderSnT);
+            if (snDataT.length > 0) {
+              Map<String, dynamic> snMap = Map();
+              snMap['FilterString'] =
+                  "FBillNo='" + snDataT[0][1] + "' and FDocumentStatus in ('A','D')";
+              snMap['FormId'] = 'QDEP_PDA_SNBind';
+              snMap['FieldKeys'] =
+              'FID,FBillNo,FDocumentStatus,FBindDate,FMATERIALID.FNUMBER,FMaterialName,FMaterialSpec,FMOBillNo,FEntity_FEntryId,FEntryBindDate,FEntryMoBillNo,FBindQty,FEntryMaterialID.FNUMBER,FEntryMaterialName,FEntryMaterialSpec,FEntryBatchNo,FEntrySN,FEntryBarcodeEn';
+              Map<String, dynamic> dataSnMap = Map();
+              dataSnMap['data'] = snMap;
+              String orderSn = await CurrencyEntity.polling(dataSnMap);
+              var snData = jsonDecode(orderSn);
+              if (snData.length > 0) {
+                this.fBillNo = snData[0][1];
+                this.FNumber = snData[0][4];
+                this.FName = snData[0][5];
+                this.FPcs = snData[0][4];
+                this.FSn = snData[0][3];
+                this.FID = snData[0][0];
+                var number = 0;
+                for (var snItem in snData) {
+                  for (var element in hobby) {
+                    if (element[0]['value']['barcode'].indexOf(snItem[17]) != -1) {
+                      ToastUtil.showInfo('某一行数据已存在，将不读取该行');
+                      number++;
+                      break;
+                    }
                   }
                 }
                 if (number == 0) {
-                  this.FNumber = barcodeData[0][1];
-                  this.FName = barcodeData[0][5];
-                  this.FPcs = barcodeData[0][6];
-                  this.FSn = barcodeData[0][7];
-                  this.FID = 0;
-                  List arr = [];
-                  arr.add({
-                    "title": "物料名称",
-                    "name": "FMaterial",
-                    "isHide": false,
-                    "value": {
-                      "label":
-                      barcodeData[0][5] + "- (" + barcodeData[0][1] + ")",
-                      "value": barcodeData[0][1],
-                      "barcode": [event]
-                    }
+                  snData.forEach((value) {
+                    List arr = [];
+                    arr.add({
+                      "title": "物料名称",
+                      "name": "FMaterial",
+                      "isHide": false,
+                      "value": {
+                        "label": value[13] + "- (" + value[12] + ")",
+                        "value": value[12],
+                        "barcode": [value[17]]
+                      }
+                    });
+                    arr.add({
+                      "title": "规格型号",
+                      "isHide": false,
+                      "name": "FMaterialIdFSpecification",
+                      "value": {"label": value[14], "value": value[14]}
+                    });
+                    arr.add({
+                      "title": "数量",
+                      "name": "FRealQty",
+                      "isHide": false,
+                      "value": {"label": "1", "value": "1"}
+                    });
+                    arr.add({
+                      "title": "批号",
+                      "name": "FLot",
+                      "isHide": false,
+                      "value": {"label": value[15], "value": value[15]}
+                    });
+                    arr.add({
+                      "title": "SN",
+                      "name": "SN",
+                      "isHide": false,
+                      "value": {"label": value[16], "value": value[16]}
+                    });
+                    arr.add({
+                      "title": "生产订单号",
+                      "name": "",
+                      "isHide": false,
+                      "value": {"label": value[10], "value": value[10]}
+                    });
+                    hobby.add(arr);
                   });
-                  arr.add({
-                    "title": "规格型号",
-                    "isHide": false,
-                    "name": "FMaterialIdFSpecification",
-                    "value": {
-                      "label": barcodeData[0][6],
-                      "value": barcodeData[0][6]
-                    }
-                  });
-                  arr.add({
-                    "title": "数量",
-                    "name": "FRealQty",
-                    "isHide": false,
-                    "value": {"label": "1", "value": "1"}
-                  });
-                  arr.add({
-                    "title": "批号",
-                    "name": "FLot",
-                    "isHide": false,
-                    "value": {
-                      "label": barcodeData[0][7],
-                      "value": barcodeData[0][7]
-                    }
-                  });
-                  arr.add({
-                    "title": "SN",
-                    "name": "SN",
-                    "isHide": false,
-                    "value": {
-                      "label": barcodeData[0][3],
-                      "value": barcodeData[0][3]
-                    }
-                  });
-                  arr.add({
-                    "title": "生产订单号",
-                    "name": "",
-                    "isHide": false,
-                    "value": {
-                      "label": barcodeData[0][4],
-                      "value": barcodeData[0][4]
-                    }
-                  });
-                  hobby.add(arr);
                 }
                 setState(() {
-                  this._getHobby();
                   EasyLoading.dismiss();
+                  this._getHobby();
                 });
               }
+            }else {
+              if(this.FNumber == ""){
+                ToastUtil.showInfo('请先扫描半成品或成品');
+                return;
+              }
+              var number = 0;
+              for (var element in hobby) {
+                if (element[0]['value']['barcode'].indexOf(event) != -1) {
+                  ToastUtil.showInfo('该标签已扫描');
+                  number++;
+                  break;
+                }
+              }
+              if (number == 0) {
+                /*this.FNumber = barcodeData[0][2];
+              this.FName = barcodeData[0][1];
+              this.FPcs = barcodeData[0][3];
+              this.FSn = event.split('-')[2];
+              this.FID = 0;*/
+                List arr = [];
+                arr.add({
+                  "title": "物料名称",
+                  "name": "FMaterial",
+                  "isHide": false,
+                  "value": {
+                    "label":
+                    barcodeData[0][1] + "- (" + barcodeData[0][2] + ")",
+                    "value": barcodeData[0][2],
+                    "barcode": [event]
+                  }
+                });
+                arr.add({
+                  "title": "规格型号",
+                  "isHide": false,
+                  "name": "FMaterialIdFSpecification",
+                  "value": {
+                    "label": barcodeData[0][3],
+                    "value": barcodeData[0][3]
+                  }
+                });
+                arr.add({
+                  "title": "数量",
+                  "name": "FRealQty",
+                  "isHide": false,
+                  "value": {"label": "1", "value": "1"}
+                });
+                arr.add({
+                  "title": "批号",
+                  "name": "FLot",
+                  "isHide": false,
+                  "value": {
+                    "label": event.substring(3,9),
+                    "value": event.substring(3,9)
+                  }
+                });
+                arr.add({
+                  "title": "SN",
+                  "name": "SN",
+                  "isHide": false,
+                  "value": {
+                    "label": event.substring(9,15),
+                    "value": event.substring(9,15)
+                  }
+                });
+                arr.add({
+                  "title": "生产订单号",
+                  "name": "",
+                  "isHide": false,
+                  "value": {
+                    "label": "",
+                    "value": ""
+                  }
+                });
+                hobby.add(arr);
+              }
+              setState(() {
+                this._getHobby();
+                EasyLoading.dismiss();
+              });
             }
           } else {
-            ToastUtil.showInfo('请扫描半成品或成品');
+            ToastUtil.showInfo('条码不存在');
           }
-        } else {
-          ToastUtil.showInfo('条码不在条码清单中');
         }
       }
     } else {

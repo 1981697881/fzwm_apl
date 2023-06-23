@@ -105,7 +105,7 @@ class _RetrievalPageState extends State<RetrievalPage> {
     userMap['FormId'] = 'SAL_DELIVERYNOTICE';
     userMap['OrderString'] = 'FBillNo ASC,FMaterialId.FNumber ASC';
     userMap['FieldKeys'] =
-        'FBillNo,FSaleOrgId.FNumber,FSaleOrgId.FName,FDate,FEntity_FEntryId,FMaterialId.FNumber,FMaterialId.FName,FMaterialId.FSpecification,FDeliveryOrgID.FNumber,FDeliveryOrgID.FName,FUnitId.FNumber,FUnitId.FName,FQty,FDeliveryDate,FRemainOutQty,FID,,FCustomerID.FNumber,FCustomerID.FName';
+        'FBillNo,FSaleOrgId.FNumber,FSaleOrgId.FName,FDate,FEntity_FEntryId,FMaterialId.FNumber,FMaterialId.FName,FMaterialId.FSpecification,FDeliveryOrgID.FNumber,FDeliveryOrgID.FName,FUnitId.FNumber,FUnitId.FName,FQty,FDeliveryDate,FRemainOutQty,FID,,FCustomerID.FNumber,FCustomerID.FName,FLinkMan,FHeadLocId.FName,FLinkPhone';
     Map<String, dynamic> dataMap = Map();
     dataMap['data'] = userMap;
     String order = await CurrencyEntity.polling(dataMap);
@@ -122,12 +122,12 @@ class _RetrievalPageState extends State<RetrievalPage> {
           "isHide": false,
           "value": {"label": value[0], "value": value[0]}
         });
-        arr.add({
+        /*arr.add({
           "title": "销售组织",
           "name": "FSaleOrgId",
           "isHide": false,
           "value": {"label": value[2], "value": value[1]}
-        });
+        });*/
         arr.add({
           "title": "客户",
           "name": "FSaleOrgId",
@@ -152,29 +152,47 @@ class _RetrievalPageState extends State<RetrievalPage> {
           "isHide": false,
           "value": {"label": value[6], "value": value[6]}
         });
-        arr.add({
+        /*arr.add({
           "title": "单位名称",
           "name": "FUnitId",
           "isHide": false,
           "value": {"label": value[11], "value": value[10]}
-        });
+        });*/
         arr.add({
           "title": "数量",
           "name": "FBaseQty",
           "isHide": false,
           "value": {"label": value[12], "value": value[12]}
         });
-        arr.add({
+        /*arr.add({
           "title": "要货日期",
           "name": "FDeliveryDate",
           "isHide": false,
           "value": {"label": value[13], "value": value[13]}
-        });
+        });*/
         arr.add({
           "title": "未出库数量",
           "name": "FRemainOutQty",
           "isHide": false,
           "value": {"label": value[14], "value": value[14]}
+        });
+        arr.add({
+          "title": "收件人",
+          "name": "FLinkMan",
+          "isHide": false,
+          "value": {"label": value[18], "value": value[18]}
+        });
+        arr.add({
+          "title": "收件电话",
+          "name": "FHeadLocId",
+          "isHide": false,
+          "value": {"label": value[20], "value": value[20]}
+        });
+        arr.add({
+          "title": "收件地址",
+          "name": "FLinkPhone",
+          "isHide": false,
+          "value": {"label": value[19], "value": value[19]}
         });
         hobby.add(arr);
       });
