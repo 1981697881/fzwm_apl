@@ -55,6 +55,7 @@ class _ReturnGoodsPageState extends State<ReturnGoodsPage> {
   }
   _initState() {
     isScan = false;
+    EasyLoading.show(status: 'loading...');
     this.getOrderList();
     /// 开启监听
     _subscription = scannerPlugin
@@ -457,6 +458,7 @@ class _ReturnGoodsPageState extends State<ReturnGoodsPage> {
                                     child: new Text('搜索',style: TextStyle(fontSize: 14.0, color: Colors.white)),
                                     onPressed: (){
                                       setState(() {
+                                        EasyLoading.show(status: 'loading...');
                                         this.keyWord = this.controller.text;
                                         this.getOrderList();
                                       });

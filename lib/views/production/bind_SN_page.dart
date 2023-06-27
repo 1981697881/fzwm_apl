@@ -41,6 +41,7 @@ class _BindSNPageState extends State<BindSNPage> {
   final _textNumber = TextEditingController();
   var checkItem;
   String FBillNo = '';
+  String FMoBillNo = '';
   String FSaleOrderNo = '';
   String FName = '';
   String FNumber = '';
@@ -366,6 +367,7 @@ class _BindSNPageState extends State<BindSNPage> {
                     this.FName = snData[0][5];
                     this.FPcs = snData[0][6];
                     this.FSn = snData[0][7];
+                    this.FMoBillNo = snData[0][7];
                     this.FID = snData[0][0];
                     var number = 0;
 
@@ -480,6 +482,7 @@ class _BindSNPageState extends State<BindSNPage> {
               this.FName = snData[0][5];
               this.FPcs = snData[0][4];
               this.FSn = snData[0][3];
+              this.FMoBillNo = snData[0][7];
               this.FID = snData[0][0];
               var number = 0;
               for (var snItem in snData) {
@@ -774,6 +777,7 @@ class _BindSNPageState extends State<BindSNPage> {
                     this.FName = snData[0][5];
                     this.FPcs = snData[0][4];
                     this.FSn = snData[0][3];
+                    this.FMoBillNo = snData[0][7];
                     this.FID = snData[0][0];
                     var number = 0;
                     for (var snItem in snData) {
@@ -852,6 +856,7 @@ class _BindSNPageState extends State<BindSNPage> {
                     this.FName = barcodeData[0][5];
                     this.FPcs = barcodeData[0][6];
                     this.FSn = barcodeData[0][7];
+                    this.FMoBillNo = barcodeData[0][4];
                     this.FID = 0;
                     List arr = [];
                     arr.add({
@@ -962,6 +967,7 @@ class _BindSNPageState extends State<BindSNPage> {
                 this.FName = snData[0][5];
                 this.FPcs = snData[0][4];
                 this.FSn = snData[0][3];
+                this.FMoBillNo = snData[0][7];
                 this.FID = snData[0][0];
                 var number = 0;
                 for (var snItem in snData) {
@@ -1114,6 +1120,8 @@ class _BindSNPageState extends State<BindSNPage> {
       this.getMaterialList("", _code, "");
       print("ChannelPage: $event");
     }
+    print(12313);
+    print(this.FMoBillNo);
   }
 
   void _onError(Object error) {
@@ -1886,13 +1894,13 @@ class _BindSNPageState extends State<BindSNPage> {
       Model['FPickOrgId'] = {"FNumber": deptData[1]};
       /* Model['FMaterialName'] = this.FName;
       Model['FMaterialSpec'] = this.FPcs;*/
-      Model['FMOBillNo'] = this.FSn;
+      Model['FMOBillNo'] = this.FMoBillNo;
       var FEntity = [];
       var hobbyIndex = 0;
       this.hobby.forEach((element) {
         Map<String, dynamic> FEntityItem = Map();
         FEntityItem['FEntryBindDate'] = FDate;
-        FEntityItem['FEntryMoBillNo'] = element[5]['value']['value'];
+        FEntityItem['FEntryMoBillNo'] = this.FMoBillNo/*element[5]['value']['value']*/;
         FEntityItem['FBindQty'] = element[2]['value']['value'];
         FEntityItem['FEntryMaterialID'] = {
           "FNUMBER": element[0]['value']['value']

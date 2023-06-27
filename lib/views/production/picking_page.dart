@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:math';
 import 'dart:ui';
 import 'package:fzwm_apl/model/currency_entity.dart';
+import 'package:fzwm_apl/model/submit_entity.dart';
 import 'package:fzwm_apl/utils/toast_util.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
@@ -57,6 +58,7 @@ class _PickingPageState extends State<PickingPage> {
   }
   _initState() {
     isScan = false;
+    EasyLoading.show(status: 'loading...');
     this.getOrderList();
     /// 开启监听
     _subscription = scannerPlugin
@@ -134,25 +136,16 @@ class _PickingPageState extends State<PickingPage> {
     hobby = [];
     if (orderDate.length > 0) {
       for (var value = 0; value < orderDate.length; value++) {
-        /* orderDate.forEach((value) async {*/
-       /* Map<String, dynamic> instockMap = Map();
-        instockMap['FilterString'] =
-        "FMoBillNo='${orderDate[value][0]}' and FDocumentStatus in ('A','B') and FMoEntrySeq='${orderDate[value][19]}'";
-        instockMap['FormId'] = 'PRD_INSTOCK';
-        instockMap['FieldKeys'] = 'FID,FDocumentStatus';
-        Map<String, dynamic> dataMap1 = Map();
-        dataMap1['data'] = instockMap;
-        String order1 = await CurrencyEntity.polling(dataMap1);
+
         Map<String, dynamic> pickmtrlMap = Map();
         pickmtrlMap['FilterString'] =
-        "FMoBillNo ='${orderDate[value][0]}' and FDocumentStatus in ('A','B') and FMoEntrySeq='${orderDate[value][19]}'";
+        "FMoBillNo ='${orderDate[value][0]}' and FDocumentStatus in ('A','B') and FMoEntrySeq='${orderDate[value][18]}'";
         pickmtrlMap['FormId'] = 'PRD_PickMtrl';
         pickmtrlMap['FieldKeys'] = 'FID,FDocumentStatus';
         Map<String, dynamic> dataMap2 = Map();
         dataMap2['data'] = pickmtrlMap;
         String order2 = await CurrencyEntity.polling(dataMap2);
-        print(order1);
-        print(order2);*/
+        print(order2);
         List arr = [];
         arr.add({
           "title": "单据编号",
@@ -205,7 +198,7 @@ class _PickingPageState extends State<PickingPage> {
         arr.add({
           "title": "生产序号",
           "name": "FProdOrder",
-          "isHide": false,
+          "isHide": true,
           "value": {
             "label": orderDate[value][1],/*orderDate[value][18]*/
             "value": orderDate[value][1]
@@ -262,7 +255,7 @@ class _PickingPageState extends State<PickingPage> {
             "value": orderDate[value][20] == null?"":orderDate[value][20],
           }
         });
-        /* arr.add({
+       /* arr.add({
           "title": "状态",
           "name": "FStatus",
           "isHide": false,
@@ -277,9 +270,9 @@ class _PickingPageState extends State<PickingPage> {
           "isHide": true,
           "value": false
         });
-        var order1Date = jsonDecode(order1);
+        var order1Date = jsonDecode(order1);*/
         var order2Date = jsonDecode(order2);
-        if (order1Date.length > 0) {
+        /*if (order1Date.length > 0) {
           arr.add({
             "title": "入库单状态",
             "name": "PRD_INSTOCK",
@@ -289,7 +282,7 @@ class _PickingPageState extends State<PickingPage> {
               "value": order1Date[0][0]
             }
           });
-        }
+        }*/
         if (order2Date.length > 0) {
           arr.add({
             "title": "领料单状态",
@@ -300,7 +293,7 @@ class _PickingPageState extends State<PickingPage> {
               "value": order2Date[0][0]
             }
           });
-        }*/
+        }
         hobby.add(arr);
       }
       /*)*/;
@@ -358,7 +351,32 @@ class _PickingPageState extends State<PickingPage> {
     setState(() {
       _code = "扫描异常";
     });
+  } //删除
+  deleteOrder(Map<String, dynamic> map, title, {var type}) async {
+    var subData = await SubmitEntity.delete(map);
+    print(subData);
+    if (subData != null) {
+      var res = jsonDecode(subData);
+      if (res != null) {
+        if (res['Result']['ResponseStatus']['IsSuccess']) {
+          if (type == 1) {
+            ToastUtil.showInfo('删除成功');
+            this.getOrderList();
+            EasyLoading.dismiss();
+          }
+        } else {
+          if (type == 1) {
+            EasyLoading.dismiss();
+            setState(() {
+              ToastUtil.errorDialog(context,
+                  res['Result']['ResponseStatus']['Errors'][0]['Message']);
+            });
+          }
+        }
+      }
+    }
   }
+
 
   List<Widget> _getHobby() {
     List<Widget> tempList = [];
@@ -366,6 +384,41 @@ class _PickingPageState extends State<PickingPage> {
       List<Widget> comList = [];
       for (int j = 0; j < this.hobby[i].length; j++) {
         if (!this.hobby[i][j]['isHide']) {
+          if (j == 14) {
+            comList.add(
+              Column(children: [
+                Container(
+                  color: Colors.white,
+                  child: ListTile(
+                      title: Text(this.hobby[i][j]["title"] +
+                          '：' +
+                          this.hobby[i][j]["value"]["label"].toString()),
+                      trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: <Widget>[
+
+                            new MaterialButton(
+                              color: Colors.red,
+                              textColor: Colors.white,
+                              child: new Text('删除'),
+                              onPressed: () {
+                                Map<String, dynamic> deleteMap = Map();
+                                deleteMap = {
+                                  "formid": this.hobby[i][j]["name"],
+                                  "data": {
+                                    'Ids': this.hobby[i][j]["value"]["value"]
+                                  }
+                                };
+                                EasyLoading.show(status: 'loading...');
+                                deleteOrder(deleteMap, '删除', type: 1);
+                              },
+                            )
+                          ])),
+                ),
+                divider,
+              ]),
+            );
+          } else {
             comList.add(
               Column(children: [
                 Container(
@@ -414,6 +467,7 @@ class _PickingPageState extends State<PickingPage> {
                 divider,
               ]),
             );
+          }
         }
       }
       tempList.add(
@@ -614,6 +668,7 @@ class _PickingPageState extends State<PickingPage> {
                                       onPressed: (){
                                         setState(() {
                                           this.keyWord = this.controller.text;
+                                          EasyLoading.show(status: 'loading...');
                                           this.getOrderList();
                                         });
                                       },

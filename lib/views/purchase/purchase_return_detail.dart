@@ -313,6 +313,7 @@ class _ReturnGoodsDetailState extends State<PurchaseReturnDetail> {
           String order = await CurrencyEntity.polling(dataMap);
           var barcodeData = jsonDecode(order);
           if (barcodeData.length > 0) {
+            if (barcodeData[0][4] > 0) {
             var msg = "";
             var orderIndex = 0;
             for (var value in orderDate) {
@@ -332,6 +333,9 @@ class _ReturnGoodsDetailState extends State<PurchaseReturnDetail> {
               print("ChannelPage: $event");
             }else{
               ToastUtil.showInfo(msg);
+            }
+            } else {
+              ToastUtil.showInfo('该条码已出库或没入库，数量为零');
             }
           } else {
             ToastUtil.showInfo('条码不在条码清单中');

@@ -317,27 +317,31 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
       String order = await CurrencyEntity.polling(dataMap);
       var barcodeData = jsonDecode(order);
       if (barcodeData.length > 0) {
-        var msg = "";
-        var orderIndex = 0;
-        for (var value in orderDate) {
-          if (value[5] == barcodeData[0][8]) {
-            msg = "";
-            if (fNumber.lastIndexOf(barcodeData[0][8]) == orderIndex) {
-              break;
+        if (barcodeData[0][4] > 0) {
+          var msg = "";
+          var orderIndex = 0;
+          for (var value in orderDate) {
+            if (value[5] == barcodeData[0][8]) {
+              msg = "";
+              if (fNumber.lastIndexOf(barcodeData[0][8]) == orderIndex) {
+                break;
+              }
+            } else {
+              msg = '条码不在单据物料中';
             }
-          } else {
-            msg = '条码不在单据物料中';
+            orderIndex++;
           }
-          orderIndex++;
-        }
-        ;
-        if (msg == "") {
-          _code = event;
-          this.getMaterialList(
-              barcodeData, barcodeData[0][10], barcodeData[0][11]);
-          print("ChannelPage: $event");
+          ;
+          if (msg == "") {
+            _code = event;
+            this.getMaterialList(
+                barcodeData, barcodeData[0][10], barcodeData[0][11]);
+            print("ChannelPage: $event");
+          } else {
+            ToastUtil.showInfo(msg);
+          }
         } else {
-          ToastUtil.showInfo(msg);
+          ToastUtil.showInfo('该条码已出库或没入库，数量为零');
         }
       } else {
         ToastUtil.showInfo('条码不在条码清单中');
@@ -1015,7 +1019,7 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
             data.forEach((element) {
               if (element == p) {
                 hobby['value']['value'] = stockListObj[elementIndex][2];
-                stock[4]['value']['hide'] = stockListObj[elementIndex][3];
+                stock[6]['value']['hide'] = stockListObj[elementIndex][3];
               }
               elementIndex++;
             });
@@ -1400,6 +1404,7 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
             "FSTOCKLOCID__FF100011": {"FNumber": element[6]['value']['value']}
           };
           FEntityItem['FRealQty'] = element[3]['value']['value'];
+          FEntityItem['FSrcBillNo'] = this.FBillNo;
           FEntityItem['FEntity_Link'] = [
             {
               "FEntity_Link_FRuleId": "DeliveryNotice-OutStock",

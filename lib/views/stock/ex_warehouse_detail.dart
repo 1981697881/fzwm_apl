@@ -309,7 +309,7 @@ class _ExWarehouseDetailState extends State<ExWarehouseDetail> {
           this.getMaterialList(barcodeData,barcodeData[0][10], barcodeData[0][11]);
           print("ChannelPage: $event");
         }else{
-          ToastUtil.showInfo('即时库存余额不足');
+          ToastUtil.showInfo('该条码已出库或没入库，数量为零');
         }
       }else{
         ToastUtil.showInfo('条码不在条码清单中');

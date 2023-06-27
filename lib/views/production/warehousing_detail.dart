@@ -1516,7 +1516,7 @@ class _WarehousingDetailState extends State<WarehousingDetail> {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     var menuData = sharedPreferences.getString('MenuPermissions');
     var deptData = jsonDecode(menuData)[0];
-    if (this.isTurnoff == "成品") {
+    /*if (this.isTurnoff == "成品") {
       if (type) {
         if (index == 1) {
           var errorMsg = "";
@@ -1539,7 +1539,7 @@ class _WarehousingDetailState extends State<WarehousingDetail> {
                   codeModel['FStockID'] = {
                     "FNUMBER": this.hobby[i][4]['value']['value']
                   };
-                  /*codeModel['FLastCheckTime'] = formatDate(DateTime.now(), [yyyy, "-", mm, "-", dd,]);*/
+                  *//*codeModel['FLastCheckTime'] = formatDate(DateTime.now(), [yyyy, "-", mm, "-", dd,]);*//*
                   Map<String, dynamic> codeFEntityItem = Map();
                   codeFEntityItem['FBillDate'] = FDate;
                   codeFEntityItem['FInQty'] = itemCode[1];
@@ -1568,7 +1568,7 @@ class _WarehousingDetailState extends State<WarehousingDetail> {
           if (errorMsg != "") {
             ToastUtil.errorDialog(context, errorMsg);
           }
-          /*this.handlerStatus();*/
+          *//*this.handlerStatus();*//*
           setState(() {
             this.hobby = [];
             this.orderDate = [];
@@ -1599,7 +1599,7 @@ class _WarehousingDetailState extends State<WarehousingDetail> {
                 codeModel['FStockID'] = {
                   "FNUMBER": this.hobby[i][4]['value']['value']
                 };
-                /*codeModel['FLastCheckTime'] = formatDate(DateTime.now(), [yyyy, "-", mm, "-", dd,]);*/
+                *//*codeModel['FLastCheckTime'] = formatDate(DateTime.now(), [yyyy, "-", mm, "-", dd,]);*//*
                 Map<String, dynamic> codeFEntityItem = Map();
                 codeFEntityItem['FBillDate'] = FDate;
                 codeFEntityItem['FInQty'] = itemCode[1];
@@ -1630,7 +1630,7 @@ class _WarehousingDetailState extends State<WarehousingDetail> {
         }
 
 
-        /*this.handlerStatus();*/
+        *//*this.handlerStatus();*//*
         setState(() {
           this.hobby = [];
           this.orderDate = [];
@@ -1640,7 +1640,7 @@ class _WarehousingDetailState extends State<WarehousingDetail> {
         ToastUtil.showInfo('提交成功');
         Navigator.of(context).pop("refresh");
       }
-    } else {
+    } else {*/
       await SubmitEntity.submit(auditMap);
       var subData = await SubmitEntity.audit(auditMap);
       var res = jsonDecode(subData);
@@ -1827,7 +1827,7 @@ class _WarehousingDetailState extends State<WarehousingDetail> {
           });*/
         }
       }
-    }
+    /*}*/
   }
 
   pushDown(val, type) async {
@@ -2060,9 +2060,6 @@ class _WarehousingDetailState extends State<WarehousingDetail> {
             var resCheck = await this.pushDown(EntryIds1, 'defective');
             var dataList = jsonEncode(resCheck);
             if (resCheck['isBool'] != false) {
-              setState(() {
-                this.isSubmit = false;
-              });
               var subData = await SubmitEntity.save(resCheck);
               var res = jsonDecode(subData);
               if (res != null) {

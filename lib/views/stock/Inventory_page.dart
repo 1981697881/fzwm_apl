@@ -420,6 +420,7 @@ class _InventoryPageState extends State<InventoryPage> {
                                       child: new Text('搜索',style: TextStyle(fontSize: 14.0, color: Colors.white)),
                                       onPressed: (){
                                         setState(() {
+                                          EasyLoading.show(status: 'loading...');
                                           this.keyWord = this.controller.text;
                                           this.getOrderList();
                                         });
