@@ -1471,7 +1471,11 @@ class _PurchaseOutSourcingDetailState extends State<PurchaseOutSourcingDetail> {
               if(kingDeeCode[subj].split("-").length>2){
                 var itemCode = kingDeeCode[subj].split("-");
                 if(itemCode.length>2){
-                  subObj['FSerialNo'] = itemCode[2];
+                  if(itemCode.length > 3){
+                    subObj['FSerialNo'] = itemCode[2]+'-'+itemCode[3];
+                  }else{
+                    subObj['FSerialNo'] = itemCode[2];
+                  }
                 }
               }else{
                 subObj['FSerialNo'] = kingDeeCode[subj];
@@ -1709,7 +1713,11 @@ class _PurchaseOutSourcingDetailState extends State<PurchaseOutSourcingDetail> {
             Map<String, dynamic> subObj = Map();
             var itemCode = kingDeeCode[subj].split("-");
             if(itemCode.length>2){
-              subObj['FSerialNo'] = itemCode[2];
+              if(itemCode.length > 3){
+                    subObj['FSerialNo'] = itemCode[2]+'-'+itemCode[3];
+                  }else{
+                    subObj['FSerialNo'] = itemCode[2];
+                  }
             }
             fSerialSub.add(subObj);
           }

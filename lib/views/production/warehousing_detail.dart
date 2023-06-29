@@ -988,6 +988,7 @@ class _WarehousingDetailState extends State<WarehousingDetail> {
             });
           } else {
             setState(() {
+              this.isSubmit = false;
               hobby['value']['label'] = p;
             });
             var elementIndex = 0;
@@ -1895,6 +1896,11 @@ class _WarehousingDetailState extends State<WarehousingDetail> {
               if(kingDeeCode[subj].split("-").length>2){
                 var itemCode = kingDeeCode[subj].split("-");
                 if(itemCode.length>2){
+                  if(itemCode.length > 3){
+                    subObj['FSerialNo'] = itemCode[2]+'-'+itemCode[3];
+                  }else{
+                    subObj['FSerialNo'] = itemCode[2];
+                  }
                  /* Map<String, dynamic> serialNoMap = Map();
                   serialNoMap['FormId'] = 'PRD_MORPT';
                   serialNoMap['FilterString'] = "FSerialSubEntity.FSerialNo='"+itemCode[2]+"'";
@@ -1902,7 +1908,6 @@ class _WarehousingDetailState extends State<WarehousingDetail> {
                   'FDetailID,FSerialNo';
                   String serialNoData = await CurrencyEntity.polling({'data': serialNoMap});
                   var resSerialNoData = jsonDecode(order);*/
-                  subObj['FSerialNo'] = itemCode[2];
                 }
               }else{
                 subObj['FSerialNo'] = kingDeeCode[subj];
@@ -1967,16 +1972,18 @@ class _WarehousingDetailState extends State<WarehousingDetail> {
 
 //保存
   submitOder() async {
-    if(this.isTurnoff==null){
+    /*if(this.isTurnoff==null){
       ToastUtil.showInfo('请选择类型');
       return;
-    }
+    }*/
     if (this.hobby.length > 0) {
+      setState(() {
+        this.isSubmit = true;
+      });
       var gsNumber = 0;
       var scNumber = 0;
       this.hobby.forEach((element) {
         if(double.parse(element[3]['value']['value']) > 0){
-
           if(element[8]['value']['value'] == "0" || element[8]['value']['value'] == null){
             gsNumber++;
           }
@@ -1987,15 +1994,14 @@ class _WarehousingDetailState extends State<WarehousingDetail> {
       });
       if(gsNumber != 0){
         ToastUtil.showInfo('请输入工时');
+        this.isSubmit = false;
         return;
       }
       /*if(scNumber != 0){
         ToastUtil.showInfo('入库数量需等于订单数量');
         return;
       }*/
-      setState(() {
-        this.isSubmit = true;
-      });
+
       var EntryIds1 = '';
       var EntryIds2 = '';
       //分两次读取良品，不良品数据
@@ -2259,7 +2265,7 @@ class _WarehousingDetailState extends State<WarehousingDetail> {
                     ],
                   ),
                   _dateItem('生产日期：', DateMode.YMDHMS),
-                  _item('类型:', ['成品', '半成品'], this.isTurnoff, 'isTurnoff'),
+                  _item('类型:', ['成品', '半成品', '原材料工厂'], this.isTurnoff, 'isTurnoff'),
                   // _item('Laber', [123, 23,235,3,14545,15,123163,18548,9646,1313], 235, label: 'kg')
                   /*Column(
                     children: [
