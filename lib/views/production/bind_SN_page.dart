@@ -441,7 +441,7 @@ class _BindSNPageState extends State<BindSNPage> {
       return;
     }
     if (fBarCodeList == 1) {
-      if(event.split('-').length>1){
+      if(event.split('-').length>2){
         Map<String, dynamic> userMap = Map();
         SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
         var menuData = sharedPreferences.getString('MenuPermissions');

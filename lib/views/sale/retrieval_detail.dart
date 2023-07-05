@@ -175,7 +175,7 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
     userMap['FormId'] = 'SAL_DELIVERYNOTICE';
     userMap['OrderString'] = 'FMaterialId.FNumber ASC';
     userMap['FieldKeys'] =
-        'FBillNo,FSaleOrgId.FNumber,FSaleOrgId.FName,FDate,FEntity_FEntryId,FMaterialId.FNumber,FMaterialId.FName,FMaterialId.FSpecification,FDeliveryOrgID.FNumber,FDeliveryOrgID.FName,FUnitId.FNumber,FUnitId.FName,FQty,FDeliveryDate,FRemainOutQty,FID,FCustomerID.FNumber,FCustomerID.FName,FStockID.FName,FStockID.FNumber,FLot.FNumber,FStockID.FIsOpenLocation,FMaterialId.FIsBatchManage,FTaxPrice,FEntryTaxRate,FAllAmount,FLinkMan,FHeadLocId.FName,FLinkPhone';
+        'FBillNo,FSaleOrgId.FNumber,FSaleOrgId.FName,FDate,FEntity_FEntryId,FMaterialId.FNumber,FMaterialId.FName,FMaterialId.FSpecification,FDeliveryOrgID.FNumber,FDeliveryOrgID.FName,FUnitId.FNumber,FUnitId.FName,FQty,FDeliveryDate,FRemainOutQty,FID,FCustomerID.FNumber,FCustomerID.FName,FStockID.FName,FStockID.FNumber,FLot.FNumber,FStockID.FIsOpenLocation,FMaterialId.FIsBatchManage,FTaxPrice,FEntryTaxRate,FAllAmount,FLinkMan,FHeadLocId.FName,FLinkPhone,F_UYEP_UserId,FSrcBillNo,F_UYEP_Date,F_UYEP_Text';
     Map<String, dynamic> dataMap = Map();
     dataMap['data'] = userMap;
     String order = await CurrencyEntity.polling(dataMap);
@@ -1385,6 +1385,8 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
         Model['FCustomerID'] = {"FNumber": this.customerNumber};
       }
       Model['FCarriageNO'] = this._remarkContent.text;
+      Model['F_UYEP_UserId '] ={"FUserID": orderDate[0][29]};
+      Model['F_UYEP_Date '] = orderDate[0][31];
       var FEntity = [];
       var hobbyIndex = 0;
       this.hobby.forEach((element) {
@@ -1405,6 +1407,8 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
           };
           FEntityItem['FRealQty'] = element[3]['value']['value'];
           FEntityItem['FSrcBillNo'] = this.FBillNo;
+          FEntityItem['FSoorDerno'] = orderDate[hobbyIndex][30];
+          FEntityItem['F_UYEP_Text1'] = orderDate[hobbyIndex][32];
           FEntityItem['FEntity_Link'] = [
             {
               "FEntity_Link_FRuleId": "DeliveryNotice-OutStock",

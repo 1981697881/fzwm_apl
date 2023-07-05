@@ -318,7 +318,7 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
       return;
     }
     if (fBarCodeList == 1) {
-      if(event.split('-').length>1){
+      if(event.split('-').length>2){
         getMaterialListT(event,event.split('-')[2]);
       }else{
         if(event.length>15){

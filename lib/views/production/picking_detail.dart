@@ -229,7 +229,7 @@ class _PickingDetailState extends State<PickingDetail> {
         OrderMap['FilterString'] =
         "FID='$entitysNumber' and FLot.FNumber != ''";
         OrderMap['FieldKeys'] =
-        'FBillNo,FPrdOrgId.FNumber,FPrdOrgId.FName,FMOBillNO,FMOEntrySeq,FEntity_FEntryId,FEntity_FSeq,FMaterialId.FNumber,FMaterialId.FName,FMaterialId.FSpecification,FUnitID.FNumber,FUnitID.FName,FAppQty,FLot.FNumber,FID';
+        'FBillNo,FPrdOrgId.FNumber,FPrdOrgId.FName,FMOBillNO,FMOEntrySeq,FEntity_FEntryId,FEntity_FSeq,FMaterialId.FNumber,FMaterialId.FName,FMaterialId.FSpecification,FUnitID.FNumber,FUnitID.FName,FAppQty,FLot.FNumber,FID,FMaterialId.FIsBatchManage';
         String order = await CurrencyEntity.polling({'data': OrderMap});
         this.getOrderListT(order);
       } else {
@@ -378,7 +378,7 @@ class _PickingDetailState extends State<PickingDetail> {
         arr.add({
           "title": "批号",
           "name": "",
-          "isHide": false,
+          "isHide": value[15] != true,
           "value": {"label": value[13], "value": value[13]}
         });
         arr.add({
@@ -438,7 +438,7 @@ class _PickingDetailState extends State<PickingDetail> {
       return;
     }
     if (fBarCodeList == 1) {
-      if (event.split('-').length > 1) {
+      if (event.split('-').length > 2) {
         getMaterialListT(event, event.split('-')[2]);
       } else {
         if (event.length > 15) {
@@ -696,20 +696,12 @@ class _PickingDetailState extends State<PickingDetail> {
               }
               if (element[5]['value']['value'] == scanCode[1]) {
                 //判断条码数量
-                if ((double.parse(element[3]['value']['label']) +
-                            double.parse(barcodeNum)) >
-                        0 &&
-                    double.parse(barcodeNum) > 0) {
+                if ((double.parse(element[3]['value']['label']) + double.parse(barcodeNum)) > 0 && double.parse(barcodeNum) > 0) {
                   //判断物料是否重复 首个下标是否对应末尾下标
-                  if (fNumber.indexOf(element[0]['value']['value']) ==
-                      fNumber.lastIndexOf(element[0]['value']['value'])) {
+                  if (fNumber.indexOf(element[0]['value']['value']) == fNumber.lastIndexOf(element[0]['value']['value'])) {
                     if (element[0]['value']['scanCode'].indexOf(code) == -1) {
-                      element[3]['value']['label'] =
-                          (double.parse(element[3]['value']['label']) +
-                                  double.parse(barcodeNum))
-                              .toString();
-                      element[3]['value']['value'] =
-                          element[3]['value']['label'];
+                      element[3]['value']['label'] = (double.parse(element[3]['value']['label']) + double.parse(barcodeNum)).toString();
+                      element[3]['value']['value'] = element[3]['value']['label'];
                       var item = barCodeScan[0].toString() +
                           "-" +
                           barcodeNum +

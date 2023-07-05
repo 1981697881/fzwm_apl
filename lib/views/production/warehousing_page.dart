@@ -179,7 +179,7 @@ class _WarehousingPageState extends State<WarehousingPage> {
         arr.add({
           "title": "生产序号",
           "name": "FProdOrder",
-          "isHide": false,
+          "isHide": true,
           "value": {
             "label": value[1],/*value[18]*/
             "value": value[1]
@@ -197,7 +197,7 @@ class _WarehousingPageState extends State<WarehousingPage> {
         arr.add({
           "title": "未入库数量",
           "name": "FBaseQty",
-          "isHide": true,
+          "isHide": false,
           "value": {
             "label": value[16],
             "value": value[16]

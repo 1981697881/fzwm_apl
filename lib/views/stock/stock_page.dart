@@ -140,7 +140,7 @@ class _StockPageState extends State<StockPage> {
       return;
     }
     if (fBarCodeList == 1) {
-      if(event.split('-').length>1){
+      if(event.split('-').length>2){
         Map<String, dynamic> userMap = Map();
         SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
         var menuData = sharedPreferences.getString('MenuPermissions');
