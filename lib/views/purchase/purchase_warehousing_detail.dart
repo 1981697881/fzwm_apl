@@ -209,7 +209,7 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
     userMap['FormId'] = 'PUR_PurchaseOrder';
     userMap['OrderString'] = 'FMaterialId.FNumber ASC';
     userMap['FieldKeys'] =
-    'FBillNo,FSupplierId.FNumber,FSupplierId.FName,FDate,FPOOrderEntry_FEntryId,FMaterialId.FNumber,FMaterialId.FName,FMaterialId.FSpecification,FPurchaseOrgId.FNumber,FPurchaseOrgId.FName,FUnitId.FNumber,FUnitId.FName,FQty,FSrcBillNo,FID,FMaterialId.FIsBatchManage,FCorrespondOrgId.FNumber,FStockUnitID.FNumber,FTaxPrice,FEntryTaxRate,FPrice';
+    'FBillNo,FSupplierId.FNumber,FSupplierId.FName,FDate,FPOOrderEntry_FEntryId,FMaterialId.FNumber,FMaterialId.FName,FMaterialId.FSpecification,FPurchaseOrgId.FNumber,FPurchaseOrgId.FName,FUnitId.FNumber,FUnitId.FName,FQty,FSrcBillNo,FID,FMaterialId.FIsBatchManage,FCorrespondOrgId.FNumber,FStockUnitID.FNumber,FTaxPrice,FEntryTaxRate,FPrice,FPurchaseDeptId.FNumber,FPurchaserId.FNumber,FEntryNote,FBillTypeID.FNUMBER';
     Map<String, dynamic> dataMap = Map();
     dataMap['data'] = userMap;
     String order = await CurrencyEntity.polling(dataMap);
@@ -1202,7 +1202,7 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
       List<Widget> comList = [];
       for (int j = 0; j < this.hobby[i].length; j++) {
         if (!this.hobby[i][j]['isHide']) {
-         /* if (j == 3 || j==5) {
+          if (j == 3) {
             comList.add(
               Column(children: [
                 Container(
@@ -1240,7 +1240,7 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
                 divider,
               ]),
             );
-          } else*/ if (j == 4) {
+          } else if (j == 4) {
             comList.add(
               _item('仓库:', stockList, this.hobby[i][j]['value']['label'],
                   this.hobby[i][j],stock:this.hobby[i]),
@@ -1674,6 +1674,8 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
         Model['FOwnerTypeIdHead'] = {"FNumber": orderDate[0][1].toString()};
         Model['FOwnerIdHead'] = {"FNumber": orderDate[0][1].toString()};
       }
+      Model['FPurDeptId'] = {"FNumber": orderDate[0][21]};
+      Model['FPurchaserId'] = {"FNumber": orderDate[0][22]};
       var FEntity = [];
       var hobbyIndex = 0;
       this.hobby.forEach((element) {
@@ -1726,11 +1728,16 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
             fSerialSub.add(subObj);
           }
           FEntityItem['FOwnerId'] = {"FNumber": this.fOrgID};
+          FEntityItem['FSrcFormId'] = orderDate[hobbyIndex][24];
+          FEntityItem['FPOQTY'] = orderDate[hobbyIndex][12];
+          FEntityItem['FSrcEntryId'] = orderDate[hobbyIndex][4];
+          FEntityItem['FOrderBillNo'] = orderDate[hobbyIndex][0];
           FEntityItem['FActReceiveQty'] = element[3]['value']['value'];
           FEntityItem['FSerialSubEntity'] = fSerialSub;
           /*FEntityItem['FOwnerTypeId'] = "BD_OwnerOrg";*/
           FEntityItem['FTaxPrice'] = orderDate[hobbyIndex][18];
           FEntityItem['FEntryTaxRate'] = orderDate[hobbyIndex][19];
+          FEntityItem['FDescription'] = orderDate[hobbyIndex][23];
           /*FEntityItem['FPrice'] = orderDate[hobbyIndex][20];*/
           FEntityItem['FDetailEntity_Link'] = [
             {

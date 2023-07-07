@@ -1,5 +1,8 @@
 import 'dart:convert';
 import 'dart:math';
+import 'package:flutter_pickers/pickers.dart';
+import 'package:flutter_pickers/style/default_style.dart';
+import 'package:fzwm_apl/components/my_text.dart';
 import 'package:fzwm_apl/model/currency_entity.dart';
 import 'package:fzwm_apl/utils/toast_util.dart';
 import 'package:flutter/material.dart';
@@ -26,13 +29,15 @@ class _StockPageState extends State<StockPage> {
   final divider = Divider(height: 1, indent: 20);
   final rightIcon = Icon(Icons.keyboard_arrow_right);
   final scanIcon = Icon(Icons.filter_center_focus);
-
+  var warehouseName;
+  var warehouseNumber;
   static const scannerPlugin =
       const EventChannel('com.shinow.pda_scanner/plugin');
    StreamSubscription ?_subscription;
   var _code;
   var fBarCodeList;
-
+  var warehouseList = [];
+  List<dynamic> warehouseListObj = [];
   List<dynamic> orderDate = [];
   final controller = TextEditingController();
   @override
@@ -45,6 +50,7 @@ class _StockPageState extends State<StockPage> {
           .listen(_onEvent, onError: _onError);
     }
     EasyLoading.dismiss();
+    getStockList();
     //_onEvent("247230329291267");
   }
 
@@ -58,7 +64,23 @@ class _StockPageState extends State<StockPage> {
       _subscription!.cancel();
     }
   }
-
+//获取仓库
+  getStockList() async {
+    Map<String, dynamic> userMap = Map();
+    userMap['FormId'] = 'BD_STOCK';
+    userMap['FieldKeys'] = 'FStockID,FName,FNumber,FIsOpenLocation';
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    var menuData = sharedPreferences.getString('MenuPermissions');
+    var deptData = jsonDecode(menuData)[0];
+    userMap['FilterString'] = "FUseOrgId.FNumber ='"+deptData[1]+"'";
+    Map<String, dynamic> dataMap = Map();
+    dataMap['data'] = userMap;
+    String res = await CurrencyEntity.polling(dataMap);
+    warehouseListObj = jsonDecode(res);
+    warehouseListObj.forEach((element) {
+      warehouseList.add(element[1]);
+    });
+  }
   // 集合
   List hobby = [];
   getOrderList(keyWord, batchNo) async {
@@ -69,7 +91,11 @@ class _StockPageState extends State<StockPage> {
         "FMaterialId.FNumber='"+this.keyWord+"' and FBaseQty >0";
         if(batchNo != ''){
           userMap['FilterString'] =
-              "FMaterialId.FNumber='"+this.keyWord+"'  and FBaseQty >0";  /*and FLot.FNumber= '"+batchNo+"'*/
+              "FMaterialId.FNumber='"+this.keyWord+"' and FStockID.FNumber='"+this.warehouseNumber+"' and FBaseQty >0";  /*and FLot.FNumber= '"+batchNo+"'*/
+        }
+        if(this.warehouseNumber){
+          userMap['FilterString'] =
+              "FMaterialId.FNumber='"+this.keyWord+"' and FStockID.FNumber='"+this.warehouseNumber+"' and FBaseQty >0";
         }
       }
       userMap['FormId'] = 'STK_Inventory';
@@ -213,7 +239,54 @@ class _StockPageState extends State<StockPage> {
       _code = "扫描异常";
     });
   }
-
+  Widget _item(title, var data, selectData, hobby, {String ?label,var stock}) {
+    if (selectData == null) {
+      selectData = "";
+    }
+    return Column(
+      children: [
+        Container(
+          color: Colors.white,
+          child: ListTile(
+            title: Text(title),
+            onTap: () => data.length>0?_onClickItem(data, selectData, hobby, label: label,stock: stock):{ToastUtil.showInfo('无数据')},
+            trailing: Row(mainAxisSize: MainAxisSize.min, children: <Widget>[
+              MyText(selectData.toString()=="" ? '暂无':selectData.toString(),
+                  color: Colors.grey, rightpadding: 18),
+              rightIcon
+            ]),
+          ),
+        ),
+        divider,
+      ],
+    );
+  }
+  void _onClickItem(var data, var selectData, hobby,
+      {String? label, var stock}) {
+    Pickers.showSinglePicker(
+      context,
+      data: data,
+      selectData: selectData,
+      pickerStyle: DefaultPickerStyle(),
+      suffix: label,
+      onConfirm: (p) {
+        print('longer >>> 返回数据：$p');
+        print('longer >>> 返回数据类型：${p.runtimeType}');
+        setState(() {
+          if (hobby == 'warehouse') {
+            warehouseName = p;
+            var elementIndex = 0;
+            data.forEach((element) {
+              if (element == p) {
+                warehouseNumber = warehouseListObj[elementIndex][2];
+              }
+              elementIndex++;
+            });
+          }
+        });
+      },
+    );
+  }
   List<Widget> _getHobby() {
     List<Widget> tempList = [];
     for (int i = 0; i < this.hobby.length; i++) {
@@ -288,63 +361,81 @@ class _StockPageState extends State<StockPage> {
                 pinned: true,
                 delegate: StickyTabBarDelegate(
                     minHeight: 50, //收起的高度
-                    maxHeight: 50, //展开的最大高度
+                    maxHeight: 120, //展开的最大高度
                     child: Container(
                       color: Theme.of(context).primaryColor,
                       child: Padding(
                         padding: EdgeInsets.only(top: 2.0),
-                        child: Container(
-                          height: 52.0,
-                          child: new Padding(
-                              padding: const EdgeInsets.all(2.0),
-                              child: new Card(
-                                child: new Container(
-                                  child: new Row(
-                                    crossAxisAlignment:
-                                    CrossAxisAlignment.center,
-                                    children: <Widget>[
-                                      SizedBox(
-                                        width: 6.0,
-                                      ),
-                                      Icon(
-                                        Icons.search,
-                                        color: Colors.grey,
-                                      ),
-                                      Expanded(
-                                        child: Container(
-                                          alignment: Alignment.center,
-                                          child: TextField(
-                                            controller:  this.controller,
-                                            decoration: new InputDecoration(
-                                                contentPadding:
-                                                EdgeInsets.only(
-                                                    bottom: 12.0),
-                                                hintText: '输入关键字',
-                                                border: InputBorder.none),
-                                            onSubmitted: (value) {
-                                              setState(() {
-                                                this.keyWord = value;
-                                                this.getOrderList(this.keyWord,"");
+                        child: Column(
+                          children: [
+                            Container(
+                              color: Theme.of(context).primaryColor,
+                              child: Padding(
+                                padding: EdgeInsets.only(top: 2.0),
+                                child: Container(
+                                  height: 52.0,
+                                  child: new Padding(
+                                      padding: const EdgeInsets.all(2.0),
+                                      child: new Card(
+                                        child: new Container(
+                                          child: new Row(
+                                            crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                            children: <Widget>[
+                                              SizedBox(
+                                                width: 6.0,
+                                              ),
+                                              Icon(
+                                                Icons.search,
+                                                color: Colors.grey,
+                                              ),
+                                              Expanded(
+                                                child: Container(
+                                                  alignment: Alignment.center,
+                                                  child: TextField(
+                                                    controller:  this.controller,
+                                                    decoration: new InputDecoration(
+                                                        contentPadding:
+                                                        EdgeInsets.only(
+                                                            bottom: 12.0),
+                                                        hintText: '输入关键字',
+                                                        border: InputBorder.none),
+                                                    onSubmitted: (value) {
+                                                      setState(() {
+                                                        this.keyWord = value;
+                                                        this.getOrderList(this.keyWord,"");
 
-                                              });
-                                            },
-                                            // onChanged: onSearchTextChanged,
+                                                      });
+                                                    },
+                                                    // onChanged: onSearchTextChanged,
+                                                  ),
+                                                ),
+                                              ),
+                                              new IconButton(
+                                                icon: new Icon(Icons.cancel),
+                                                color: Colors.grey,
+                                                iconSize: 18.0,
+                                                onPressed: () {
+                                                  this.controller.clear();
+                                                  // onSearchTextChanged('');
+                                                },
+                                              ),
+                                            ],
                                           ),
                                         ),
-                                      ),
-                                      new IconButton(
-                                        icon: new Icon(Icons.cancel),
-                                        color: Colors.grey,
-                                        iconSize: 18.0,
-                                        onPressed: () {
-                                          this.controller.clear();
-                                          // onSearchTextChanged('');
-                                        },
-                                      ),
-                                    ],
-                                  ),
+                                      )),
                                 ),
-                              )),
+                              ),
+                            ),
+                            Container(
+                              color: Theme.of(context).primaryColor,
+                              child: Padding(
+                                padding: const EdgeInsets.fromLTRB(5.0,0,5.0,0),
+                                child: _item('仓库:', this.warehouseList, this.warehouseName,
+                                    'warehouse'),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
@@ -352,6 +443,7 @@ class _StockPageState extends State<StockPage> {
               ),
               SliverFillRemaining(
                 child: ListView(children: <Widget>[
+
                   Column(
                     children: this._getHobby(),
                   ),
