@@ -2235,8 +2235,12 @@ class _PickingDetailState extends State<PickingDetail> {
               Map<String, dynamic> subObj = Map();
               if (kingDeeCode[subj].split("-").length > 2) {
                 var itemCode = kingDeeCode[subj].split("-");
-                if (itemCode.length > 2) {
-                  subObj['FSerialNo'] = itemCode[2];
+                if(itemCode.length>2){
+                  if(itemCode.length > 3){
+                    subObj['FSerialNo'] = itemCode[2]+'-'+itemCode[3];
+                  }else{
+                    subObj['FSerialNo'] = itemCode[2];
+                  }
                 }
               } else {
                 subObj['FSerialNo'] = kingDeeCode[subj];

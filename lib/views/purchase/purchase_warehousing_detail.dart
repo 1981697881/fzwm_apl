@@ -1674,7 +1674,9 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
         Model['FOwnerTypeIdHead'] = {"FNumber": orderDate[0][1].toString()};
         Model['FOwnerIdHead'] = {"FNumber": orderDate[0][1].toString()};
       }
-      Model['FPurDeptId'] = {"FNumber": orderDate[0][21]};
+      if(orderDate[0][21] != null){
+        Model['FPurDeptId'] = {"FNumber": orderDate[0][21]};
+      }
       Model['FPurchaserId'] = {"FNumber": orderDate[0][22]};
       var FEntity = [];
       var hobbyIndex = 0;
@@ -1729,6 +1731,7 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
           }
           FEntityItem['FOwnerId'] = {"FNumber": this.fOrgID};
           FEntityItem['FSrcFormId'] = orderDate[hobbyIndex][24];
+          FEntityItem['FSrcBillNo'] = orderDate[hobbyIndex][0];
           FEntityItem['FPOQTY'] = orderDate[hobbyIndex][12];
           FEntityItem['FSrcEntryId'] = orderDate[hobbyIndex][4];
           FEntityItem['FOrderBillNo'] = orderDate[hobbyIndex][0];

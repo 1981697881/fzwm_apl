@@ -90,10 +90,15 @@ class _StockPageState extends State<StockPage> {
         userMap['FilterString'] =
         "FMaterialId.FNumber='"+this.keyWord+"' and FBaseQty >0";
         if(batchNo != ''){
-          userMap['FilterString'] =
-              "FMaterialId.FNumber='"+this.keyWord+"' and FStockID.FNumber='"+this.warehouseNumber+"' and FBaseQty >0";  /*and FLot.FNumber= '"+batchNo+"'*/
+          if(this.warehouseNumber != null){
+            userMap['FilterString'] =
+                "FMaterialId.FNumber='"+this.keyWord+"' and FStockID.FNumber='"+this.warehouseNumber+"' and FBaseQty >0";  /*and FLot.FNumber= '"+batchNo+"'*/
+          }else{
+            userMap['FilterString'] =
+                "FMaterialId.FNumber='"+this.keyWord+"' and FBaseQty >0";  /*and FLot.FNumber= '"+batchNo+"'*/
+          }
         }
-        if(this.warehouseNumber){
+        if(this.warehouseNumber != null){
           userMap['FilterString'] =
               "FMaterialId.FNumber='"+this.keyWord+"' and FStockID.FNumber='"+this.warehouseNumber+"' and FBaseQty >0";
         }
@@ -282,6 +287,9 @@ class _StockPageState extends State<StockPage> {
               }
               elementIndex++;
             });
+            if(this.keyWord != ''){
+              this.getOrderList(this.keyWord,"");
+            }
           }
         });
       },
