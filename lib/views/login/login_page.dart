@@ -596,8 +596,7 @@ class _LoginPageState extends State<LoginPage> {
                         ToastUtil.showInfo('无授予权限或者授权数量超过限定，请检查!');
                       }
                     }else{
-                      ToastUtil.errorDialog(context,
-                          author.data!.data.fMessage);
+                      ToastUtil.errorDialog(context,author.data!.data.fMessage);
                     }
                   } else {
                     if (!resUser[0][0]['Result']['ResponseStatus']['IsSuccess']) {

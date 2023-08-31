@@ -235,8 +235,12 @@ class _PickingDetailState extends State<PickingDetail> {
       } else {
         setState(() {
           this.isSubmitT = false;
-          ToastUtil.errorDialog(
-              context, res['Result']['ResponseStatus']['Errors'][0]['Message']);
+          if(res['Result']['ResponseStatus']['Errors'][0]['Message']=="分录实体“明细”是必填项"){
+          ToastUtil.errorDialog(context, "默认发料仓库异常");
+          }else{
+            ToastUtil.errorDialog(
+                context, res['Result']['ResponseStatus']['Errors'][0]['Message']);
+          }
         });
       }
      /* orderDate.forEach((value) {
@@ -439,7 +443,25 @@ class _PickingDetailState extends State<PickingDetail> {
     }
     if (fBarCodeList == 1) {
       if (event.split('-').length > 2) {
-        getMaterialListT(event, event.split('-')[2]);
+        Map<String, dynamic> serialMap = Map();
+        serialMap['FormId'] = 'BD_SerialMainFile';
+        serialMap['FieldKeys'] = 'FStockStatus';
+        serialMap['FilterString'] = "FNumber = '" +
+            event.split('-')[2] +
+            "'";
+        Map<String, dynamic> serialDataMap = Map();
+        serialDataMap['data'] = serialMap;
+        String serialRes = await CurrencyEntity.polling(serialDataMap);
+        var serialJson = jsonDecode(serialRes);
+        if (serialJson.length > 0) {
+          if(serialJson[0][0]=="1"){
+            getMaterialListT(event, event.split('-')[2]);
+          }else{
+            ToastUtil.showInfo('该序列号已出库或未入库');
+          }
+        }else{
+          ToastUtil.showInfo('序列号不存在');
+        }
       } else {
         if (event.length > 15) {
           Map<String, dynamic> barcodeMap = Map();
@@ -472,9 +494,27 @@ class _PickingDetailState extends State<PickingDetail> {
               ;
               if (msg == "") {
                 _code = event;
-                this.getMaterialList(
-                    barcodeData, barcodeData[0][10], barcodeData[0][11]);
-                print("ChannelPage: $event");
+                Map<String, dynamic> serialMap = Map();
+                serialMap['FormId'] = 'BD_SerialMainFile';
+                serialMap['FieldKeys'] = 'FStockStatus';
+                serialMap['FilterString'] = "FNumber = '" +
+                    barcodeData[0][11] +
+                    "'";
+                Map<String, dynamic> serialDataMap = Map();
+                serialDataMap['data'] = serialMap;
+                String serialRes = await CurrencyEntity.polling(serialDataMap);
+                var serialJson = jsonDecode(serialRes);
+                if (serialJson.length > 0) {
+                  if(serialJson[0][0]=="1"){
+                    this.getMaterialList(
+                        barcodeData, barcodeData[0][10], barcodeData[0][11]);
+                    print("ChannelPage: $event");
+                  }else{
+                    ToastUtil.showInfo('该序列号已出库或未入库');
+                  }
+                }else{
+                  ToastUtil.showInfo('序列号不存在');
+                }
               } else {
                 ToastUtil.showInfo(msg);
               }
@@ -485,7 +525,25 @@ class _PickingDetailState extends State<PickingDetail> {
             ToastUtil.showInfo('条码不在条码清单中');
           }
         } else {
-          getMaterialListTH(event, event.substring(9, 15));
+          Map<String, dynamic> serialMap = Map();
+          serialMap['FormId'] = 'BD_SerialMainFile';
+          serialMap['FieldKeys'] = 'FStockStatus';
+          serialMap['FilterString'] = "FNumber = '" +
+              event.substring(9,15) +
+              "'";
+          Map<String, dynamic> serialDataMap = Map();
+          serialDataMap['data'] = serialMap;
+          String serialRes = await CurrencyEntity.polling(serialDataMap);
+          var serialJson = jsonDecode(serialRes);
+          if (serialJson.length > 0) {
+            if(serialJson[0][0]=="1"){
+              getMaterialListTH(event, event.substring(9, 15));
+            }else{
+              ToastUtil.showInfo('该序列号已出库或未入库');
+            }
+          }else{
+            ToastUtil.showInfo('序列号不存在');
+          }
         }
       }
     } else {

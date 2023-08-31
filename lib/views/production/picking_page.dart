@@ -324,16 +324,34 @@ class _PickingPageState extends State<PickingPage> {
       barcodeMap['FilterString'] = "FBarCodeEn='" + event + "'";
       barcodeMap['FormId'] = 'QDEP_Cust_BarCodeList';
       barcodeMap['FieldKeys'] =
-      'FSrcBillNo';
+      'FSrcBillNo,FSN';
       Map<String, dynamic> dataMap = Map();
       dataMap['data'] = barcodeMap;
       String order = await CurrencyEntity.polling(dataMap);
       var barcodeData = jsonDecode(order);
       if (barcodeData.length > 0) {
-        keyWord = barcodeData[0][0];
-        this.controller.text = barcodeData[0][0];
-        this.isScan = true;
-        await this.getOrderList();
+        Map<String, dynamic> serialMap = Map();
+        serialMap['FormId'] = 'BD_SerialMainFile';
+        serialMap['FieldKeys'] = 'FStockStatus';
+        serialMap['FilterString'] = "FNumber = '" +
+            barcodeData[0][1] +
+            "'";
+        Map<String, dynamic> serialDataMap = Map();
+        serialDataMap['data'] = serialMap;
+        String serialRes = await CurrencyEntity.polling(serialDataMap);
+        var serialJson = jsonDecode(serialRes);
+        if (serialJson.length > 0) {
+          if(serialJson[0][0]=="1"){
+            keyWord = barcodeData[0][0];
+            this.controller.text = barcodeData[0][0];
+            this.isScan = true;
+            await this.getOrderList();
+          }else{
+            ToastUtil.showInfo('该序列号已出库或未入库');
+          }
+        }else{
+          ToastUtil.showInfo('序列号不存在');
+        }
       } else {
         ToastUtil.showInfo('条码不在条码清单中');
       }

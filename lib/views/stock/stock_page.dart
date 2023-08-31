@@ -14,10 +14,11 @@ import 'package:flutter/cupertino.dart';
 import 'package:qrscan/qrscan.dart' as scanner;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:qrscan/qrscan.dart' as scanner;
+
 final String _fontFamily = Platform.isWindows ? "Roboto" : "";
 
 class StockPage extends StatefulWidget {
-  StockPage({Key ?key}) : super(key: key);
+  StockPage({Key? key}) : super(key: key);
 
   @override
   _StockPageState createState() => _StockPageState();
@@ -33,16 +34,19 @@ class _StockPageState extends State<StockPage> {
   var warehouseNumber;
   static const scannerPlugin =
       const EventChannel('com.shinow.pda_scanner/plugin');
-   StreamSubscription ?_subscription;
+  StreamSubscription? _subscription;
   var _code;
+  var fSn = "";
   var fBarCodeList;
   var warehouseList = [];
   List<dynamic> warehouseListObj = [];
   List<dynamic> orderDate = [];
   final controller = TextEditingController();
+
   @override
   void initState() {
     super.initState();
+
     /// 开启监听
     if (_subscription == null) {
       _subscription = scannerPlugin
@@ -64,6 +68,7 @@ class _StockPageState extends State<StockPage> {
       _subscription!.cancel();
     }
   }
+
 //获取仓库
   getStockList() async {
     Map<String, dynamic> userMap = Map();
@@ -72,7 +77,7 @@ class _StockPageState extends State<StockPage> {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     var menuData = sharedPreferences.getString('MenuPermissions');
     var deptData = jsonDecode(menuData)[0];
-    userMap['FilterString'] = "FUseOrgId.FNumber ='"+deptData[1]+"'";
+    userMap['FilterString'] = "FUseOrgId.FNumber ='" + deptData[1] + "'";
     Map<String, dynamic> dataMap = Map();
     dataMap['data'] = userMap;
     String res = await CurrencyEntity.polling(dataMap);
@@ -81,85 +86,117 @@ class _StockPageState extends State<StockPage> {
       warehouseList.add(element[1]);
     });
   }
+
   // 集合
   List hobby = [];
-  getOrderList(keyWord, batchNo) async {
+
+  getOrderList(keyWord, batchNo, fSn) async {
+    print(fSn);
+    print("123333");
     EasyLoading.show(status: 'loading...');
-      Map<String, dynamic> userMap = Map();
-      if(keyWord != ''){
-        userMap['FilterString'] =
-        "FMaterialId.FNumber='"+this.keyWord+"' and FBaseQty >0";
-        if(batchNo != ''){
-          if(this.warehouseNumber != null){
-            userMap['FilterString'] =
-                "FMaterialId.FNumber='"+this.keyWord+"' and FStockID.FNumber='"+this.warehouseNumber+"' and FBaseQty >0";  /*and FLot.FNumber= '"+batchNo+"'*/
-          }else{
-            userMap['FilterString'] =
-                "FMaterialId.FNumber='"+this.keyWord+"' and FBaseQty >0";  /*and FLot.FNumber= '"+batchNo+"'*/
-          }
-        }
-        if(this.warehouseNumber != null){
-          userMap['FilterString'] =
-              "FMaterialId.FNumber='"+this.keyWord+"' and FStockID.FNumber='"+this.warehouseNumber+"' and FBaseQty >0";
+    Map<String, dynamic> userMap = Map();
+    if (keyWord != '') {
+      userMap['FilterString'] =
+          "FMaterialId.FNumber='" + this.keyWord + "' and FBaseQty >0";
+      if (batchNo != '') {
+        if (this.warehouseNumber != null) {
+          userMap['FilterString'] = "FMaterialId.FNumber='" +
+              this.keyWord +
+              "' and FStockID.FNumber='" +
+              this.warehouseNumber +
+              "' and FBaseQty >0"; /*and FLot.FNumber= '"+batchNo+"'*/
+        } else {
+          userMap['FilterString'] = "FMaterialId.FNumber='" +
+              this.keyWord +
+              "' and FBaseQty >0"; /*and FLot.FNumber= '"+batchNo+"'*/
         }
       }
-      userMap['FormId'] = 'STK_Inventory';
-      userMap['Limit'] = '50';
-      userMap['FieldKeys'] =
-          'FMaterialId.FNumber,FMaterialId.FName,FMaterialId.FSpecification,FStockId.FName,FBaseQty,FLot.FNumber';
-      Map<String, dynamic> dataMap = Map();
-      dataMap['data'] = userMap;
-      String order = await CurrencyEntity.polling(dataMap);
-      orderDate = [];
-      orderDate = jsonDecode(order);
-      print(orderDate);
-      hobby = [];
+      if (this.warehouseNumber != null) {
+        userMap['FilterString'] = "FMaterialId.FNumber='" +
+            this.keyWord +
+            "' and FStockID.FNumber='" +
+            this.warehouseNumber +
+            "' and FBaseQty >0";
+      }
+    }
+    userMap['FormId'] = 'STK_Inventory';
+    userMap['Limit'] = '50';
+    userMap['FieldKeys'] =
+        'FMaterialId.FNumber,FMaterialId.FName,FMaterialId.FSpecification,FStockId.FName,FBaseQty,FLot.FNumber';
+    Map<String, dynamic> dataMap = Map();
+    dataMap['data'] = userMap;
+    String order = await CurrencyEntity.polling(dataMap);
+    orderDate = [];
+    orderDate = jsonDecode(order);
+    print(orderDate);
+    hobby = [];
+    this.fSn = fSn;
     if (orderDate.length > 0) {
-        orderDate.forEach((value) {
-          List arr = [];
-          arr.add({
-            "title": "编码",
-            "name": "FMaterialFNumber",
-            "value": {"label": value[0], "value": value[0]}
-          });
-          arr.add({
-            "title": "名称",
-            "name": "FMaterialFName",
-            "value": {"label": value[1], "value": value[1]}
-          });
-          arr.add({
-            "title": "规格",
-            "name": "FMaterialIdFSpecification",
-            "value": {"label": value[2], "value": value[2]}
-          });
-          arr.add({
-            "title": "仓库",
-            "name": "FStockIdFName",
-            "value": {"label": value[3], "value": value[3]}
-          });
-          arr.add({
-            "title": "库存数量",
-            "name": "FBaseQty",
-            "value": {"label": value[4], "value": value[4]}
-          });
-          arr.add({
-            "title": "批号",
-            "name": "FBatchNo",
-            "value": {"label": value[5], "value": value[5]}
-          });
-          hobby.add(arr);
+      for (var value in orderDate) {
+        List arr = [];
+        arr.add({
+          "title": "编码",
+          "name": "FMaterialFNumber",
+          "value": {"label": value[0], "value": value[0]}
         });
-        setState(() {
-          EasyLoading.dismiss();
-          this._getHobby();
+        arr.add({
+          "title": "名称",
+          "name": "FMaterialFName",
+          "value": {"label": value[1], "value": value[1]}
         });
-      } else {
-        setState(() {
-          EasyLoading.dismiss();
-          this._getHobby();
+        arr.add({
+          "title": "规格",
+          "name": "FMaterialIdFSpecification",
+          "value": {"label": value[2], "value": value[2]}
         });
-        ToastUtil.showInfo('无数据');
+        arr.add({
+          "title": "仓库",
+          "name": "FStockIdFName",
+          "value": {"label": value[3], "value": value[3]}
+        });
+        arr.add({
+          "title": "库存数量",
+          "name": "FBaseQty",
+          "value": {"label": value[4], "value": value[4]}
+        });
+        /*Map<String, dynamic> userMap = Map();
+        userMap['FormId'] = 'BD_SerialMainFile';
+        userMap['FieldKeys'] = 'FNumber';
+        userMap['FilterString'] = "FMaterialID.FNumber = '" +
+            value[0] +
+            "' and FStockStatus in(1) and FLot.FNumber='" +
+            value[5] +
+            "'";
+        Map<String, dynamic> dataMap = Map();
+        dataMap['data'] = userMap;
+        String res = await CurrencyEntity.polling(dataMap);
+        var stocks = jsonDecode(res);
+        if (stocks.length > 0) {
+          arr.add({
+            "title": "SN",
+            "name": "FSN",
+            "value": {"label": "", "value": stocks}
+          });
+        }*/
+        arr.add({
+          "title": "批号",
+          "name": "FBatchNo",
+          "value": {"label": value[5], "value": value[5]}
+        });
+        hobby.add(arr);
       }
+      ;
+      setState(() {
+        EasyLoading.dismiss();
+        this._getHobby();
+      });
+    } else {
+      setState(() {
+        EasyLoading.dismiss();
+        this._getHobby();
+      });
+      ToastUtil.showInfo('无数据');
+    }
   }
 
   void _onEvent(event) async {
@@ -167,19 +204,24 @@ class _StockPageState extends State<StockPage> {
     var deptData = sharedPreferences.getString('menuList');
     var menuList = new Map<dynamic, dynamic>.from(jsonDecode(deptData));
     fBarCodeList = menuList['FBarCodeList'];
-    if(event == ""){
+    if (event == "") {
       return;
     }
     if (fBarCodeList == 1) {
-      if(event.split('-').length>2){
+      if (event.split('-').length > 2) {
         Map<String, dynamic> userMap = Map();
-        SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+        SharedPreferences sharedPreferences =
+            await SharedPreferences.getInstance();
         var menuData = sharedPreferences.getString('MenuPermissions');
         var deptData = jsonDecode(menuData)[0];
-        userMap['FilterString'] = "F_UYEP_GYSTM='"+event.split('-')[0]+"' and FForbidStatus = 'A' and FUseOrgId.FNumber = '"+deptData[1]+"'";
+        userMap['FilterString'] = "F_UYEP_GYSTM='" +
+            event.split('-')[0] +
+            "' and FForbidStatus = 'A' and FUseOrgId.FNumber = '" +
+            deptData[1] +
+            "'";
         userMap['FormId'] = 'BD_MATERIAL';
         userMap['FieldKeys'] =
-        'FMATERIALID,FName,FNumber,FSpecification,FBaseUnitId.FName,FBaseUnitId.FNumber,FIsBatchManage';/*,SubHeadEntity1.FStoreUnitID.FNumber*/
+            'FMATERIALID,FName,FNumber,FSpecification,FBaseUnitId.FName,FBaseUnitId.FNumber,FIsBatchManage'; /*,SubHeadEntity1.FStoreUnitID.FNumber*/
         Map<String, dynamic> dataMap = Map();
         dataMap['data'] = userMap;
         String order = await CurrencyEntity.polling(dataMap);
@@ -187,17 +229,17 @@ class _StockPageState extends State<StockPage> {
         if (barcodeData.length > 0) {
           keyWord = barcodeData[0][2];
           this.controller.text = barcodeData[0][2];
-          await this.getOrderList(barcodeData[0][2],"");
+          await this.getOrderList(barcodeData[0][2], "", event.split('-')[2]);
         } else {
           ToastUtil.showInfo('条码不存在');
         }
-      }else{
-        if(event.length>15){
+      } else {
+        if (event.length > 15) {
           Map<String, dynamic> barcodeMap = Map();
           barcodeMap['FilterString'] = "FBarCodeEn='" + event + "'";
           barcodeMap['FormId'] = 'QDEP_Cust_BarCodeList';
           barcodeMap['FieldKeys'] =
-          'FID,FInQtyTotal,FOutQtyTotal,FEntity_FEntryId,FRemainQty,FBarCodeQty,FStockID.FName,FStockID.FNumber,FMATERIALID.FNUMBER,FOwnerID.FNumber,FBarCode,FBatchNo';
+              'FID,FInQtyTotal,FOutQtyTotal,FEntity_FEntryId,FRemainQty,FBarCodeQty,FStockID.FName,FStockID.FNumber,FMATERIALID.FNUMBER,FOwnerID.FNumber,FBarCode,FBatchNo,FSN';
           Map<String, dynamic> dataMap = Map();
           dataMap['data'] = barcodeMap;
           String order = await CurrencyEntity.polling(dataMap);
@@ -205,19 +247,25 @@ class _StockPageState extends State<StockPage> {
           if (barcodeData.length > 0) {
             keyWord = barcodeData[0][8];
             this.controller.text = barcodeData[0][8];
-            await this.getOrderList(barcodeData[0][8],barcodeData[0][11]);
+            await this.getOrderList(
+                barcodeData[0][8], barcodeData[0][11], barcodeData[0][12]);
           } else {
             ToastUtil.showInfo('条码不在条码清单中');
           }
-        }else{
+        } else {
           Map<String, dynamic> userMap = Map();
-          SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+          SharedPreferences sharedPreferences =
+              await SharedPreferences.getInstance();
           var menuData = sharedPreferences.getString('MenuPermissions');
           var deptData = jsonDecode(menuData)[0];
-          userMap['FilterString'] = "F_UYEP_GYSTM='"+event.substring(0,3)+"' and FForbidStatus = 'A' and FUseOrgId.FNumber = '"+deptData[1]+"'";
+          userMap['FilterString'] = "F_UYEP_GYSTM='" +
+              event.substring(0, 3) +
+              "' and FForbidStatus = 'A' and FUseOrgId.FNumber = '" +
+              deptData[1] +
+              "'";
           userMap['FormId'] = 'BD_MATERIAL';
           userMap['FieldKeys'] =
-          'FMATERIALID,FName,FNumber,FSpecification,FBaseUnitId.FName,FBaseUnitId.FNumber,FIsBatchManage';/*,SubHeadEntity1.FStoreUnitID.FNumber*/
+              'FMATERIALID,FName,FNumber,FSpecification,FBaseUnitId.FName,FBaseUnitId.FNumber,FIsBatchManage'; /*,SubHeadEntity1.FStoreUnitID.FNumber*/
           Map<String, dynamic> dataMap = Map();
           dataMap['data'] = userMap;
           String order = await CurrencyEntity.polling(dataMap);
@@ -225,7 +273,8 @@ class _StockPageState extends State<StockPage> {
           if (barcodeData.length > 0) {
             keyWord = barcodeData[0][2];
             this.controller.text = barcodeData[0][2];
-            await this.getOrderList(barcodeData[0][2],"");
+            await this
+                .getOrderList(barcodeData[0][2], "", event.substring(9, 15));
           } else {
             ToastUtil.showInfo('条码不存在');
           }
@@ -235,16 +284,18 @@ class _StockPageState extends State<StockPage> {
       keyWord = _code;
       this.controller.text = _code;
       _code = event;
-      await this.getOrderList(_code,"");
+      await this.getOrderList(_code, "", "");
       print("ChannelPage: $event");
     }
   }
+
   void _onError(Object error) {
     setState(() {
       _code = "扫描异常";
     });
   }
-  Widget _item(title, var data, selectData, hobby, {String ?label,var stock}) {
+
+  Widget _item(title, var data, selectData, hobby, {String? label, var stock}) {
     if (selectData == null) {
       selectData = "";
     }
@@ -254,9 +305,12 @@ class _StockPageState extends State<StockPage> {
           color: Colors.white,
           child: ListTile(
             title: Text(title),
-            onTap: () => data.length>0?_onClickItem(data, selectData, hobby, label: label,stock: stock):{ToastUtil.showInfo('无数据')},
+            onTap: () => data.length > 0
+                ? _onClickItem(data, selectData, hobby,
+                    label: label, stock: stock)
+                : {ToastUtil.showInfo('无数据')},
             trailing: Row(mainAxisSize: MainAxisSize.min, children: <Widget>[
-              MyText(selectData.toString()=="" ? '暂无':selectData.toString(),
+              MyText(selectData.toString() == "" ? '暂无' : selectData.toString(),
                   color: Colors.grey, rightpadding: 18),
               rightIcon
             ]),
@@ -266,6 +320,7 @@ class _StockPageState extends State<StockPage> {
       ],
     );
   }
+
   void _onClickItem(var data, var selectData, hobby,
       {String? label, var stock}) {
     Pickers.showSinglePicker(
@@ -287,37 +342,66 @@ class _StockPageState extends State<StockPage> {
               }
               elementIndex++;
             });
-            if(this.keyWord != ''){
-              this.getOrderList(this.keyWord,"");
+            if (this.keyWord != '') {
+              this.getOrderList(this.keyWord, "", "");
             }
           }
         });
       },
     );
   }
+
   List<Widget> _getHobby() {
     List<Widget> tempList = [];
     for (int i = 0; i < this.hobby.length; i++) {
       List<Widget> comList = [];
       for (int j = 0; j < this.hobby[i].length; j++) {
-        comList.add(
-          Column(children: [
-            Container(
-              color: Colors.white,
-              child: ListTile(
-                title: Text(this.hobby[i][j]["title"] +
-                    '：' +
-                    this.hobby[i][j]["value"]["label"].toString()),
-                trailing:
-                Row(mainAxisSize: MainAxisSize.min, children: <Widget>[
-                  /* MyText(orderDate[i][j],
-                        color: Colors.grey, rightpadding: 18),*/
-                ]),
+        if (j == 5) {
+          comList.add(
+            Column(children: [
+              Container(
+                color: Colors.white,
+                child: ListTile(
+                    title: Text(this.hobby[i][j]["title"] +
+                        '：' +
+                        this.hobby[i][j]["value"]["label"].toString()),
+                    trailing:
+                        Row(mainAxisSize: MainAxisSize.min, children: <Widget>[
+                      new MaterialButton(
+                        color: Colors.blue,
+                        textColor: Colors.white,
+                        child: new Text('查看'),
+                        onPressed: () async {
+                          await _showMultiChoiceModalBottomSheet(
+                              context, this.hobby[i][j]["value"]["value"]);
+                          setState(() {});
+                        },
+                      ),
+                    ])),
               ),
-            ),
-            divider,
-          ]),
-        );
+              divider,
+            ]),
+          );
+        } else {
+          comList.add(
+            Column(children: [
+              Container(
+                color: Colors.white,
+                child: ListTile(
+                  title: Text(this.hobby[i][j]["title"] +
+                      '：' +
+                      this.hobby[i][j]["value"]["label"].toString()),
+                  trailing:
+                      Row(mainAxisSize: MainAxisSize.min, children: <Widget>[
+                    /* MyText(orderDate[i][j],
+                        color: Colors.grey, rightpadding: 18),*/
+                  ]),
+                ),
+              ),
+              divider,
+            ]),
+          );
+        }
       }
       tempList.add(
         SizedBox(height: 10),
@@ -343,9 +427,90 @@ class _StockPageState extends State<StockPage> {
     _onEvent(scan);
   }
 
+  Widget _getModalSheetHeaderWithConfirm(String title,
+      {required Function onCancel, required Function onConfirm}) {
+    return SizedBox(
+      height: 50,
+      child: Row(
+        children: [
+          IconButton(
+            icon: Icon(Icons.close),
+            onPressed: () {
+              onCancel();
+            },
+          ),
+          Expanded(
+            child: Center(
+              child: Text(
+                title,
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16.0),
+              ),
+            ),
+          ),
+          IconButton(
+              icon: Icon(
+                Icons.check,
+                color: Colors.blue,
+              ),
+              onPressed: () {
+                onConfirm();
+              }),
+        ],
+      ),
+    );
+  }
+
+  Future<List<int>?> _showMultiChoiceModalBottomSheet(
+      BuildContext context, List<dynamic> options) async {
+    return showModalBottomSheet<List<int>?>(
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(builder: (context1, setState) {
+          return Container(
+            clipBehavior: Clip.antiAlias,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.only(
+                topLeft: const Radius.circular(20.0),
+                topRight: const Radius.circular(20.0),
+              ),
+            ),
+            height: MediaQuery.of(context).size.height / 2.0,
+            child: Column(children: [
+              _getModalSheetHeaderWithConfirm(
+                'SN',
+                onCancel: () {
+                  Navigator.of(context).pop();
+                },
+                onConfirm: () async {
+                  Navigator.of(context).pop(); /*selected.toList()*/
+                },
+              ),
+              Divider(height: 1.0),
+              Expanded(
+                child: ListView.builder(
+                  itemBuilder: (BuildContext context, int index) {
+                    return ListTile(
+                      title: Text(options[index].toString()),
+                      onTap: () {
+                        setState(() {});
+                      },
+                    );
+                  },
+                  itemCount: options.length,
+                ),
+              ),
+            ]),
+          );
+        });
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-
     return FlutterEasyLoading(
       /*child: MaterialApp(
       title: "loging",*/
@@ -368,90 +533,101 @@ class _StockPageState extends State<StockPage> {
               SliverPersistentHeader(
                 pinned: true,
                 delegate: StickyTabBarDelegate(
-                    minHeight: 50, //收起的高度
-                    maxHeight: 120, //展开的最大高度
-                    child: Container(
-                      color: Theme.of(context).primaryColor,
-                      child: Padding(
-                        padding: EdgeInsets.only(top: 2.0),
-                        child: Column(
-                          children: [
-                            Container(
-                              color: Theme.of(context).primaryColor,
-                              child: Padding(
-                                padding: EdgeInsets.only(top: 2.0),
-                                child: Container(
-                                  height: 52.0,
-                                  child: new Padding(
-                                      padding: const EdgeInsets.all(2.0),
-                                      child: new Card(
-                                        child: new Container(
-                                          child: new Row(
-                                            crossAxisAlignment:
-                                            CrossAxisAlignment.center,
-                                            children: <Widget>[
-                                              SizedBox(
-                                                width: 6.0,
-                                              ),
-                                              Icon(
-                                                Icons.search,
-                                                color: Colors.grey,
-                                              ),
-                                              Expanded(
-                                                child: Container(
-                                                  alignment: Alignment.center,
-                                                  child: TextField(
-                                                    controller:  this.controller,
-                                                    decoration: new InputDecoration(
-                                                        contentPadding:
-                                                        EdgeInsets.only(
-                                                            bottom: 12.0),
-                                                        hintText: '输入关键字',
-                                                        border: InputBorder.none),
-                                                    onSubmitted: (value) {
-                                                      setState(() {
-                                                        this.keyWord = value;
-                                                        this.getOrderList(this.keyWord,"");
-
-                                                      });
-                                                    },
-                                                    // onChanged: onSearchTextChanged,
-                                                  ),
+                  minHeight: 50, //收起的高度
+                  maxHeight: 175, //展开的最大高度
+                  child: Container(
+                    color: Theme.of(context).primaryColor,
+                    child: Padding(
+                      padding: EdgeInsets.only(top: 2.0),
+                      child: Column(
+                        children: [
+                          Container(
+                            color: Theme.of(context).primaryColor,
+                            child: Padding(
+                              padding: EdgeInsets.only(top: 2.0),
+                              child: Container(
+                                height: 52.0,
+                                child: new Padding(
+                                    padding: const EdgeInsets.all(2.0),
+                                    child: new Card(
+                                      child: new Container(
+                                        child: new Row(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.center,
+                                          children: <Widget>[
+                                            SizedBox(
+                                              width: 6.0,
+                                            ),
+                                            Icon(
+                                              Icons.search,
+                                              color: Colors.grey,
+                                            ),
+                                            Expanded(
+                                              child: Container(
+                                                alignment: Alignment.center,
+                                                child: TextField(
+                                                  controller: this.controller,
+                                                  decoration:
+                                                      new InputDecoration(
+                                                          contentPadding:
+                                                              EdgeInsets.only(
+                                                                  bottom: 12.0),
+                                                          hintText: '输入关键字',
+                                                          border:
+                                                              InputBorder.none),
+                                                  onSubmitted: (value) {
+                                                    setState(() {
+                                                      this.keyWord = value;
+                                                      this.getOrderList(
+                                                          this.keyWord, "", "");
+                                                    });
+                                                  },
+                                                  // onChanged: onSearchTextChanged,
                                                 ),
                                               ),
-                                              new IconButton(
-                                                icon: new Icon(Icons.cancel),
-                                                color: Colors.grey,
-                                                iconSize: 18.0,
-                                                onPressed: () {
-                                                  this.controller.clear();
-                                                  // onSearchTextChanged('');
-                                                },
-                                              ),
-                                            ],
-                                          ),
+                                            ),
+                                            new IconButton(
+                                              icon: new Icon(Icons.cancel),
+                                              color: Colors.grey,
+                                              iconSize: 18.0,
+                                              onPressed: () {
+                                                this.controller.clear();
+                                                // onSearchTextChanged('');
+                                              },
+                                            ),
+                                          ],
                                         ),
-                                      )),
-                                ),
+                                      ),
+                                    )),
                               ),
                             ),
-                            Container(
-                              color: Theme.of(context).primaryColor,
-                              child: Padding(
-                                padding: const EdgeInsets.fromLTRB(5.0,0,5.0,0),
-                                child: _item('仓库:', this.warehouseList, this.warehouseName,
-                                    'warehouse'),
+                          ),
+                          Container(
+                            color: Theme.of(context).primaryColor,
+                            child: Padding(
+                              padding:
+                                  const EdgeInsets.fromLTRB(5.0, 0, 5.0, 0),
+                              child: _item('仓库:', this.warehouseList,
+                                  this.warehouseName, 'warehouse'),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(5.0, 0, 5.0, 0),
+                            child: Container(
+                              color: Colors.white,
+                              child: ListTile(
+                                title: Text("SN：$fSn"),
                               ),
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
+                  ),
                 ),
               ),
               SliverFillRemaining(
                 child: ListView(children: <Widget>[
-
                   Column(
                     children: this._getHobby(),
                   ),
@@ -468,11 +644,13 @@ class StickyTabBarDelegate extends SliverPersistentHeaderDelegate {
   final Container child;
   final double minHeight;
   final double maxHeight;
-  StickyTabBarDelegate({required this.minHeight,
-  required this.maxHeight,required this.child});
+
+  StickyTabBarDelegate(
+      {required this.minHeight, required this.maxHeight, required this.child});
 
   @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+  Widget build(
+      BuildContext context, double shrinkOffset, bool overlapsContent) {
     return this.child;
   }
 

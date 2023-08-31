@@ -340,9 +340,22 @@ class _WarehousingDetailState extends State<WarehousingDetail> {
         ;
         if (msg == "") {
           _code = event;
-          this.getMaterialList(
-              barcodeData, barcodeData[0][10], barcodeData[0][11]);
-          print("ChannelPage: $event");
+          Map<String, dynamic> serialMap = Map();
+          serialMap['FormId'] = 'BD_SerialMainFile';
+          serialMap['FieldKeys'] = 'FStockStatus';
+          serialMap['FilterString'] = "FNumber = '" +
+              barcodeData[0][11] +
+              "'";
+          Map<String, dynamic> serialDataMap = Map();
+          serialDataMap['data'] = serialMap;
+          String serialRes = await CurrencyEntity.polling(serialDataMap);
+          var serialJson = jsonDecode(serialRes);
+          if (serialJson.length > 0 && serialJson[0][0]=="1") {
+            ToastUtil.showInfo('该序列号已入库');
+          }else{
+            this.getMaterialList(
+                barcodeData, barcodeData[0][10], barcodeData[0][11]);
+          }
         } else {
           ToastUtil.showInfo(msg);
         }
@@ -1395,6 +1408,7 @@ class _WarehousingDetailState extends State<WarehousingDetail> {
                     Map<String, dynamic> dataCodeMap = Map();
                     dataCodeMap['formid'] = 'QDEP_Cust_BarCodeList';
                     Map<String, dynamic> orderCodeMap = Map();
+                    orderCodeMap['NeedUpDataFields'] = ['FEntity',"FHrWorkTime","FFinishQty","FQuaQty",'FSerialSubEntity','FSerialNo'];
                     orderCodeMap['NeedReturnFields'] = [];
                     orderCodeMap['IsDeleteEntry'] = false;
                     Map<String, dynamic> codeModel = Map();
@@ -2081,13 +2095,17 @@ class _WarehousingDetailState extends State<WarehousingDetail> {
                   };
                   await auditOrder(auditMap, i, EntryIds2 != '');
                 } else {
-                  /*Map<String, dynamic> deleteMap = Map();
+                 /* setState(() {
+                    this.isSubmit = false;
+                    ToastUtil.errorDialog(context, res['Result']['ResponseStatus']['Errors'][0]['Message']);
+                  });*/
+                  Map<String, dynamic> deleteMap = Map();
                   deleteMap = {
                     "formid": "PRD_MORPT",
                     "data": {'Ids': resCheck['data']["Model"]["FID"]}
                   };
                   deleteOrder(deleteMap,
-                      res['Result']['ResponseStatus']['Errors'][0]['Message']);*/
+                      res['Result']['ResponseStatus']['Errors'][0]['Message']);
                 }
               }
             } else {

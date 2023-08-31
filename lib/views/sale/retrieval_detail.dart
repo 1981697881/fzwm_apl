@@ -175,7 +175,7 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
     userMap['FormId'] = 'SAL_DELIVERYNOTICE';
     userMap['OrderString'] = 'FMaterialId.FNumber ASC';
     userMap['FieldKeys'] =
-        'FBillNo,FSaleOrgId.FNumber,FSaleOrgId.FName,FDate,FEntity_FEntryId,FMaterialId.FNumber,FMaterialId.FName,FMaterialId.FSpecification,FDeliveryOrgID.FNumber,FDeliveryOrgID.FName,FUnitId.FNumber,FUnitId.FName,FQty,FDeliveryDate,FRemainOutQty,FID,FCustomerID.FNumber,FCustomerID.FName,FStockID.FName,FStockID.FNumber,FLot.FNumber,FStockID.FIsOpenLocation,FMaterialId.FIsBatchManage,FTaxPrice,FEntryTaxRate,FAllAmount,FLinkMan,FHeadLocId.FName,FLinkPhone,F_UYEP_UserId,FSrcBillNo,F_UYEP_Date,F_UYEP_Text';
+        'FBillNo,FSaleOrgId.FNumber,FSaleOrgId.FName,FDate,FEntity_FEntryId,FMaterialId.FNumber,FMaterialId.FName,FMaterialId.FSpecification,FDeliveryOrgID.FNumber,FDeliveryOrgID.FName,FUnitId.FNumber,FUnitId.FName,FQty,FDeliveryDate,FRemainOutQty,FID,FCustomerID.FNumber,FCustomerID.FName,FStockID.FName,FStockID.FNumber,FLot.FNumber,FStockID.FIsOpenLocation,FMaterialId.FIsBatchManage,FTaxPrice,FEntryTaxRate,FAllAmount,FLinkMan,FHeadLocId.FName,FLinkPhone,F_UYEP_UserId,FSrcBillNo,F_UYEP_Date,F_UYEP_Text,FNote,FNoteEntry';
     Map<String, dynamic> dataMap = Map();
     dataMap['data'] = userMap;
     String order = await CurrencyEntity.polling(dataMap);
@@ -295,7 +295,8 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
       ToastUtil.showInfo('无数据');
     }
     getStockList();
-    /*_onEvent("mB@CpNDtniREhhqrndaYPT9HiXOipMKs0csC7RJ8y4eJM38mGYHuig==");*/
+    /*_onEvent("34TI4lY5kQOIQxGWehV+aj1NEKgIMLqSkaAHBHK+qA1lH1BvJz3G0g==");
+    _onEvent("34TI4lY5kQOIQxGWehV+aj1NEKgIMLqSkaAHBHK+qA0FqxbBy2zc9A==");*/
   }
 
   void _onEvent(event) async {
@@ -308,7 +309,25 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
     }
     if (fBarCodeList == 1) {
       if(event.split('-').length>2){
-        getMaterialListT(event,event.split('-')[2]);
+        Map<String, dynamic> serialMap = Map();
+        serialMap['FormId'] = 'BD_SerialMainFile';
+        serialMap['FieldKeys'] = 'FStockStatus';
+        serialMap['FilterString'] = "FNumber = '" +
+            event.split('-')[2] +
+            "'";
+        Map<String, dynamic> serialDataMap = Map();
+        serialDataMap['data'] = serialMap;
+        String serialRes = await CurrencyEntity.polling(serialDataMap);
+        var serialJson = jsonDecode(serialRes);
+        if (serialJson.length > 0) {
+          if(serialJson[0][0]=="1"){
+            getMaterialListT(event,event.split('-')[2]);
+          }else{
+            ToastUtil.showInfo('该序列号已出库或未入库');
+          }
+        }else{
+          ToastUtil.showInfo('序列号不存在');
+        }
       }else {
         if (event.length > 15) {
           Map<String, dynamic> barcodeMap = Map();
@@ -338,8 +357,27 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
               ;
               if (msg == "") {
                 _code = event;
-                this.getMaterialList(
-                    barcodeData, barcodeData[0][10], barcodeData[0][11]);
+                Map<String, dynamic> serialMap = Map();
+                serialMap['FormId'] = 'BD_SerialMainFile';
+                serialMap['FieldKeys'] = 'FStockStatus';
+                serialMap['FilterString'] = "FNumber = '" +
+                    barcodeData[0][11] +
+                    "'";
+                Map<String, dynamic> serialDataMap = Map();
+                serialDataMap['data'] = serialMap;
+                String serialRes = await CurrencyEntity.polling(serialDataMap);
+                var serialJson = jsonDecode(serialRes);
+                if (serialJson.length > 0) {
+                  if(serialJson[0][0]=="1"){
+                    this.getMaterialList(
+                        barcodeData, barcodeData[0][10], barcodeData[0][11]);
+                  }else{
+                    ToastUtil.showInfo('该序列号已出库或未入库');
+                  }
+                }else{
+                  ToastUtil.showInfo('序列号不存在');
+                }
+
                 print("ChannelPage: $event");
               } else {
                 ToastUtil.showInfo(msg);
@@ -351,7 +389,26 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
             ToastUtil.showInfo('条码不在条码清单中');
           }
         }else{
-          getMaterialListTH(event,event.substring(9,15));
+          Map<String, dynamic> serialMap = Map();
+          serialMap['FormId'] = 'BD_SerialMainFile';
+          serialMap['FieldKeys'] = 'FStockStatus';
+          serialMap['FilterString'] = "FNumber = '" +
+              event.substring(9,15) +
+              "'";
+          Map<String, dynamic> serialDataMap = Map();
+          serialDataMap['data'] = serialMap;
+          String serialRes = await CurrencyEntity.polling(serialDataMap);
+          var serialJson = jsonDecode(serialRes);
+          if (serialJson.length > 0) {
+            if(serialJson[0][0]=="1"){
+              getMaterialListTH(event,event.substring(9,15));
+            }else{
+              ToastUtil.showInfo('该序列号已出库或未入库');
+            }
+          }else{
+            ToastUtil.showInfo('序列号不存在');
+          }
+
         }
       }
     } else {
@@ -2167,8 +2224,12 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
         Model['FCustomerID'] = {"FNumber": this.customerNumber};
       }
       Model['FCarriageNO'] = this._remarkContent.text;
-      Model['F_UYEP_UserId '] ={"FUserID": orderDate[0][29]};
-      Model['F_UYEP_Date '] = orderDate[0][31];
+      Model['F_UYEP_UserId'] ={"FUserID": orderDate[0][29]};
+      Model['F_UYEP_Date'] = orderDate[0][31];
+      Model['FNote'] = orderDate[0][33];
+      Model['FReceiverContactID'] ={"FNAME": orderDate[0][26]};
+      Model['FReceiveAddress'] = orderDate[0][27];
+      Model['FLinkPhone'] = orderDate[0][28];
       var FEntity = [];
       var hobbyIndex = 0;
       this.hobby.forEach((element) {
@@ -2191,6 +2252,7 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
           FEntityItem['FSrcBillNo'] = this.FBillNo;
           FEntityItem['FSoorDerno'] = orderDate[hobbyIndex][30];
           FEntityItem['F_UYEP_Text1'] = orderDate[hobbyIndex][32];
+          FEntityItem['FEntrynote'] = orderDate[hobbyIndex][34];
           FEntityItem['FEntity_Link'] = [
             {
               "FEntity_Link_FRuleId": "DeliveryNotice-OutStock",
@@ -2232,6 +2294,7 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
       orderMap['Model'] = Model;
       dataMap['data'] = orderMap;
       print(jsonEncode(dataMap));
+      var paramsvalve=jsonEncode(dataMap);
       String order = await SubmitEntity.save(dataMap);
       var res = jsonDecode(order);
       print(res);
@@ -2243,62 +2306,76 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
             'Ids': res['Result']['ResponseStatus']['SuccessEntitys'][0]['Id']
           }
         };
-        var errorMsg = "";
-        if (fBarCodeList == 1) {
-          for (int i = 0; i < this.hobby.length; i++) {
-            if (this.hobby[i][3]['value']['value'] != '0'&&
-                this.hobby[i][4]['value']['value'] != '') {
-              var kingDeeCode = this.hobby[i][0]['value']['kingDeeCode'];
-              for (int j = 0; j < kingDeeCode.length; j++) {
-                Map<String, dynamic> dataCodeMap = Map();
-                dataCodeMap['formid'] = 'QDEP_Cust_BarCodeList';
-                Map<String, dynamic> orderCodeMap = Map();
-                orderCodeMap['NeedReturnFields'] = [];
-                orderCodeMap['IsDeleteEntry'] = false;
-                Map<String, dynamic> codeModel = Map();
-                var itemCode = kingDeeCode[j].split("-");
-                if(itemCode.length>1){
+        //提交
+        HandlerOrder.orderHandler(
+            context,
+            submitMap,
+            1,
+            "PUR_ReceiveBill",
+            SubmitEntity.submit(submitMap))
+            .then((submitResult) async {
+          if (submitResult) {
+            var errorMsg = "";
+            if (fBarCodeList == 1) {
+              for (int i = 0; i < this.hobby.length; i++) {
+                if (this.hobby[i][3]['value']['value'] != '0'&&
+                    this.hobby[i][4]['value']['value'] != '') {
+                  var kingDeeCode = this.hobby[i][0]['value']['kingDeeCode'];
+                  for (int j = 0; j < kingDeeCode.length; j++) {
+                    Map<String, dynamic> dataCodeMap = Map();
+                    dataCodeMap['formid'] = 'QDEP_Cust_BarCodeList';
+                    Map<String, dynamic> orderCodeMap = Map();
+                    orderCodeMap['NeedReturnFields'] = [];
+                    orderCodeMap['IsDeleteEntry'] = false;
+                    Map<String, dynamic> codeModel = Map();
+                    var itemCode = kingDeeCode[j].split("-");
+                    if(itemCode.length>1){
 
-                codeModel['FID'] = itemCode[0];
-                Map<String, dynamic> codeFEntityItem = Map();
-                codeFEntityItem['FBillDate'] = FDate;
-                codeFEntityItem['FOutQty'] = itemCode[1];
-                codeFEntityItem['FEntryBillNo'] = orderDate[i][0];
-                codeFEntityItem['FEntryStockID'] = {
-                  "FNUMBER": this.hobby[i][4]['value']['value']
-                };
-                var codeFEntity = [codeFEntityItem];
-                codeModel['FEntity'] = codeFEntity;
-                orderCodeMap['Model'] = codeModel;
-                dataCodeMap['data'] = orderCodeMap;
-                String codeRes = await SubmitEntity.save(dataCodeMap);
-                var barcodeRes = jsonDecode(codeRes);
-                if (!barcodeRes['Result']['ResponseStatus']['IsSuccess']) {
-                  errorMsg += "错误反馈：" +
-                      itemCode[1] +
-                      ":" +
-                      barcodeRes['Result']['ResponseStatus']['Errors'][0]
-                          ['Message'];
+                      codeModel['FID'] = itemCode[0];
+                      Map<String, dynamic> codeFEntityItem = Map();
+                      codeFEntityItem['FBillDate'] = FDate;
+                      codeFEntityItem['FOutQty'] = itemCode[1];
+                      codeFEntityItem['FEntryBillNo'] = orderDate[i][0];
+                      codeFEntityItem['FEntryStockID'] = {
+                        "FNUMBER": this.hobby[i][4]['value']['value']
+                      };
+                      var codeFEntity = [codeFEntityItem];
+                      codeModel['FEntity'] = codeFEntity;
+                      orderCodeMap['Model'] = codeModel;
+                      dataCodeMap['data'] = orderCodeMap;
+                      String codeRes = await SubmitEntity.save(dataCodeMap);
+                      var barcodeRes = jsonDecode(codeRes);
+                      if (!barcodeRes['Result']['ResponseStatus']['IsSuccess']) {
+                        errorMsg += "错误反馈：" +
+                            itemCode[1] +
+                            ":" +
+                            barcodeRes['Result']['ResponseStatus']['Errors'][0]
+                            ['Message'];
+                      }
+                      print(codeRes);
+                    }
+                  }
+
                 }
-                print(codeRes);
               }
-              }
-
             }
+            if (errorMsg != "") {
+              ToastUtil.errorDialog(context, errorMsg);
+              this.isSubmit = false;
+            }
+            //提交清空页面
+            setState(() {
+              this.hobby = [];
+              this.orderDate = [];
+              this.FBillNo = '';
+              ToastUtil.showInfo('提交成功');
+              Navigator.of(context).pop("refresh");
+            });
+          } else {
+            this.isSubmit = false;
           }
-        }
-        if (errorMsg != "") {
-          ToastUtil.errorDialog(context, errorMsg);
-          this.isSubmit = false;
-        }
-        //提交清空页面
-        setState(() {
-          this.hobby = [];
-          this.orderDate = [];
-          this.FBillNo = '';
-          ToastUtil.showInfo('提交成功');
-          Navigator.of(context).pop("refresh");
         });
+
         /* setState(() {
           this.isSubmit = true;
         });

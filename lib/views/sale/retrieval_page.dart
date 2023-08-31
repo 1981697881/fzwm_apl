@@ -80,26 +80,26 @@ class _RetrievalPageState extends State<RetrievalPage> {
   getOrderList() async {
     EasyLoading.show(status: 'loading...');
     Map<String, dynamic> userMap = Map();
-    userMap['FilterString'] = "FRemainOutQty>0 and FCLOSESTATUS='A'";
+    userMap['FilterString'] = "FRemainOutQty>0 and FDocumentStatus ='C'";
     var scanCode = keyWord.split(",");
     if (this._dateSelectText != "") {
       this.startDate = this._dateSelectText.substring(0, 10);
       this.endDate = this._dateSelectText.substring(26, 36);
       userMap['FilterString'] =
-          "FRemainOutQty>0 and FCLOSESTATUS='A' and FDate>= '$startDate' and FDate <= '$endDate'";
+          "FRemainOutQty>0 and FDocumentStatus ='C' and FDate>= '$startDate' and FDate <= '$endDate'";
     }
     if(this.isScan){
       if (this.keyWord != '') {
         userMap['FilterString'] =
-            "FBillNo like '%"+keyWord+"%' and FCLOSESTATUS='A' and FRemainOutQty>0";
+            "FBillNo like '%"+keyWord+"%' and FDocumentStatus ='C' and FRemainOutQty>0";
       }
     }else{
       if (this.keyWord != '') {
         userMap['FilterString'] =
-            "FBillNo like '%"+keyWord+"%' and FCLOSESTATUS='A' and FRemainOutQty>0";
+            "FBillNo like '%"+keyWord+"%' and FDocumentStatus ='C' and FRemainOutQty>0";
       }else{
         userMap['FilterString'] =
-            "FBillNo like '%"+keyWord+"%' and FCLOSESTATUS='A' and FRemainOutQty>0 and FDate>= '$startDate' and FDate <= '$endDate'";
+            "FBillNo like '%"+keyWord+"%' and FDocumentStatus ='C' and FRemainOutQty>0 and FDate>= '$startDate' and FDate <= '$endDate'";
       }
     }
     this.isScan = false;
@@ -208,6 +208,7 @@ class _RetrievalPageState extends State<RetrievalPage> {
       });
       ToastUtil.showInfo('无数据');
     }
+
   }
 
   void _onEvent(event) async {
@@ -224,16 +225,34 @@ class _RetrievalPageState extends State<RetrievalPage> {
       barcodeMap['FilterString'] = "FBarCodeEn='" + event + "'";
       barcodeMap['FormId'] = 'QDEP_Cust_BarCodeList';
       barcodeMap['FieldKeys'] =
-      'FSrcBillNo';
+      'FSrcBillNo,FSN';
       Map<String, dynamic> dataMap = Map();
       dataMap['data'] = barcodeMap;
       String order = await CurrencyEntity.polling(dataMap);
       var barcodeData = jsonDecode(order);
       if (barcodeData.length > 0) {
-        keyWord = barcodeData[0][0];
-        this.controller.text = barcodeData[0][0];
-        this.isScan = true;
-        await this.getOrderList();
+        Map<String, dynamic> serialMap = Map();
+        serialMap['FormId'] = 'BD_SerialMainFile';
+        serialMap['FieldKeys'] = 'FStockStatus';
+        serialMap['FilterString'] = "FNumber = '" +
+            barcodeData[0][1] +
+            "'";
+        Map<String, dynamic> serialDataMap = Map();
+        serialDataMap['data'] = serialMap;
+        String serialRes = await CurrencyEntity.polling(serialDataMap);
+        var serialJson = jsonDecode(serialRes);
+        if (serialJson.length > 0) {
+          if(serialJson[0][0]=="1"){
+            keyWord = barcodeData[0][0];
+            this.controller.text = barcodeData[0][0];
+            this.isScan = true;
+            await this.getOrderList();
+          }else{
+            ToastUtil.showInfo('该序列号已出库或未入库');
+          }
+        }else{
+          ToastUtil.showInfo('序列号不存在');
+        }
       } else {
         ToastUtil.showInfo('条码不在条码清单中');
       }
