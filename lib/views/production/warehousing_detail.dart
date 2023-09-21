@@ -343,9 +343,7 @@ class _WarehousingDetailState extends State<WarehousingDetail> {
           Map<String, dynamic> serialMap = Map();
           serialMap['FormId'] = 'BD_SerialMainFile';
           serialMap['FieldKeys'] = 'FStockStatus';
-          serialMap['FilterString'] = "FNumber = '" +
-              barcodeData[0][11] +
-              "'";
+          serialMap['FilterString'] = "FNumber = '" + barcodeData[0][11] + "' and FMaterialID.FNumber = '" + barcodeData[0][8] + "'";
           Map<String, dynamic> serialDataMap = Map();
           serialDataMap['data'] = serialMap;
           String serialRes = await CurrencyEntity.polling(serialDataMap);

@@ -573,7 +573,7 @@ class _LoginPageState extends State<LoginPage> {
                       empDataMap['data'] = empMap;
                       String EmpEntity = await CurrencyEntity.polling(empDataMap);
                       var resEmp = jsonDecode(EmpEntity);
-                      if(author.data!.data.fAuthNums > resEmp.length && resEmp.length > 0){
+                      if(author.data!.data.fAuthNums >= resEmp.length && resEmp.length > 0){
                         sharedPreferences.setString('menuList', jsonEncode(author.data!.data));
                         sharedPreferences.setString('FStaffNumber', _username);
                         sharedPreferences.setString('FPwd', _password);

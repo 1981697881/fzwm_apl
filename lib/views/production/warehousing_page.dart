@@ -274,7 +274,7 @@ class _WarehousingPageState extends State<WarehousingPage> {
       barcodeMap['FilterString'] = "FBarCodeEn='" + event + "'";
       barcodeMap['FormId'] = 'QDEP_Cust_BarCodeList';
       barcodeMap['FieldKeys'] =
-      'FSrcBillNo,FSN';
+      'FSrcBillNo,FSN,FMATERIALID.FNUMBER';
       Map<String, dynamic> dataMap = Map();
       dataMap['data'] = barcodeMap;
       String order = await CurrencyEntity.polling(dataMap);
@@ -283,9 +283,7 @@ class _WarehousingPageState extends State<WarehousingPage> {
         Map<String, dynamic> serialMap = Map();
         serialMap['FormId'] = 'BD_SerialMainFile';
         serialMap['FieldKeys'] = 'FStockStatus';
-        serialMap['FilterString'] = "FNumber = '" +
-            barcodeData[0][1] +
-            "'";
+        serialMap['FilterString'] = "FNumber = '" + barcodeData[0][1] + "' and FMaterialID.FNumber = '" + barcodeData[0][2] + "'";
         Map<String, dynamic> serialDataMap = Map();
         serialDataMap['data'] = serialMap;
         String serialRes = await CurrencyEntity.polling(serialDataMap);

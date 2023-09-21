@@ -338,7 +338,7 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
       ToastUtil.showInfo('无数据');
     }
     getStockList();
-    /*_onEvent("247230329291267");*/
+    //_onEvent("B.07.APSP101;23070001;;50;JGRK23070008;2");
   }
 
   void _onEvent(event) async {
@@ -383,8 +383,7 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
               Map<String, dynamic> serialMap = Map();
               serialMap['FormId'] = 'BD_SerialMainFile';
               serialMap['FieldKeys'] = 'FStockStatus';
-              serialMap['FilterString'] =
-                  "FNumber = '" + barcodeData[0][11] + "'";
+              serialMap['FilterString'] = "FNumber = '" + barcodeData[0][11] + "' and FMaterialID.FNumber = '" + barcodeData[0][8] + "'";
               Map<String, dynamic> serialDataMap = Map();
               serialDataMap['data'] = serialMap;
               String serialRes = await CurrencyEntity.polling(serialDataMap);
@@ -1925,9 +1924,7 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
       dataMap['data'] = inOrderMap;
       Map<String, dynamic> orderMap = Map();
       orderMap['NeedUpDataFields'] = [
-        'FStockStatusId',
-        'FRealQty',
-        'FInStockType'
+        'FDetailEntity',
       ];
       orderMap['IsDeleteEntry'] = false;
       Map<String, dynamic> Model = Map();
@@ -1940,7 +1937,7 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
             Map<String, dynamic> FEntityItem = Map();
             FEntityItem['FEntryID'] = resData[entity][0];
             FEntityItem['FStockStatusId'] = {"FNumber": "KCZT01_SYS"};
-            FEntityItem['FActlandQty'] =
+            FEntityItem['FActReceiveQty'] =
                 this.hobby[element][3]['value']['value'];
           /*  FEntityItem['FStockId'] = {
               "FNumber": this.hobby[element][4]['value']['value']
@@ -1964,9 +1961,9 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
           }
         }
       }
-      Model['FEntity'] = FEntity;
+      Model['FDetailEntity'] = FEntity;
       orderMap['Model'] = Model;
-      dataMap = {"formid": "PUR_ReceiveBill", "data": orderMap, "isBool": true, "msg": res['Result']['ResponseStatus']['Errors'][0]['Message']};
+      dataMap = {"formid": "PUR_ReceiveBill", "data": orderMap, "isBool": true};
       print(jsonEncode(dataMap));
       //返回保存参数
       return dataMap;
@@ -2006,47 +2003,52 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
         var resCheck = await this.pushDown(EntryIds, 'defective');
         print(resCheck);
         if (resCheck['isBool'] != false) {
-          print(resCheck);
-          Map<String, dynamic> submitMap = Map();
-          submitMap = {
-            "formid": "PUR_ReceiveBill",
-            "data": {'Ids': resCheck['data']['Model']['FID']}
+          String order = await SubmitEntity.save(resCheck);
+          var res = jsonDecode(order);
+          print(res);
+          if (res['Result']['ResponseStatus']['IsSuccess']) {
+            print(resCheck);
+            Map<String, dynamic> submitMap = Map();
+            submitMap = {
+              "formid": "PUR_ReceiveBill",
+              "data": {'Ids': resCheck['data']['Model']['FID']}
+            };
+            //提交
+            HandlerOrder.orderHandler(context, submitMap, 1, "PUR_ReceiveBill",
+                SubmitEntity.submit(submitMap))
+                .then((submitResult) {
+              if (submitResult) {
+                //审核
+                HandlerOrder.orderHandler(context, submitMap, 1,
+                    "PUR_ReceiveBill", SubmitEntity.audit(submitMap))
+                    .then((auditResult) async {
+                  if (auditResult) {
+                    //提交清空页面
+                    setState(() {
+                      this.hobby = [];
+                      this.orderDate = [];
+                      this.FBillNo = '';
+                      ToastUtil.showInfo('提交成功');
+                      Navigator.of(context).pop("refresh");
+                    });
+                  } else {
+                    //失败后反审
+                    HandlerOrder.orderHandler(context, submitMap, 0,
+                        "PUR_ReceiveBill", SubmitEntity.unAudit(submitMap))
+                        .then((unAuditResult) {
+                      if (unAuditResult) {
+                        this.isSubmit = false;
+                      } else {
+                        this.isSubmit = false;
+                      }
+                    });
+                  }
+                });
+              } else {
+                this.isSubmit = false;
+              }
+            });
           };
-          //提交
-          HandlerOrder.orderHandler(context, submitMap, 1, "PUR_ReceiveBill",
-                  SubmitEntity.submit(submitMap))
-              .then((submitResult) {
-            if (submitResult) {
-              //审核
-              HandlerOrder.orderHandler(context, submitMap, 1,
-                      "PUR_ReceiveBill", SubmitEntity.audit(submitMap))
-                  .then((auditResult) async {
-                if (auditResult) {
-                  //提交清空页面
-                  setState(() {
-                    this.hobby = [];
-                    this.orderDate = [];
-                    this.FBillNo = '';
-                    ToastUtil.showInfo('提交成功');
-                    Navigator.of(context).pop("refresh");
-                  });
-                } else {
-                  //失败后反审
-                  HandlerOrder.orderHandler(context, submitMap, 0,
-                          "PUR_ReceiveBill", SubmitEntity.unAudit(submitMap))
-                      .then((unAuditResult) {
-                    if (unAuditResult) {
-                      this.isSubmit = false;
-                    } else {
-                      this.isSubmit = false;
-                    }
-                  });
-                }
-              });
-            } else {
-              this.isSubmit = false;
-            }
-          });
         } else {
           setState(() {
             this.isSubmit = false;
@@ -2329,7 +2331,7 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
                       number++;
                     }
                   }
-                  if (number == this.hobby.length) {
+                  if (number>0) {
                     saveOrder(false);
                   } else {
                     saveOrder(true);
