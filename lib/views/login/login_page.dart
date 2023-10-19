@@ -541,7 +541,6 @@ class _LoginPageState extends State<LoginPage> {
               map['lcid'] =  "2052";
               map['password'] = sharedPreferences.getString('password');
               ApiResponse<LoginEntity> entity = await LoginEntity.login(map);
-              print(entity);
               if (entity.data!.loginResultType == 1) {
                 //  print("登录成功");
                 Map<String, dynamic> userMap = Map();
@@ -610,7 +609,7 @@ class _LoginPageState extends State<LoginPage> {
                   ToastUtil.showInfo('用户名或密码错误');
                 }
               } else {
-                ToastUtil.showInfo('登录失败');
+                ToastUtil.showInfo(entity.data!.message);
               }
             }else{
               ToastUtil.showInfo('请配置登录信息,在登录页右上角,点击设置按钮进行配置');
