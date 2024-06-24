@@ -348,7 +348,7 @@ class _WarehousingDetailState extends State<WarehousingDetail> {
           serialDataMap['data'] = serialMap;
           String serialRes = await CurrencyEntity.polling(serialDataMap);
           var serialJson = jsonDecode(serialRes);
-          if (serialJson.length > 0 && serialJson[0][0]=="1") {
+          if (serialJson.length > 1  || (serialJson.length > 0 && serialJson[0][0] == "1")) {
             ToastUtil.showInfo('该序列号已入库');
           }else{
             this.getMaterialList(
@@ -1882,54 +1882,55 @@ class _WarehousingDetailState extends State<WarehousingDetail> {
       var FEntity = [];
       for (int entity = 0; entity < resData.length; entity++) {
         for (int element = 0; element < this.hobby.length; element++) {
-          if (resData[entity][1].toString() ==
-              this.hobby[element][0]['value']['value'].toString()) {
-            // ignore: non_constant_identifier_names
-            //判断不良品还是良品
-            Map<String, dynamic> FEntityItem = Map();
-            FEntityItem['FEntryID'] = resData[entity][0];
-            FEntityItem['FReportType'] = {"FNumber": "HBLX01_SYS"};
-            FEntityItem['FInStockType'] = '1';
-            /*FEntityItem['FWorkshipId'] = {"FNumber": "BM00018"};*/
-            FEntityItem['FFinishQty'] =
-                this.hobby[element][3]['value']['value'];
-            FEntityItem['FQuaQty'] = this.hobby[element][3]['value']['value'];
+          if (resData[entity][1].toString() == this.hobby[element][0]['value']['value'].toString()) {
+            if (this.hobby[element][3]['value']['value'] != '0') {
+              // ignore: non_constant_identifier_names
+              //判断不良品还是良品
+              Map<String, dynamic> FEntityItem = Map();
+              FEntityItem['FEntryID'] = resData[entity][0];
+              FEntityItem['FReportType'] = {"FNumber": "HBLX01_SYS"};
+              FEntityItem['FInStockType'] = '1';
+              /*FEntityItem['FWorkshipId'] = {"FNumber": "BM00018"};*/
+              FEntityItem['FFinishQty'] =
+              this.hobby[element][3]['value']['value'];
+              FEntityItem['FQuaQty'] = this.hobby[element][3]['value']['value'];
 
-            FEntityItem['FStockId'] = {
-              "FNumber": this.hobby[element][4]['value']['value']
-            };
-            FEntityItem['FLot'] = {
-              "FNumber": this.hobby[element][5]['value']['value']
-            };
-            var fSerialSub = [];
-            var kingDeeCode = this.hobby[element][0]['value']['kingDeeCode'];
-            for (int subj = 0; subj < kingDeeCode.length; subj++) {
-              Map<String, dynamic> subObj = Map();
-              if(kingDeeCode[subj].split("-").length>2){
-                var itemCode = kingDeeCode[subj].split("-");
-                if(itemCode.length>2){
-                  if(itemCode.length > 3){
-                    subObj['FSerialNo'] = itemCode[2]+'-'+itemCode[3];
-                  }else{
-                    subObj['FSerialNo'] = itemCode[2];
-                  }
-                 /* Map<String, dynamic> serialNoMap = Map();
+              FEntityItem['FStockId'] = {
+                "FNumber": this.hobby[element][4]['value']['value']
+              };
+              FEntityItem['FLot'] = {
+                "FNumber": this.hobby[element][5]['value']['value']
+              };
+              var fSerialSub = [];
+              var kingDeeCode = this.hobby[element][0]['value']['kingDeeCode'];
+              for (int subj = 0; subj < kingDeeCode.length; subj++) {
+                Map<String, dynamic> subObj = Map();
+                if(kingDeeCode[subj].split("-").length>2){
+                  var itemCode = kingDeeCode[subj].split("-");
+                  if(itemCode.length>2){
+                    if(itemCode.length > 3){
+                      subObj['FSerialNo'] = itemCode[2]+'-'+itemCode[3];
+                    }else{
+                      subObj['FSerialNo'] = itemCode[2];
+                    }
+                    /* Map<String, dynamic> serialNoMap = Map();
                   serialNoMap['FormId'] = 'PRD_MORPT';
                   serialNoMap['FilterString'] = "FSerialSubEntity.FSerialNo='"+itemCode[2]+"'";
                   serialNoMap['FieldKeys'] =
                   'FDetailID,FSerialNo';
                   String serialNoData = await CurrencyEntity.polling({'data': serialNoMap});
                   var resSerialNoData = jsonDecode(order);*/
+                  }
+                }else{
+                  subObj['FSerialNo'] = kingDeeCode[subj];
                 }
-              }else{
-                subObj['FSerialNo'] = kingDeeCode[subj];
+                fSerialSub.add(subObj);
               }
-              fSerialSub.add(subObj);
+              FEntityItem['FSerialSubEntity'] = fSerialSub;
+              FEntityItem['FHrWorkTime'] =
+              this.hobby[element][8]['value']['value'];
+              FEntity.add(FEntityItem);
             }
-            FEntityItem['FSerialSubEntity'] = fSerialSub;
-            FEntityItem['FHrWorkTime'] =
-            this.hobby[element][8]['value']['value'];
-            FEntity.add(FEntityItem);
           }
         }
       }

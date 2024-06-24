@@ -351,7 +351,19 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
     }
     if (fBarCodeList == 1) {
       if (event.split('-').length > 2) {
-        getMaterialListT(event, event.split('-')[2]);
+        Map<String, dynamic> serialMap = Map();
+        serialMap['FormId'] = 'BD_SerialMainFile';
+        serialMap['FieldKeys'] = 'FStockStatus';
+        serialMap['FilterString'] = "FNumber = '" + event.split('-')[2] + "'";
+        Map<String, dynamic> serialDataMap = Map();
+        serialDataMap['data'] = serialMap;
+        String serialRes = await CurrencyEntity.polling(serialDataMap);
+        var serialJson = jsonDecode(serialRes);
+        if (serialJson.length > 1 || (serialJson.length > 0 && serialJson[0][0] == "1")) {
+          ToastUtil.showInfo('该序列号已入库');
+        } else {
+          getMaterialListT(event, event.split('-')[2]);
+        }
       } else {
         if (event.length > 15) {
           Map<String, dynamic> barcodeMap = Map();
@@ -383,12 +395,12 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
               Map<String, dynamic> serialMap = Map();
               serialMap['FormId'] = 'BD_SerialMainFile';
               serialMap['FieldKeys'] = 'FStockStatus';
-              serialMap['FilterString'] = "FNumber = '" + barcodeData[0][11] + "' and FMaterialID.FNumber = '" + barcodeData[0][8] + "'";
+              serialMap['FilterString'] = "FNumber = '" + barcodeData[0][11] + "'"; // and FMaterialID.FNumber = '" + barcodeData[0][8] + "'
               Map<String, dynamic> serialDataMap = Map();
               serialDataMap['data'] = serialMap;
               String serialRes = await CurrencyEntity.polling(serialDataMap);
               var serialJson = jsonDecode(serialRes);
-              if (serialJson.length > 0 && serialJson[0][0] == "1") {
+              if (serialJson.length > 1  || (serialJson.length > 0 && serialJson[0][0] == "1")) {
                 ToastUtil.showInfo('该序列号已入库');
               } else {
                 this.getMaterialList(
@@ -401,7 +413,19 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
             ToastUtil.showInfo('条码不在条码清单中');
           }
         } else {
-          getMaterialListTH(event, event.substring(9, 15));
+          Map<String, dynamic> serialMap = Map();
+          serialMap['FormId'] = 'BD_SerialMainFile';
+          serialMap['FieldKeys'] = 'FStockStatus';
+          serialMap['FilterString'] = "FNumber = '" + event.substring(9, 15) + "'";
+          Map<String, dynamic> serialDataMap = Map();
+          serialDataMap['data'] = serialMap;
+          String serialRes = await CurrencyEntity.polling(serialDataMap);
+          var serialJson = jsonDecode(serialRes);
+          if (serialJson.length > 1  || (serialJson.length > 0 && serialJson[0][0] == "1")) {
+            ToastUtil.showInfo('该序列号已入库');
+          } else {
+            getMaterialListTH(event, event.substring(9, 15));
+          }
         }
       }
     } else {

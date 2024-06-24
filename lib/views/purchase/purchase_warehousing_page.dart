@@ -205,7 +205,7 @@ class _PurchaseWarehousingPageState extends State<PurchaseWarehousingPage> {
         serialDataMap['data'] = serialMap;
         String serialRes = await CurrencyEntity.polling(serialDataMap);
         var serialJson = jsonDecode(serialRes);
-        if (serialJson.length > 0 && serialJson[0][0]=="1") {
+        if (serialJson.length > 1  || (serialJson.length > 0 && serialJson[0][0] == "1")) {
           ToastUtil.showInfo('该序列号已入库');
         }else{
           keyWord = barcodeData[0][0];

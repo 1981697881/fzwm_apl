@@ -175,7 +175,7 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
     userMap['FormId'] = 'SAL_DELIVERYNOTICE';
     userMap['OrderString'] = 'FMaterialId.FNumber ASC';
     userMap['FieldKeys'] =
-        'FBillNo,FSaleOrgId.FNumber,FSaleOrgId.FName,FDate,FEntity_FEntryId,FMaterialId.FNumber,FMaterialId.FName,FMaterialId.FSpecification,FDeliveryOrgID.FNumber,FDeliveryOrgID.FName,FUnitId.FNumber,FUnitId.FName,FQty,FDeliveryDate,FRemainOutQty,FID,FCustomerID.FNumber,FCustomerID.FName,FStockID.FName,FStockID.FNumber,FLot.FNumber,FStockID.FIsOpenLocation,FMaterialId.FIsBatchManage,FTaxPrice,FEntryTaxRate,FAllAmount,FLinkMan,FHeadLocId.FName,FLinkPhone,F_UYEP_UserId,FSrcBillNo,F_UYEP_Date,F_UYEP_Text,FNote,FNoteEntry';
+        'FBillNo,FSaleOrgId.FNumber,FSaleOrgId.FName,FDate,FEntity_FEntryId,FMaterialId.FNumber,FMaterialId.FName,FMaterialId.FSpecification,FDeliveryOrgID.FNumber,FDeliveryOrgID.FName,FUnitId.FNumber,FUnitId.FName,FQty,FDeliveryDate,FRemainOutQty,FID,FCustomerID.FNumber,FCustomerID.FName,FStockID.FName,FStockID.FNumber,FLot.FNumber,FStockID.FIsOpenLocation,FMaterialId.FIsBatchManage,FTaxPrice,FEntryTaxRate,FAllAmount,FLinkMan,FHeadLocId.FName,FLinkPhone,F_UYEP_UserId,FSrcBillNo,F_UYEP_Date,F_UYEP_Text,FNote,FNoteEntry,FPrice';
     Map<String, dynamic> dataMap = Map();
     dataMap['data'] = userMap;
     String order = await CurrencyEntity.polling(dataMap);
@@ -2183,7 +2183,7 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
       orderMap['NeedUpDataFields'] = [
         'FEntity',
         'FSerialSubEntity',
-        'FSerialNo'
+        'FSerialNo', "FPrice", "FTaxPrice", "FEntryTaxRate"
       ];
       orderMap['NeedReturnFields'] = [
         'FEntity',
@@ -2237,8 +2237,7 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
           FEntityItem['FMaterialId'] = {
             "FNumber": element[0]['value']['value']
           };
-          FEntityItem['FTaxPrice'] = orderDate[hobbyIndex][23];
-          FEntityItem['FEntryTaxRate'] = orderDate[hobbyIndex][24];
+
           FEntityItem['FUnitID'] = {"FNumber": element[2]['value']['value']};
           FEntityItem['FReturnType'] = 1;
           FEntityItem['FLot'] = {"FNumber": element[5]['value']['value']};
@@ -2251,6 +2250,9 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
           FEntityItem['FSoorDerno'] = orderDate[hobbyIndex][30];
           FEntityItem['F_UYEP_Text1'] = orderDate[hobbyIndex][32];
           FEntityItem['FEntrynote'] = orderDate[hobbyIndex][34];
+          FEntityItem['FPrice'] = orderDate[hobbyIndex][35];
+          FEntityItem['FTaxPrice'] = orderDate[hobbyIndex][23];
+          FEntityItem['FEntryTaxRate'] = orderDate[hobbyIndex][24];
           FEntityItem['FEntity_Link'] = [
             {
               "FEntity_Link_FRuleId": "DeliveryNotice-OutStock",
