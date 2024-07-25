@@ -430,7 +430,7 @@ class _PickingDetailState extends State<PickingDetail> {
       ToastUtil.showInfo('无数据');
       getStockList();
     }
-    /* _onEvent("247230329291267");*/
+     //_onEvent("023002062-20240703-202407030040");
   }
 
   void _onEvent(event) async {
@@ -443,23 +443,8 @@ class _PickingDetailState extends State<PickingDetail> {
     }
     if (fBarCodeList == 1) {
       if (event.split('-').length > 2) {
-        Map<String, dynamic> serialMap = Map();
-        serialMap['FormId'] = 'BD_SerialMainFile';
-        serialMap['FieldKeys'] = 'FStockStatus';
-        serialMap['FilterString'] = "FNumber = '" + event.split('-')[2] + "'";
-        Map<String, dynamic> serialDataMap = Map();
-        serialDataMap['data'] = serialMap;
-        String serialRes = await CurrencyEntity.polling(serialDataMap);
-        var serialJson = jsonDecode(serialRes);
-        if (serialJson.length > 0) {
-          if(serialJson[0][0]=="1"){
-            getMaterialListT(event, event.split('-')[2]);
-          }else{
-            ToastUtil.showInfo('该序列号已出库或未入库');
-          }
-        }else{
-          ToastUtil.showInfo('序列号不存在');
-        }
+        getMaterialListT(event, event.split('-')[2]);
+
       } else {
         if (event.length > 15) {
           Map<String, dynamic> barcodeMap = Map();
@@ -492,25 +477,8 @@ class _PickingDetailState extends State<PickingDetail> {
               ;
               if (msg == "") {
                 _code = event;
-                Map<String, dynamic> serialMap = Map();
-                serialMap['FormId'] = 'BD_SerialMainFile';
-                serialMap['FieldKeys'] = 'FStockStatus';
-                serialMap['FilterString'] = "FNumber = '" + barcodeData[0][11] + "' and FMaterialID.FNumber = '" + barcodeData[0][8] + "'";
-                Map<String, dynamic> serialDataMap = Map();
-                serialDataMap['data'] = serialMap;
-                String serialRes = await CurrencyEntity.polling(serialDataMap);
-                var serialJson = jsonDecode(serialRes);
-                if (serialJson.length > 0) {
-                  if(serialJson[0][0]=="1"){
-                    this.getMaterialList(
-                        barcodeData, barcodeData[0][10], barcodeData[0][11]);
-                    print("ChannelPage: $event");
-                  }else{
-                    ToastUtil.showInfo('该序列号已出库或未入库');
-                  }
-                }else{
-                  ToastUtil.showInfo('序列号不存在');
-                }
+                this.getMaterialList(
+                    barcodeData, barcodeData[0][10], barcodeData[0][11]);
               } else {
                 ToastUtil.showInfo(msg);
               }
@@ -521,23 +489,8 @@ class _PickingDetailState extends State<PickingDetail> {
             ToastUtil.showInfo('条码不在条码清单中');
           }
         } else {
-          Map<String, dynamic> serialMap = Map();
-          serialMap['FormId'] = 'BD_SerialMainFile';
-          serialMap['FieldKeys'] = 'FStockStatus';
-          serialMap['FilterString'] = "FNumber = '" + event.substring(9,15) + "'";
-          Map<String, dynamic> serialDataMap = Map();
-          serialDataMap['data'] = serialMap;
-          String serialRes = await CurrencyEntity.polling(serialDataMap);
-          var serialJson = jsonDecode(serialRes);
-          if (serialJson.length > 0) {
-            if(serialJson[0][0]=="1"){
-              getMaterialListTH(event, event.substring(9, 15));
-            }else{
-              ToastUtil.showInfo('该序列号已出库或未入库');
-            }
-          }else{
-            ToastUtil.showInfo('序列号不存在');
-          }
+          getMaterialListTH(event, event.substring(9, 15));
+
         }
       }
     } else {
@@ -560,13 +513,25 @@ class _PickingDetailState extends State<PickingDetail> {
         deptData[1];
     userMap['FormId'] = 'BD_MATERIAL';
     userMap['FieldKeys'] =
-        'FMATERIALID,FName,FNumber,FSpecification,FBaseUnitId.FName,FBaseUnitId.FNumber,FIsBatchManage,FStockId.FName,FStockId.FNumber';
+        'FMATERIALID,FName,FNumber,FSpecification,FBaseUnitId.FName,FBaseUnitId.FNumber,FIsBatchManage,FCategoryID.FNumber';
     Map<String, dynamic> dataMap = Map();
     dataMap['data'] = userMap;
     String order = await CurrencyEntity.polling(dataMap);
     materialDate = [];
     materialDate = jsonDecode(order);
     if (materialDate.length > 0) {
+      Map<String, dynamic> serialMap = Map();
+      serialMap['FormId'] = 'BD_SerialMainFile';
+      serialMap['FieldKeys'] = 'FStockStatus';
+      serialMap['FilterString'] = "FNumber = '" + barcodeData[0][11] + "' and FMaterialID.FNumber = '" + materialDate[0][2] + "'";
+      Map<String, dynamic> serialDataMap = Map();
+      serialDataMap['data'] = serialMap;
+      String serialRes = await CurrencyEntity.polling(serialDataMap);
+      var serialJson = jsonDecode(serialRes);
+      if ((serialJson.length > 1 || (serialJson.length > 0 && serialJson[0][0] != "1"))) {// && materialDate[0][7] != '001'
+        ToastUtil.showInfo('该序列号已出库或未入库');
+        return;
+      }
       var number = 0;
       var barCodeScan;
       if (fBarCodeList == 1) {
@@ -1055,7 +1020,7 @@ class _PickingDetailState extends State<PickingDetail> {
         "'";
     userMap['FormId'] = 'BD_MATERIAL';
     userMap['FieldKeys'] =
-        'FMATERIALID,FName,FNumber,FSpecification,FBaseUnitId.FName,FBaseUnitId.FNumber,FIsBatchManage'; /*,SubHeadEntity1.FStoreUnitID.FNumber*/
+        'FMATERIALID,FName,FNumber,FSpecification,FBaseUnitId.FName,FBaseUnitId.FNumber,FIsBatchManage,FCategoryID.FNumber'; /*,SubHeadEntity1.FStoreUnitID.FNumber*/
     Map<String, dynamic> dataMap = Map();
     dataMap['data'] = userMap;
     String order = await CurrencyEntity.polling(dataMap);
@@ -1063,6 +1028,18 @@ class _PickingDetailState extends State<PickingDetail> {
     materialDate = jsonDecode(order);
     var scanCode = [materialDate[0][2], code.split("-")[1], "", "", "", "N"];
     if (materialDate.length > 0) {
+      Map<String, dynamic> serialMap = Map();
+      serialMap['FormId'] = 'BD_SerialMainFile';
+      serialMap['FieldKeys'] = 'FStockStatus';
+      serialMap['FilterString'] = "FNumber = '" + code.split('-')[2] + "' and FMaterialID.FNumber = '" + materialDate[0][2] + "'";
+      Map<String, dynamic> serialDataMap = Map();
+      serialDataMap['data'] = serialMap;
+      String serialRes = await CurrencyEntity.polling(serialDataMap);
+      var serialJson = jsonDecode(serialRes);
+      if ((serialJson.length > 1 || (serialJson.length > 0 && serialJson[0][0] != "1"))) {// && materialDate[0][7] != '001'
+        ToastUtil.showInfo('该序列号已出库或未入库');
+        return;
+      }
       var msg = "";
       var orderIndex = 0;
       for (var value in orderDate) {
@@ -1367,7 +1344,7 @@ class _PickingDetailState extends State<PickingDetail> {
         "'";
     userMap['FormId'] = 'BD_MATERIAL';
     userMap['FieldKeys'] =
-        'FMATERIALID,FName,FNumber,FSpecification,FBaseUnitId.FName,FBaseUnitId.FNumber,FIsBatchManage'; /*,SubHeadEntity1.FStoreUnitID.FNumber*/
+        'FMATERIALID,FName,FNumber,FSpecification,FBaseUnitId.FName,FBaseUnitId.FNumber,FIsBatchManage,FCategoryID.FNumber'; /*,SubHeadEntity1.FStoreUnitID.FNumber*/
     Map<String, dynamic> dataMap = Map();
     dataMap['data'] = userMap;
     String order = await CurrencyEntity.polling(dataMap);
@@ -1375,6 +1352,20 @@ class _PickingDetailState extends State<PickingDetail> {
     materialDate = jsonDecode(order);
     var scanCode = [materialDate[0][2], code.substring(3, 9), "", "", "", "N"];
     if (materialDate.length > 0) {
+      Map<String, dynamic> serialMap = Map();
+      serialMap['FormId'] = 'BD_SerialMainFile';
+      serialMap['FieldKeys'] = 'FStockStatus';
+      serialMap['FilterString'] = "FNumber = '" +
+          code.substring(9,15) +
+          "' and FMaterialID.FNumber = '" + materialDate[0][2] + "'";
+      Map<String, dynamic> serialDataMap = Map();
+      serialDataMap['data'] = serialMap;
+      String serialRes = await CurrencyEntity.polling(serialDataMap);
+      var serialJson = jsonDecode(serialRes);
+      if ((serialJson.length > 1 || (serialJson.length > 0 && serialJson[0][0] != "1"))) {// && materialDate[0][7] != '001'
+        ToastUtil.showInfo('该序列号已出库或未入库');
+        return;
+      }
       var msg = "";
       var orderIndex = 0;
       for (var value in orderDate) {
