@@ -342,15 +342,21 @@ class _IndexPageState extends State<IndexPage> {
           menu.add(obj);
           break;
       }
-    };
-    var obj = {
+    }
+    menu.add({
       "icon": Icons.ballot,
       "text": "委外管理",
       "id": 6,
       "color": Colors.pink.withOpacity(0.7),
       "router": MiddleLayerPage(menuId: 6, menuTitle: "委外管理")
-    };
-    menu.add(obj);
+    });
+    menu.add({
+      "icon": Icons.art_track,
+      "text": "VMI管理",
+      "id": 7,
+      "color": Colors.pink.withOpacity(0.7),
+      "router": MiddleLayerPage(menuId: 7, menuTitle: "VMI管理")
+    });
     return Wrap(
         /*mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,*/

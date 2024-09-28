@@ -232,7 +232,9 @@ class _SchemeInventoryDetailState extends State<SchemeInventoryDetail> {
     var menuData = sharedPreferences.getString('MenuPermissions');
     var deptData = jsonDecode(menuData)[0];
     userMap['FilterString'] =
-        "FForbidStatus = 'A' and FUseOrgId.FNumber =" + deptData[1];
+        "FForbidStatus = 'A' and FUseOrgId.FNumber ='" +
+            deptData[1]+
+            "'";
     Map<String, dynamic> dataMap = Map();
     dataMap['data'] = userMap;
     String res = await CurrencyEntity.polling(dataMap);

@@ -529,8 +529,8 @@ class _UndercarriagePageState extends State<UndercarriagePage> {
       SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
       var menuData = sharedPreferences.getString('MenuPermissions');
       var deptData = jsonDecode(menuData)[0];
-      Model['FStockOrgId'] = {"FNumber": deptData[1]};
-      Model['FPickOrgId'] = {"FNumber": deptData[1]};
+      Model['FStockOrgId'] = {"FNumber": deptData[1].toString()};
+      Model['FPickOrgId'] = {"FNumber": deptData[1].toString()};
       Model['FDeptId'] = {"FNumber": this.departmentNumber};
       Model['FCustId'] = {"FNumber": this.customerNumber};
       Model['FOwnerTypeIdHead'] = {"FNumber": "BD_Customer"};

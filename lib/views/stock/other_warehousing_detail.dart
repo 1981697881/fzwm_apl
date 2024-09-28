@@ -970,7 +970,7 @@ class _OtherWarehousingDetailState extends State<OtherWarehousingDetail> {
       SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
       var menuData = sharedPreferences.getString('MenuPermissions');
       var deptData = jsonDecode(menuData)[0];
-      Model['FStockOrgId'] = {"FNumber": deptData[1]};
+      Model['FStockOrgId'] = {"FNumber": deptData[1].toString()};
       /*Model['F_ora_Assistant'] = {"FNumber": this.typeNumber};*/
       if (this.departmentNumber  != null) {
         Model['FDEPTID'] = {"FNumber": this.departmentNumber};
@@ -980,7 +980,7 @@ class _OtherWarehousingDetailState extends State<OtherWarehousingDetail> {
       if (this.supplierNumber  != null) {
         Model['FSUPPLIERID'] = {"FNumber": this.supplierNumber};
       }
-      Model['FOwnerIdHead'] = {"FNumber": deptData[1]};
+      Model['FOwnerIdHead'] = {"FNumber": deptData[1].toString()};
       Model['FNOTE'] = this._remarkContent.text;
       var FEntity = [];
       var hobbyIndex = 0;
@@ -1006,7 +1006,7 @@ class _OtherWarehousingDetailState extends State<OtherWarehousingDetail> {
           FEntityItem['FQty'] = element[3]['value']['value'];
           FEntityItem['FOWNERTYPEID'] = "BD_OwnerOrg";
           FEntityItem['FSTOCKSTATUSID'] = {"FNumber": "KCZT01_SYS"};
-          FEntityItem['FOWNERID'] = {"FNumber": deptData[1]};
+          FEntityItem['FOWNERID'] = {"FNumber": deptData[1].toString()};
           FEntityItem['FLOT'] = {"FNumber": element[5]['value']['value']};
           var fSerialSub = [];
           var kingDeeCode = element[0]['value']['kingDeeCode'];
@@ -1080,10 +1080,10 @@ class _OtherWarehousingDetailState extends State<OtherWarehousingDetail> {
                         var itemCode = kingDeeCode[j].split("-");
                         codeModel['FID'] = itemCode[0];
                         codeModel['FOwnerID'] = {
-                          "FNUMBER": deptData[1]
+                          "FNUMBER": deptData[1].toString()
                         };
                         codeModel['FStockOrgID'] = {
-                          "FNUMBER": deptData[1]
+                          "FNUMBER": deptData[1].toString()
                         };
                         codeModel['FStockID'] = {
                           "FNUMBER": this.hobby[i][4]['value']['value']

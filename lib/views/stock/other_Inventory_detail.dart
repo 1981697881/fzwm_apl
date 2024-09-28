@@ -123,7 +123,9 @@ class _OtherInventoryDetailState extends State<OtherInventoryDetail> {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     var menuData = sharedPreferences.getString('MenuPermissions');
     var deptData = jsonDecode(menuData)[0];
-    userMap['FilterString'] = "FForbidStatus = 'A' and FUseOrgId.FNumber ="+deptData[1];
+    userMap['FilterString'] = "FForbidStatus = 'A' and FUseOrgId.FNumber ='" +
+        deptData[1]+
+        "'";
     Map<String, dynamic> dataMap = Map();
     dataMap['data'] = userMap;
     String res = await CurrencyEntity.polling(dataMap);

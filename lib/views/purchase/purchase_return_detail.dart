@@ -1614,10 +1614,10 @@ class _ReturnGoodsDetailState extends State<PurchaseReturnDetail> {
                         var itemCode = kingDeeCode[j].split("-");
                         codeModel['FID'] = itemCode[0];
                         codeModel['FOwnerID'] = {
-                          "FNUMBER": deptData[1]
+                          "FNUMBER": deptData[1].toString()
                         };
                         codeModel['FStockOrgID'] = {
-                          "FNUMBER": deptData[1]
+                          "FNUMBER": deptData[1].toString()
                         };
                         codeModel['FStockID'] = {
                           "FNUMBER": this.hobby[i][4]['value']['value']

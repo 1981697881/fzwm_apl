@@ -23,6 +23,10 @@ import 'package:fzwm_apl/views/stock/other_warehousing_detail.dart';
 import 'package:fzwm_apl/views/stock/other_warehousing_page.dart';
 import 'package:fzwm_apl/views/stock/stock_page.dart';
 import 'package:fzwm_apl/views/stock/undercarriage_page.dart';
+import 'package:fzwm_apl/views/vmi/vmi_Inventory_detail.dart';
+import 'package:fzwm_apl/views/vmi/vmi_allocation_detail.dart';
+import 'package:fzwm_apl/views/vmi/vmi_allocation_page.dart';
+import 'package:fzwm_apl/views/vmi/vmi_warehousing_page.dart';
 import 'package:fzwm_apl/views/workshop/dispatch_detail.dart';
 import 'package:fzwm_apl/views/workshop/dispatch_page.dart';
 import 'package:fzwm_apl/views/workshop/report_detail.dart';
@@ -345,6 +349,30 @@ class MenuPermissions {
       "parentId": 3,
       "color": Colors.pink.withOpacity(0.7),
       "router": StockPage(),
+      "source": '',
+    });
+    menu.add({
+      "icon": Icons.loupe,
+      "text": "采购入库",
+      "parentId": 7,
+      "color": Colors.pink.withOpacity(0.7),
+      "router": VmiWarehousingPage(),
+      "source": '',
+    });
+    menu.add({
+      "icon": Icons.loupe,
+      "text": "调拨",
+      "parentId": 7,
+      "color": Colors.pink.withOpacity(0.7),
+      "router": VmiAllocationDetail(),
+      "source": '',
+    });
+    menu.add({
+      "icon": Icons.loupe,
+      "text": "盘点",
+      "parentId": 7,
+      "color": Colors.pink.withOpacity(0.7),
+      "router": VmiInventoryDetail(),
       "source": '',
     });
     /* menu.add({

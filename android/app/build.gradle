@@ -55,8 +55,14 @@ android {
             }
     }
     signingConfigs {
+        debug {
+            storeFile file("pda.jks")
+            storePassword "123456"
+            keyAlias "key0"
+            keyPassword "123456"
+        }
         release {
-            storeFile file("E:\\Android\\fzwm_apl\\android\\app\\pda.jks")
+            storeFile file("pda.jks")
             storePassword "123456"
             keyAlias "key0"
             keyPassword "123456"
@@ -79,4 +85,5 @@ flutter {
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation 'com.android.support:multidex:2.0.1'
+    implementation 'com.googlecode.json-simple:json-simple:1.1'
 }

@@ -509,8 +509,9 @@ class _PickingDetailState extends State<PickingDetail> {
     var scanCode = code.split(";");
     userMap['FilterString'] = "FNumber='" +
         barcodeData[0][8] +
-        "' and FForbidStatus = 'A' and FUseOrgId.FNumber = " +
-        deptData[1];
+        "' and FForbidStatus = 'A' and FUseOrgId.FNumber = '" +
+        deptData[1]+
+        "'";
     userMap['FormId'] = 'BD_MATERIAL';
     userMap['FieldKeys'] =
         'FMATERIALID,FName,FNumber,FSpecification,FBaseUnitId.FName,FBaseUnitId.FNumber,FIsBatchManage,FCategoryID.FNumber';

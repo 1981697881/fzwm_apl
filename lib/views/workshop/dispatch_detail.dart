@@ -600,7 +600,7 @@ class _DispatchDetailState extends State<DispatchDetail> {
       Map<String, dynamic> Model = Map();
       Model['FID'] = 0;
       Model['FDate'] = FDate;
-      Model['FCreateOrgId'] = {"FNumber": deptData[1]};
+      Model['FCreateOrgId'] = {"FNumber": deptData[1].toString()};
       Model['F_ora_Assistant'] = {
         "FNumber": orderDate[0][20]
       };

@@ -356,8 +356,9 @@ class _PickingOutSourcingDetailState extends State<PickingOutSourcingDetail> {
     var deptData = jsonDecode(menuData)[0];
     var scanCode = code.split(";");
     userMap['FilterString'] = "FNumber='" +barcodeData[0][8] +
-        "' and FForbidStatus = 'A' and FUseOrgId.FNumber = " +
-        deptData[1];
+        "' and FForbidStatus = 'A' and FUseOrgId.FNumber = '" +
+    deptData[1]+
+        "'";
     userMap['FormId'] = 'BD_MATERIAL';
     userMap['FieldKeys'] =
     'FMATERIALID,FName,FNumber,FSpecification,FBaseUnitId.FName,FBaseUnitId.FNumber,FIsBatchManage,FStockId.FName,FStockId.FNumber';

@@ -968,8 +968,8 @@ class _ExWarehouseDetailState extends State<ExWarehouseDetail> {
       SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
       var menuData = sharedPreferences.getString('MenuPermissions');
       var deptData = jsonDecode(menuData)[0];
-      Model['FStockOrgId'] = {"FNumber": deptData[1]};
-      Model['FPickOrgId'] = {"FNumber": deptData[1]};
+      Model['FStockOrgId'] = {"FNumber": deptData[1].toString()};
+      Model['FPickOrgId'] = {"FNumber": deptData[1].toString()};
       if (this.departmentNumber  != null) {
         Model['FDeptId'] = {"FNumber": this.departmentNumber};
       }
@@ -980,7 +980,7 @@ class _ExWarehouseDetailState extends State<ExWarehouseDetail> {
       Model['FStockDirect'] = "GENERAL";
       Model['FBizType'] = "0";
       /*Model['F_ora_Assistant'] = {"FNumber": this.typeNumber};*/
-      Model['FOwnerIdHead'] = {"FNumber": deptData[1]};
+      Model['FOwnerIdHead'] = {"FNumber": deptData[1].toString()};
       Model['FNote'] = this._remarkContent.text;
       var FEntity = [];
       var hobbyIndex = 0;
@@ -1009,10 +1009,10 @@ class _ExWarehouseDetailState extends State<ExWarehouseDetail> {
           FEntityItem['FQty'] = element[3]['value']['value'];
           FEntityItem['FOWNERTYPEID'] = "BD_OwnerOrg";
           FEntityItem['FSTOCKSTATUSID'] = {"FNumber": "KCZT01_SYS"};
-          FEntityItem['FOWNERID'] = {"FNumber": deptData[1]};
-          FEntityItem['FOwnerId'] = {"FNumber": deptData[1]};
+          FEntityItem['FOWNERID'] = {"FNumber": deptData[1].toString()};
+          FEntityItem['FOwnerId'] = {"FNumber": deptData[1].toString()};
           FEntityItem['FKeeperTypeId'] = "BD_KeeperOrg";
-          FEntityItem['FKeeperId'] = {"FNumber": deptData[1]};
+          FEntityItem['FKeeperId'] = {"FNumber": deptData[1].toString()};
           FEntityItem['FLot'] = {"FNumber": element[5]['value']['value']};
           var fSerialSub = [];
           var kingDeeCode = element[0]['value']['kingDeeCode'];

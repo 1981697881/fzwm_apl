@@ -25,18 +25,18 @@ import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:qrscan/qrscan.dart' as scanner;
 
-class PurchaseWarehousingDetail extends StatefulWidget {
+class VmiWarehousingDetail extends StatefulWidget {
   var FBillNo;
 
-  PurchaseWarehousingDetail({Key? key, @required this.FBillNo})
+  VmiWarehousingDetail({Key? key, @required this.FBillNo})
       : super(key: key);
 
   @override
-  _PurchaseWarehousingDetailState createState() =>
-      _PurchaseWarehousingDetailState(FBillNo);
+  _VmiWarehousingDetailState createState() =>
+      _VmiWarehousingDetailState(FBillNo);
 }
 
-class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
+class _VmiWarehousingDetailState extends State<VmiWarehousingDetail> {
   var _remarkContent = new TextEditingController();
   GlobalKey<TextWidgetState> textKey = GlobalKey();
   GlobalKey<PartRefreshWidgetState> globalKey = GlobalKey();
@@ -86,7 +86,7 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
   var fOrgID;
   var fBarCodeList;
 
-  _PurchaseWarehousingDetailState(FBillNo) {
+  _VmiWarehousingDetailState(FBillNo) {
     if (FBillNo != null) {
       this.fBillNo = FBillNo['value'];
       this.getOrderList();
@@ -217,11 +217,11 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
   getOrderList() async {
     Map<String, dynamic> userMap = Map();
     print(fBillNo);
-    userMap['FilterString'] = "FBillNo='$fBillNo'";
-    userMap['FormId'] = 'PUR_PurchaseOrder';
+    userMap['FilterString'] = "FBillNo='$fBillNo' and FENTRYSTATUS = 'A'";
+    userMap['FormId'] = 'PUR_ReceiveBill';
     userMap['OrderString'] = 'FMaterialId.FNumber ASC';
     userMap['FieldKeys'] =
-        'FBillNo,FSupplierId.FNumber,FSupplierId.FName,FDate,FPOOrderEntry_FEntryId,FMaterialId.FNumber,FMaterialId.FName,FMaterialId.FSpecification,FPurchaseOrgId.FNumber,FPurchaseOrgId.FName,FUnitId.FNumber,FUnitId.FName,FQty,FSrcBillNo,FID,FMaterialId.FIsBatchManage,FCorrespondOrgId.FNumber,FStockUnitID.FNumber,FTaxPrice,FEntryTaxRate,FPrice,FPurchaseDeptId.FNumber,FPurchaserId.FNumber,FEntryNote,FBillTypeID.FNUMBER';
+        'FBillNo,FSupplierId.FNumber,FSupplierId.FName,FDate,FDetailEntity_FEntryId,FMaterialId.FNumber,FMaterialId.FName,FMaterialId.FSpecification,FPurOrgId.FNumber,FPurOrgId.FName,FUnitId.FNumber,FUnitId.FName,FActlandQty,FSrcBillNo,FID,FMaterialId.FIsBatchManage,FStockOrgId.FNumber,FStockUnitID.FNumber,FTaxPrice,FEntryTaxRate,FPrice,FPurDeptId.FNumber,FPurchaserId.FNumber,FDescription,FBillTypeID.FNUMBER,FInStockQty,FSettleCurrId.FNumber';
     Map<String, dynamic> dataMap = Map();
     dataMap['data'] = userMap;
     String order = await CurrencyEntity.polling(dataMap);
@@ -309,13 +309,13 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
           "value": {"label": value[18], "value": value[18]}
         });
         arr.add({
-          "title": "实到数量",
+          "title": "剩余数量",
           "name": "",
           "isHide": false,
           "value": {
-            "label": value[12],
-            "value": value[12],
-            "rateValue": value[12]
+            "label": (value[12] - value[25])>0?value[12] - value[25]: 0,
+            "value": (value[12] - value[25])>0?value[12] - value[25]: 0,
+            "rateValue": (value[12] - value[25])>0?value[12] - value[25]: 0
           } /*+value[12]*0.1*/
         });
         arr.add({
@@ -2038,17 +2038,17 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
             print(resCheck);
             Map<String, dynamic> submitMap = Map();
             submitMap = {
-              "formid": "PUR_ReceiveBill",
+              "formid": "STK_InStock",
               "data": {'Ids': resCheck['data']['Model']['FID']}
             };
             //提交
-            HandlerOrder.orderHandler(context, submitMap, 1, "PUR_ReceiveBill",
+            HandlerOrder.orderHandler(context, submitMap, 1, "STK_InStock",
                 SubmitEntity.submit(submitMap))
                 .then((submitResult) {
               if (submitResult) {
                 //审核
                 HandlerOrder.orderHandler(context, submitMap, 1,
-                    "PUR_ReceiveBill", SubmitEntity.audit(submitMap))
+                    "STK_InStock", SubmitEntity.audit(submitMap))
                     .then((auditResult) async {
                   if (auditResult) {
                     //提交清空页面
@@ -2062,7 +2062,7 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
                   } else {
                     //失败后反审
                     HandlerOrder.orderHandler(context, submitMap, 0,
-                        "PUR_ReceiveBill", SubmitEntity.unAudit(submitMap))
+                        "STK_InStock", SubmitEntity.unAudit(submitMap))
                         .then((unAuditResult) {
                       if (unAuditResult) {
                         this.isSubmit = false;
@@ -2085,24 +2085,24 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
         }
       } else {
         Map<String, dynamic> dataMap = Map();
-        dataMap['formid'] = 'PUR_ReceiveBill';
+        dataMap['formid'] = 'STK_InStock';
         Map<String, dynamic> orderMap = Map();
         orderMap['NeedUpDataFields'] = [
-          'FDetailEntity',
+          'FInStockEntry',
           'FSerialSubEntity',
           'FSerialNo'
         ];
         orderMap['NeedReturnFields'] = [
-          'FDetailEntity',
+          'FInStockEntry',
           'FSerialSubEntity',
           'FSerialNo'
         ];
         orderMap['IsDeleteEntry'] = true;
         Map<String, dynamic> Model = Map();
         Model['FID'] = 0;
-        Model['FBillTypeID'] = {"FNUMBER": "SLD01_SYS"};
+        Model['FBillTypeID'] = {"FNUMBER": "RKD07_SYS"};
         Model['FBusinessType'] = "CG";
-        Model['F_UYEP_TEXT'] = "PDA-";
+        //Model['F_UYEP_TEXT'] = "PDA-";
         Model['FDate'] = FDate;
         //判断有源单 无源单
         if (this.isScanWork) {
@@ -2132,11 +2132,13 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
         if (orderDate[0][21] != null) {
           Model['FPurDeptId'] = {"FNumber": orderDate[0][21]};
         }
-        Model['FPurchaserId'] = {"FNumber": orderDate[0][22]};
+        if (orderDate[0][22] != null) {
+          Model['FPurchaserId'] = {"FNumber": orderDate[0][22]};
+        }
         var FEntity = [];
         var hobbyIndex = 0;
         this.hobby.forEach((element) {
-          if (element[3]['value']['value'] != '0' &&
+          if (element[3]['value']['value'] != '0' && element[3]['value']['value'] != '' &&
               element[4]['value']['value'] != '') {
             Map<String, dynamic> FEntityItem = Map();
 
@@ -2144,7 +2146,8 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
               "FNumber": element[0]['value']['value']
             };
             FEntityItem['FUnitId'] = {"FNumber": element[2]['value']['value']};
-            FEntityItem['FStockUnitID'] = {
+            FEntityItem['FRemainInStockUnitId'] = {"FNumber": element[2]['value']['value']};
+            FEntityItem['FBaseUnitID'] = {
               "FNumber": orderDate[hobbyIndex][17]
             };
             FEntityItem['FPriceUnitId'] = {
@@ -2175,27 +2178,26 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
               fSerialSub.add(subObj);
             }
             FEntityItem['FOwnerId'] = {"FNumber": this.fOrgID};
-            FEntityItem['FSrcFormId'] = orderDate[hobbyIndex][24];
-            FEntityItem['FSrcBillNo'] = orderDate[hobbyIndex][0];
-            FEntityItem['FPOQTY'] = orderDate[hobbyIndex][12];
-            FEntityItem['FSrcEntryId'] = orderDate[hobbyIndex][4];
-            FEntityItem['FOrderBillNo'] = orderDate[hobbyIndex][0];
-            FEntityItem['FActReceiveQty'] = element[3]['value']['value'];
-            FEntityItem['FSerialSubEntity'] = fSerialSub;
+            FEntityItem['FSRCBILLTYPEID'] = orderDate[hobbyIndex][24];
+            FEntityItem['FSRCBillNo'] = orderDate[hobbyIndex][0];
+            //FEntityItem['FPOQTY'] = orderDate[hobbyIndex][12];
+            FEntityItem['FPOORDERENTRYID'] = orderDate[hobbyIndex][4];
+            FEntityItem['FPOOrderNo'] = orderDate[hobbyIndex][13];
+            FEntityItem['FRealQty'] = element[3]['value']['value'];
+            //FEntityItem['FSerialSubEntity'] = fSerialSub;
             /*FEntityItem['FOwnerTypeId'] = "BD_OwnerOrg";*/
             FEntityItem['FTaxPrice'] = orderDate[hobbyIndex][18];
             FEntityItem['FEntryTaxRate'] = orderDate[hobbyIndex][19];
-            FEntityItem['FDescription'] = orderDate[hobbyIndex][23];
+            FEntityItem['FNote'] = orderDate[hobbyIndex][23];
             /*FEntityItem['FPrice'] = orderDate[hobbyIndex][20];*/
-            FEntityItem['FDetailEntity_Link'] = [
+            FEntityItem['FInStockEntry_Link'] = [
               {
-                "FDetailEntity_Link_FRuleId":
-                    "PUR_PurchaseOrder-PUR_ReceiveBill",
-                "FDetailEntity_Link_FSTableName": "t_PUR_POOrderEntry",
-                "FDetailEntity_Link_FSBillId": orderDate[hobbyIndex][14],
-                "FDetailEntity_Link_FSId": orderDate[hobbyIndex][4],
-                "FDetailEntity_Link_FBaseUnitQty": element[3]['value']['value'],
-                "FDetailEntity_Link_FStockBaseQty": element[3]['value']['value']
+                "FInStockEntry_Link_FRuleId": "PUR_ReceiveBill-STK_InStock",
+                "FInStockEntry_Link_FSTableName": "T_PUR_ReceiveEntry",
+                "FInStockEntry_Link_FSBillId": orderDate[hobbyIndex][14],
+                "FInStockEntry_Link_FSId": orderDate[hobbyIndex][4],
+                "FInStockEntry_Link_FBaseUnitQty": element[3]['value']['value'],
+                "FInStockEntry_Link_FRemainInStockBaseQty": element[3]['value']['value']
               }
             ];
             FEntity.add(FEntityItem);
@@ -2211,8 +2213,9 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
         Model['FOwnerIdHead'] = {"FNumber": this.fOrgID};
         Map<String, dynamic> FinanceEntity = Map();
         FinanceEntity['FSettleOrgId'] = {"FNumber": this.fOrgID};
-        Model['FinanceEntity'] = FinanceEntity;
-        Model['FDetailEntity'] = FEntity;
+        FinanceEntity['FSettleCurrId'] = {"FNumber": orderDate[0][26]};
+        Model['FInStockFin'] = FinanceEntity;
+        Model['FInStockEntry'] = FEntity;
         /*Model['FDescription'] = this._remarkContent.text;*/
         orderMap['Model'] = Model;
         dataMap['data'] = orderMap;
@@ -2225,22 +2228,22 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
         if (res['Result']['ResponseStatus']['IsSuccess']) {
           Map<String, dynamic> submitMap = Map();
           submitMap = {
-            "formid": "PUR_ReceiveBill",
+            "formid": "STK_InStock",
             "data": {
               'Ids': res['Result']['ResponseStatus']['SuccessEntitys'][0]['Id']
             }
           };
           //提交
-          HandlerOrder.orderHandler(context, submitMap, 1, "PUR_ReceiveBill",
+          HandlerOrder.orderHandler(context, submitMap, 1, "STK_InStock",
                   SubmitEntity.submit(submitMap))
               .then((submitResult) {
             if (submitResult) {
               //审核
               HandlerOrder.orderHandler(context, submitMap, 1,
-                      "PUR_ReceiveBill", SubmitEntity.audit(submitMap))
+                      "STK_InStock", SubmitEntity.audit(submitMap))
                   .then((auditResult) async {
                 if (auditResult) {
-                  var errorMsg = "";
+                  /*var errorMsg = "";
                   if (fBarCodeList == 1) {
                     for (int i = 0; i < this.hobby.length; i++) {
                       if (this.hobby[i][3]['value']['value'] != '0' &&
@@ -2294,7 +2297,7 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
                   if (errorMsg != "") {
                     ToastUtil.errorDialog(context, errorMsg);
                     this.isSubmit = false;
-                  }
+                  }*/
                   //提交清空页面
                   setState(() {
                     this.hobby = [];
@@ -2306,7 +2309,7 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
                 } else {
                   //失败后反审
                   HandlerOrder.orderHandler(context, submitMap, 0,
-                          "PUR_ReceiveBill", SubmitEntity.unAudit(submitMap))
+                          "STK_InStock", SubmitEntity.unAudit(submitMap))
                       .then((unAuditResult) {
                     if (unAuditResult) {
                       this.isSubmit = false;
@@ -2359,11 +2362,11 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
                       number++;
                     }
                   }
-                  if (number>0) {
+                  //if (number>0) {
                     saveOrder(false);
-                  } else {
+                  /*} else {
                     saveOrder(true);
-                  }
+                  }*/
                 },
               )
             ],
