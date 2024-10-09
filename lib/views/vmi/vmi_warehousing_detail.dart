@@ -221,7 +221,7 @@ class _VmiWarehousingDetailState extends State<VmiWarehousingDetail> {
     userMap['FormId'] = 'PUR_ReceiveBill';
     userMap['OrderString'] = 'FMaterialId.FNumber ASC';
     userMap['FieldKeys'] =
-        'FBillNo,FSupplierId.FNumber,FSupplierId.FName,FDate,FDetailEntity_FEntryId,FMaterialId.FNumber,FMaterialId.FName,FMaterialId.FSpecification,FPurOrgId.FNumber,FPurOrgId.FName,FUnitId.FNumber,FUnitId.FName,FActlandQty,FSrcBillNo,FID,FMaterialId.FIsBatchManage,FStockOrgId.FNumber,FStockUnitID.FNumber,FTaxPrice,FEntryTaxRate,FPrice,FPurDeptId.FNumber,FPurchaserId.FNumber,FDescription,FBillTypeID.FNUMBER,FInStockQty,FSettleCurrId.FNumber';
+        'FBillNo,FSupplierId.FNumber,FSupplierId.FName,FDate,FDetailEntity_FEntryId,FMaterialId.FNumber,FMaterialId.FName,FMaterialId.FSpecification,FPurOrgId.FNumber,FPurOrgId.FName,FUnitId.FNumber,FUnitId.FName,FActlandQty,FSrcBillNo,FID,FMaterialId.FIsBatchManage,FStockOrgId.FNumber,FStockUnitID.FNumber,FTaxPrice,FEntryTaxRate,FPrice,FPurDeptId.FNumber,FPurchaserId.FNumber,FDescription,FBillTypeID.FNUMBER,FInStockQty,FSettleCurrId.FNumber,FOwnerIdHead.FNumber,FOwnerId.FNumber,FSettleOrgId.FNumber,FOwnerTypeIdHead,FOwnerTypeId';
     Map<String, dynamic> dataMap = Map();
     dataMap['data'] = userMap;
     String order = await CurrencyEntity.polling(dataMap);
@@ -2101,7 +2101,7 @@ class _VmiWarehousingDetailState extends State<VmiWarehousingDetail> {
         Map<String, dynamic> Model = Map();
         Model['FID'] = 0;
         Model['FBillTypeID'] = {"FNUMBER": "RKD07_SYS"};
-        Model['FBusinessType'] = "CG";
+        Model['FBusinessType'] = "VMICG";
         //Model['F_UYEP_TEXT'] = "PDA-";
         Model['FDate'] = FDate;
         //判断有源单 无源单
@@ -2109,8 +2109,8 @@ class _VmiWarehousingDetailState extends State<VmiWarehousingDetail> {
           Model['FPurchaseOrgId'] = {"FNumber": this.fOrgID};
           Model['FStockOrgId'] = {"FNumber": this.fOrgID};
           Model['FSupplierId'] = {"FNumber": orderDate[0][1].toString()};
-          Model['FOwnerTypeIdHead'] = {"FNumber": orderDate[0][1].toString()};
-          Model['FOwnerIdHead'] = {"FNumber": orderDate[0][1].toString()};
+          Model['FOwnerTypeIdHead'] = orderDate[0][30].toString();
+          Model['FOwnerIdHead'] = {"FNumber": orderDate[0][27].toString()};
         } else {
           if (this.departmentNumber == null) {
             this.isSubmit = false;
@@ -2126,8 +2126,8 @@ class _VmiWarehousingDetailState extends State<VmiWarehousingDetail> {
           Model['FStockOrgId'] = {"FNumber": this.fOrgID};
           Model['FStockDeptId'] = {"FNumber": this.departmentNumber};
           Model['FSupplierId'] = {"FNumber": this.supplierNumber};
-          Model['FOwnerTypeIdHead'] = {"FNumber": orderDate[0][1].toString()};
-          Model['FOwnerIdHead'] = {"FNumber": orderDate[0][1].toString()};
+          Model['FOwnerTypeIdHead'] = orderDate[0][30].toString();
+          Model['FOwnerIdHead'] = {"FNumber": orderDate[0][27].toString()};
         }
         if (orderDate[0][21] != null) {
           Model['FPurDeptId'] = {"FNumber": orderDate[0][21]};
@@ -2141,7 +2141,6 @@ class _VmiWarehousingDetailState extends State<VmiWarehousingDetail> {
           if (element[3]['value']['value'] != '0' && element[3]['value']['value'] != '' &&
               element[4]['value']['value'] != '') {
             Map<String, dynamic> FEntityItem = Map();
-
             FEntityItem['FMaterialId'] = {
               "FNumber": element[0]['value']['value']
             };
@@ -2177,7 +2176,8 @@ class _VmiWarehousingDetailState extends State<VmiWarehousingDetail> {
               }
               fSerialSub.add(subObj);
             }
-            FEntityItem['FOwnerId'] = {"FNumber": this.fOrgID};
+            FEntityItem['FOWNERTYPEID'] = orderDate[hobbyIndex][31];
+            FEntityItem['FOWNERID'] = {"FNumber": orderDate[hobbyIndex][28]};
             FEntityItem['FSRCBILLTYPEID'] = orderDate[hobbyIndex][24];
             FEntityItem['FSRCBillNo'] = orderDate[hobbyIndex][0];
             //FEntityItem['FPOQTY'] = orderDate[hobbyIndex][12];
@@ -2185,7 +2185,6 @@ class _VmiWarehousingDetailState extends State<VmiWarehousingDetail> {
             FEntityItem['FPOOrderNo'] = orderDate[hobbyIndex][13];
             FEntityItem['FRealQty'] = element[3]['value']['value'];
             //FEntityItem['FSerialSubEntity'] = fSerialSub;
-            /*FEntityItem['FOwnerTypeId'] = "BD_OwnerOrg";*/
             FEntityItem['FTaxPrice'] = orderDate[hobbyIndex][18];
             FEntityItem['FEntryTaxRate'] = orderDate[hobbyIndex][19];
             FEntityItem['FNote'] = orderDate[hobbyIndex][23];
@@ -2209,10 +2208,8 @@ class _VmiWarehousingDetailState extends State<VmiWarehousingDetail> {
           ToastUtil.showInfo('请输入数量和仓库');
           return;
         }
-        Model['FOwnerTypeIdHead'] = "BD_OwnerOrg";
-        Model['FOwnerIdHead'] = {"FNumber": this.fOrgID};
         Map<String, dynamic> FinanceEntity = Map();
-        FinanceEntity['FSettleOrgId'] = {"FNumber": this.fOrgID};
+        FinanceEntity['FSettleOrgId'] = {"FNumber": orderDate[0][29]};
         FinanceEntity['FSettleCurrId'] = {"FNumber": orderDate[0][26]};
         Model['FInStockFin'] = FinanceEntity;
         Model['FInStockEntry'] = FEntity;
@@ -2243,7 +2240,7 @@ class _VmiWarehousingDetailState extends State<VmiWarehousingDetail> {
                       "STK_InStock", SubmitEntity.audit(submitMap))
                   .then((auditResult) async {
                 if (auditResult) {
-                  /*var errorMsg = "";
+                  var errorMsg = "";
                   if (fBarCodeList == 1) {
                     for (int i = 0; i < this.hobby.length; i++) {
                       if (this.hobby[i][3]['value']['value'] != '0' &&
@@ -2297,7 +2294,7 @@ class _VmiWarehousingDetailState extends State<VmiWarehousingDetail> {
                   if (errorMsg != "") {
                     ToastUtil.errorDialog(context, errorMsg);
                     this.isSubmit = false;
-                  }*/
+                  }
                   //提交清空页面
                   setState(() {
                     this.hobby = [];

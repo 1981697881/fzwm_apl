@@ -20,6 +20,7 @@ import 'package:flutter_pickers/utils/check.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:fzwm_apl/components/my_text.dart';
 import 'package:intl/intl.dart';
+import 'package:qrscan/qrscan.dart' as scanner;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class VmiInventoryDetail extends StatefulWidget {
@@ -159,7 +160,7 @@ class _VmiInventoryDetailState extends State<VmiInventoryDetail> {
     userMap['FormId'] = 'STK_StockCountScheme';
     userMap['FieldKeys'] = 'FStockOrgId,FName,FBillNo';
     userMap['FilterString'] =
-        "FDocumentStatus = 'C' and FCloseStatus ='0' and FStockOrgId.FNumber ='" +
+        " FCloseStatus ='0' and FStockOrgId.FNumber ='" +
             deptData[1] +
             "'";
     Map<String, dynamic> dataMap = Map();
@@ -383,7 +384,7 @@ class _VmiInventoryDetailState extends State<VmiInventoryDetail> {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     var menuData = sharedPreferences.getString('MenuPermissions');
     var deptData = jsonDecode(menuData)[0];
-    var scanCode = code.split(",");
+    var scanCode = code.split(";");
     userMap['FilterString'] = "FMaterialId.FNumber='" +
         scanCode[0] +
         "' and FStockId.FNumber = '$stockNumber' and FSchemeNo = '$schemeNumber' and FOwnerId.FNumber = '$organizationsNumber'";
@@ -1449,21 +1450,21 @@ class _VmiInventoryDetailState extends State<VmiInventoryDetail> {
           }
           Map<String, dynamic> FEntityItem = Map();
           FEntityItem['FEntryID'] = element[13]['value']['value'];
-          FEntityItem['FMaterialId'] = {
+          /*FEntityItem['FMaterialId'] = {
             "FNumber": element[0]['value']['value']
           };
           FEntityItem['FUnitID'] = {"FNumber": element[2]['value']['value']};
           FEntityItem['FStockId'] = {"FNumber": element[5]['value']['value']};
           FEntityItem['FOwnerId'] = {"FNumber": element[9]['value']['value']};
-         // FEntityItem['FLOT'] = {"FNumber": element[6]['value']['value']};
+         // FEntityItem['FLot'] = {"FNumber": element[6]['value']['value']};
           FEntityItem['FStockStatusId'] = {
             "FNumber": element[10]['value']['value']
           };
           FEntityItem['FKeeperTypeId'] = element[11]['value']['value'];
-          FEntityItem['FKeeperId'] = {"FNumber": element[12]['value']['value']};
+          FEntityItem['FKeeperId'] = {"FNumber": element[12]['value']['value']};*/
           /*FEntityItem['FReturnType'] = 1;*/
           FEntityItem['FCountQty'] = element[4]['value']['value'];
-          FEntityItem['FOwnerTypeId'] = "BD_OwnerOrg";
+          /*FEntityItem['FOwnerTypeId'] = "BD_OwnerOrg";*/
           FEntity.add(FEntityItem);
         }
         hobbyIndex++;
@@ -1479,7 +1480,7 @@ class _VmiInventoryDetailState extends State<VmiInventoryDetail> {
       Model['FBillEntry'] = FEntity;
       orderMap['Model'] = Model;
       dataMap['data'] = orderMap;
-      print(jsonEncode(dataMap));
+      var saveData = jsonEncode(dataMap);
       String order = await SubmitEntity.save(dataMap);
       var res = jsonDecode(order);
       if (res['Result']['ResponseStatus']['IsSuccess']) {
@@ -1513,7 +1514,7 @@ class _VmiInventoryDetailState extends State<VmiInventoryDetail> {
             print(barcode);
             for (int j = 0; j < barcode.length; j++) {
               Map<String, dynamic> dataCodeMap = Map();
-              dataCodeMap['formid'] = 'QDEP_BarCodeList';
+              dataCodeMap['formid'] = 'QDEP_Cust_BarCodeList';
               Map<String, dynamic> orderCodeMap = Map();
               orderCodeMap['NeedReturnFields'] = [];
               orderCodeMap['IsDeleteEntry'] = false;
@@ -1565,11 +1566,26 @@ class _VmiInventoryDetailState extends State<VmiInventoryDetail> {
       ToastUtil.showInfo('无提交数据');
     }
   }
+//扫码函数,最简单的那种
+  Future scan() async {
+    String cameraScanResult = await scanner.scan(); //通过扫码获取二维码中的数据
+    getScan(cameraScanResult); //将获取到的参数通过HTTP请求发送到服务器
+    print(cameraScanResult); //在控制台打印
+  }
 
+//用于验证数据(也可以在控制台直接打印，但模拟器体验不好)
+  void getScan(String scan) async {
+    _onEvent(scan);
+  }
   @override
   Widget build(BuildContext context) {
     return FlutterEasyLoading(
       child: Scaffold(
+          floatingActionButton: FloatingActionButton(
+            onPressed: scan,
+            tooltip: 'Increment',
+            child: Icon(Icons.filter_center_focus),
+          ),
           appBar: AppBar(
             title: Text("盘点"),
             centerTitle: true,

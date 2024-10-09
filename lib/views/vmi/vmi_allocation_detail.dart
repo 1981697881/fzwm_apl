@@ -58,8 +58,8 @@ class _RetrievalDetailState extends State<VmiAllocationDetail> {
   };
   var organizationsName;
   var organizationsNumber;
-  var typeName;
-  var typeNumber;
+  var typeName = 'VMI直接调拨单';
+  var typeNumber = 'ZJDB05_SYS';
   var fBarCodeList;
   var stockList = [];
   List<dynamic> stockListObj = [];
@@ -1820,7 +1820,11 @@ class _RetrievalDetailState extends State<VmiAllocationDetail> {
       }
       Model['FOwnerTypeOutIdHead'] = "BD_OwnerOrg";
       Model['FTransferDirect'] = "GENERAL";
-      Model['FBizType'] = "GENERAL";
+      if(this.typeNumber=="ZJDB01_SYS"){
+        Model['FBizType'] = "NORMAL";
+      }else{
+        Model['FBizType'] = "VMI";
+      }
       Model['FOwnerOutIdHead'] = {"FNumber": this.organizationsNumber1};
       Model['FOwnerIdHead'] = {"FNumber": this.organizationsNumber2};
       var FEntity = [];
