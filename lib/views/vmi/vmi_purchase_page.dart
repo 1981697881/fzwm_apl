@@ -10,16 +10,16 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:qrscan/qrscan.dart' as scanner;
 import 'package:shared_preferences/shared_preferences.dart';
-import 'purchase_warehousing_detail.dart';
+import 'vmi_purchase_detail.dart';
 
-class PurchaseWarehousingPage extends StatefulWidget {
-  PurchaseWarehousingPage({Key ?key}) : super(key: key);
+class VmiPurchasePage extends StatefulWidget {
+  VmiPurchasePage({Key ?key}) : super(key: key);
 
   @override
-  _PurchaseWarehousingPageState createState() => _PurchaseWarehousingPageState();
+  _VmiPurchasePageState createState() => _VmiPurchasePageState();
 }
 
-class _PurchaseWarehousingPageState extends State<PurchaseWarehousingPage> {
+class _VmiPurchasePageState extends State<VmiPurchasePage> {
   //搜索字段
   String keyWord = '';
   String startDate = '';
@@ -31,7 +31,7 @@ class _PurchaseWarehousingPageState extends State<PurchaseWarehousingPage> {
 
   static const scannerPlugin =
   const EventChannel('com.shinow.pda_scanner/plugin');
-   StreamSubscription ?_subscription;
+  StreamSubscription ?_subscription;
   var _code;
 
   List<dynamic> orderDate = [];
@@ -45,7 +45,7 @@ class _PurchaseWarehousingPageState extends State<PurchaseWarehousingPage> {
     _dateSelectText = "${dateTime.year}-${dateTime.month.toString().padLeft(2,'0')}-${dateTime.day.toString().padLeft(2,'0')} 00:00:00.000 - ${newDate.year}-${newDate.month.toString().padLeft(2,'0')}-${newDate.day.toString().padLeft(2,'0')} 00:00:00.000";
     EasyLoading.dismiss();
     /// 开启监听
-     if (_subscription == null) {
+    if (_subscription == null) {
       _subscription = scannerPlugin
           .receiveBroadcastStream()
           .listen(_onEvent, onError: _onError);
@@ -77,26 +77,26 @@ class _PurchaseWarehousingPageState extends State<PurchaseWarehousingPage> {
   getOrderList() async {
     EasyLoading.show(status: 'loading...');
     Map<String, dynamic> userMap = Map();
-    userMap['FilterString'] = "FRemainStockINQty >0 and FBillTypeID.FNumber!='CGDD07_SYS'";
+    userMap['FilterString'] = "FRemainStockINQty >0 and FBillTypeID.FNumber='CGDD07_SYS'";
     var scanCode = keyWord.split(",");
     if (this._dateSelectText != "") {
       this.startDate = this._dateSelectText.substring(0, 10);
       this.endDate = this._dateSelectText.substring(26, 36);
       userMap['FilterString'] =
-      "FDate>= '$startDate' and FCloseStatus = 'A' and FDate <= '$endDate' and FBillTypeID.FNumber!='CGDD07_SYS'";
+      "FDate>= '$startDate' and FCloseStatus = 'A' and FDate <= '$endDate' and FBillTypeID.FNumber='CGDD07_SYS'";
     }
     if(this.isScan){
       if (this.keyWord != '') {
         userMap['FilterString'] =/*and FRemainStockINQty>0*/
-        "FBillNo like '%"+keyWord+"%' and FCloseStatus = 'A' and FRemainStockINQty>0 and FBillTypeID.FNumber!='CGDD07_SYS'";
+        "FBillNo like '%"+keyWord+"%' and FCloseStatus = 'A' and FRemainStockINQty>0 and FBillTypeID.FNumber='CGDD07_SYS'";
       }
     }else{
       if (this.keyWord != '') {
         userMap['FilterString'] =/*and FRemainStockINQty>0*/
-        "FBillNo like '%"+keyWord+"%' and FCloseStatus = 'A' and FRemainStockINQty>0 and FBillTypeID.FNumber!='CGDD07_SYS'";
+        "FBillNo like '%"+keyWord+"%' and FCloseStatus = 'A' and FRemainStockINQty>0 and FBillTypeID.FNumber='CGDD07_SYS'";
       }else{
         userMap['FilterString'] =/*and FRemainStockINQty>0*/
-        "FBillNo like '%"+keyWord+"%' and FCloseStatus = 'A' and FDate>= '$startDate' and FDate <= '$endDate' and FRemainStockINQty>0 and FBillTypeID.FNumber!='CGDD07_SYS'";
+        "FBillNo like '%"+keyWord+"%' and FCloseStatus = 'A' and FDate>= '$startDate' and FDate <= '$endDate' and FRemainStockINQty>0 and FBillTypeID.FNumber='CGDD07_SYS'";
       }
     }
     this.isScan = false;
@@ -248,7 +248,7 @@ class _PurchaseWarehousingPageState extends State<PurchaseWarehousingPage> {
                       context,
                       MaterialPageRoute(
                         builder: (context) {
-                          return PurchaseWarehousingDetail(
+                          return VmiWarehousingDetail(
                               FBillNo: this.hobby[i][0]['value']
                             // 路由参数
                           );
@@ -313,7 +313,7 @@ class _PurchaseWarehousingPageState extends State<PurchaseWarehousingPage> {
     DateTime now = DateTime.now();
     DateTime start = DateTime(dateTime.year, dateTime.month, dateTime.day);
     DateTime end = DateTime(now.year, now.month, now.day);
-     var seDate = _dateSelectText.split(" - ");
+    var seDate = _dateSelectText.split(" - ");
     //显示时间选择器
     DateTimeRange? selectTimeRange = await showDateRangePicker(
       //语言环境

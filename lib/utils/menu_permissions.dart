@@ -26,6 +26,7 @@ import 'package:fzwm_apl/views/stock/undercarriage_page.dart';
 import 'package:fzwm_apl/views/vmi/vmi_Inventory_detail.dart';
 import 'package:fzwm_apl/views/vmi/vmi_allocation_detail.dart';
 import 'package:fzwm_apl/views/vmi/vmi_allocation_page.dart';
+import 'package:fzwm_apl/views/vmi/vmi_purchase_page.dart';
 import 'package:fzwm_apl/views/vmi/vmi_warehousing_page.dart';
 import 'package:fzwm_apl/views/workshop/dispatch_detail.dart';
 import 'package:fzwm_apl/views/workshop/dispatch_page.dart';
@@ -356,7 +357,7 @@ class MenuPermissions {
       "text": "采购入库",
       "parentId": 7,
       "color": Colors.pink.withOpacity(0.7),
-      "router": VmiWarehousingPage(),
+      "router": VmiPurchasePage(),
       "source": '',
     });
     menu.add({
