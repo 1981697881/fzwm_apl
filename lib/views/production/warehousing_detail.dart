@@ -300,8 +300,8 @@ class _WarehousingDetailState extends State<WarehousingDetail> {
       getStockList();
       scanDialog();
     }
-   /* _onEvent("u+zeGAN0HjGOOOh3LfNGcSst+0RCbFmsR1G63psT2kLVkcuIIRcQDSTcpqu63ZW7");
-    _onEvent("u+zeGAN0HjGOOOh3LfNGcSst+0RCbFmsR1G63psT2kLVkcuIIRcQDXt3X7AnjnOD");*/
+    //_onEvent("34TI4lY5kQOReBLyuoliLqZ4MU5@Vxw4ykP+dQqAvJzcIhBON4dJWUoFi4DL2vtEIdiR1PC33Lw=");
+    //_onEvent("34TI4lY5kQOReBLyuoliLqZ4MU5@Vxw4ykP+dQqAvJzcIhBON4dJWXrnpzHIeQX4MURXs1@ROig=");
   }
 
   void _onEvent(event) async {

@@ -217,7 +217,7 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
   getOrderList() async {
     Map<String, dynamic> userMap = Map();
     print(fBillNo);
-    userMap['FilterString'] = "FBillNo='$fBillNo'";
+    userMap['FilterString'] = "FBillNo='$fBillNo' and FMRPCloseStatus='A'";
     userMap['FormId'] = 'PUR_PurchaseOrder';
     userMap['OrderString'] = 'FMaterialId.FNumber ASC';
     userMap['FieldKeys'] =
@@ -337,8 +337,9 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
       });
       ToastUtil.showInfo('无数据');
     }
+    //_onEvent("B.03.2501014;20230627;;40;PDA-WGRK23070052;2");
+    //_onEvent("B.03.2501014;20230701;;40;PDA-WGRK23070057;2");
     getStockList();
-    //_onEvent("023002046-20240627-202406270200");
   }
 
   void _onEvent(event) async {
