@@ -221,7 +221,7 @@ class _VmiWarehousingDetailState extends State<VmiWarehousingDetail> {
     userMap['FormId'] = 'PUR_PurchaseOrder';
     userMap['OrderString'] = 'FMaterialId.FNumber ASC';
     userMap['FieldKeys'] =
-    'FBillNo,FSupplierId.FNumber,FSupplierId.FName,FDate,FPOOrderEntry_FEntryId,FMaterialId.FNumber,FMaterialId.FName,FMaterialId.FSpecification,FPurchaseOrgId.FNumber,FPurchaseOrgId.FName,FUnitId.FNumber,FUnitId.FName,FQty,FSrcBillNo,FID,FMaterialId.FIsBatchManage,FCorrespondOrgId.FNumber,FStockUnitID.FNumber,FTaxPrice,FEntryTaxRate,FPrice,FPurchaseDeptId.FNumber,FPurchaserId.FNumber,FEntryNote,FBillTypeID.FNUMBER';
+    'FBillNo,FSupplierId.FNumber,FSupplierId.FName,FDate,FPOOrderEntry_FEntryId,FMaterialId.FNumber,FMaterialId.FName,FMaterialId.FSpecification,FPurchaseOrgId.FNumber,FPurchaseOrgId.FName,FUnitId.FNumber,FUnitId.FName,FQty,FSrcBillNo,FID,FMaterialId.FIsBatchManage,FCorrespondOrgId.FNumber,FStockUnitID.FNumber,FTaxPrice,FEntryTaxRate,FPrice,FPurchaseDeptId.FNumber,FPurchaserId.FNumber,FEntryNote,FBillTypeID.FNUMBER,FGiveAway';
     Map<String, dynamic> dataMap = Map();
     dataMap['data'] = userMap;
     String order = await CurrencyEntity.polling(dataMap);
@@ -2181,6 +2181,7 @@ class _VmiWarehousingDetailState extends State<VmiWarehousingDetail> {
             FEntityItem['FSrcEntryId'] = orderDate[hobbyIndex][4];
             FEntityItem['FOrderBillNo'] = orderDate[hobbyIndex][0];
             FEntityItem['FActReceiveQty'] = element[3]['value']['value'];
+            FEntityItem['FGiveAway'] = orderDate[hobbyIndex][25];
             FEntityItem['FSerialSubEntity'] = fSerialSub;
             /*FEntityItem['FOwnerTypeId'] = "BD_OwnerOrg";*/
             FEntityItem['FTaxPrice'] = orderDate[hobbyIndex][18];
