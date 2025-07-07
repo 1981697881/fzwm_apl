@@ -244,7 +244,7 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
     hobby = [];
     if (orderDate.length > 0) {
       this.fOrgID = orderDate[0][16];
-      orderDate.forEach((value) {
+      for(var value in orderDate){
         fNumber.add(value[5]);
         List arr = [];
         arr.add({
@@ -325,7 +325,7 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
           "value": {"label": "0", "value": "0"}
         });
         hobby.add(arr);
-      });
+      };
       setState(() {
         EasyLoading.dismiss();
         this._getHobby();
@@ -2136,7 +2136,7 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
         Model['FPurchaserId'] = {"FNumber": orderDate[0][22]};
         var FEntity = [];
         var hobbyIndex = 0;
-        this.hobby.forEach((element) {
+        for(var element in hobby){
           if (element[3]['value']['value'] != '0' &&
               element[4]['value']['value'] != '') {
             Map<String, dynamic> FEntityItem = Map();
@@ -2184,11 +2184,11 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
             FEntityItem['FGiveAway'] = orderDate[hobbyIndex][25];
             FEntityItem['FActReceiveQty'] = element[3]['value']['value'];
             /*FEntityItem['FOwnerTypeId'] = "BD_OwnerOrg";*/
+            FEntityItem['FPrice'] = orderDate[hobbyIndex][20];
             FEntityItem['FTaxPrice'] = orderDate[hobbyIndex][18];
             FEntityItem['FEntryTaxRate'] = orderDate[hobbyIndex][19];
             FEntityItem['FDescription'] = orderDate[hobbyIndex][23];
             FEntityItem['FSerialSubEntity'] = fSerialSub;
-            /*FEntityItem['FPrice'] = orderDate[hobbyIndex][20];*/
             FEntityItem['FDetailEntity_Link'] = [
               {
                 "FDetailEntity_Link_FRuleId":
@@ -2203,7 +2203,7 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
             FEntity.add(FEntityItem);
           }
           hobbyIndex++;
-        });
+        };
         if (FEntity.length == 0) {
           this.isSubmit = false;
           ToastUtil.showInfo('请输入数量和仓库');

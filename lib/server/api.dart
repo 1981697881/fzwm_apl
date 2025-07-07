@@ -78,5 +78,5 @@ class API {
       'https://www.pgyer.com/apiv2/app/check?_api_key=dd6926b00c3c3f22a0ee4204f8aaad88&appKey=ef0c698e399e901fae15cd8f6970ae53';
   //授权查询 authorize
   static const String AUTHORIZE_URL =
-      'http://auth.gzfzdev.com:50022/web/auth/findAuthMessage';
+      'http://14.29.254.232:50022/web/auth/findAuthMessage';
 }

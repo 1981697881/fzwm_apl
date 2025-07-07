@@ -127,7 +127,7 @@ class _BindSNPageState extends State<BindSNPage> {
       "-",
       dd,
     ]);
-    /*_onEvent("247230329291267");*/
+    /*_onEvent("34TI4lY5kQOIMRcshSeK3ag6958rtaxpnSl6KswGMa7FQb4WsA5rZav3r8gv0q9v9Gok2JXBu6Y=");*/
    /* _onEvent("34TI4lY5kQMeeeRftiNVZbNeM4@GyjUf9huSIkwn@km8QDmVaYtheQ==");
     Future.delayed(Duration(milliseconds: 5000), () {
       _onEvent(
