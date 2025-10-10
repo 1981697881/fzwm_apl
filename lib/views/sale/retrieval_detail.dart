@@ -295,8 +295,8 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
       ToastUtil.showInfo('无数据');
     }
     getStockList();
-    //_onEvent("247240621320073");
-    /*_onEvent("34TI4lY5kQOIQxGWehV+aj1NEKgIMLqSkaAHBHK+qA0FqxbBy2zc9A==");*/
+    // _onEvent("34TI4lY5kQPOidfFmy4S+Q9heg2lwADgSX46DCOR@gRPUlGhXYACcJzS7iHigUVWWaaBNwVaSzc=");
+    // _onEvent("34TI4lY5kQPOidfFmy4S+WnaSrG8sR20Cn5AjEdrxnaWfSSmsyKEK+gGgTp1yciVptVnPFqrakg=");
   }
 
   void _onEvent(event) async {
@@ -472,7 +472,7 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
                   //判断条码是否重复
                   if (element[0]['value']['scanCode'].indexOf(code) == -1) {
                     //判断末尾
-                    if (fNumber.lastIndexOf(
+                    /*if (fNumber.lastIndexOf(
                             element[0]['value']['value'].toString()) ==
                         (hobbyIndex - 1)) {
                       var item = barCodeScan[0].toString() +
@@ -498,7 +498,7 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
                               100;
                       element[0]['value']['kingDeeCode'].add(item);
                       element[0]['value']['scanCode'].add(code);
-                    } else {
+                    } else {*/
                       //判断剩余数量是否大于扫码数量
                       if (element[0]['value']['surplus'] >= residue) {
                         var item = barCodeScan[0].toString() +
@@ -522,6 +522,7 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
                                 100;
                         element[0]['value']['kingDeeCode'].add(item);
                         element[0]['value']['scanCode'].add(code);
+                        break;
                       } else {
                         var item = barCodeScan[0].toString() +
                             "-" +
@@ -551,7 +552,7 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
                         element[0]['value']['scanCode'].add(code);
                       }
                     }
-                  }
+                  //}
                 }
               }
             } else {
@@ -602,7 +603,7 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
                     //判断条码是否重复
                     if (element[0]['value']['scanCode'].indexOf(code) == -1) {
                       //判断末尾
-                      if (fNumber.lastIndexOf(
+                      /*if (fNumber.lastIndexOf(
                               element[0]['value']['value'].toString()) ==
                           (hobbyIndex - 1)) {
                         var item = barCodeScan[0].toString() +
@@ -630,7 +631,7 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
                         ;
                         element[0]['value']['kingDeeCode'].add(item);
                         element[0]['value']['scanCode'].add(code);
-                      } else {
+                      } else {*/
                         //判断剩余数量是否大于扫码数量
                         if (element[0]['value']['surplus'] >= residue) {
                           var item = barCodeScan[0].toString() +
@@ -655,6 +656,7 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
                               100;
                           element[0]['value']['kingDeeCode'].add(item);
                           element[0]['value']['scanCode'].add(code);
+                          break;
                         } else {
                           var item = barCodeScan[0].toString() +
                               "-" +
@@ -685,7 +687,7 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
                           element[0]['value']['scanCode'].add(code);
                         }
                       }
-                    }
+                    //}
                   }
                 }
               } else {
@@ -704,7 +706,7 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
                       //判断条码是否重复
                       if (element[0]['value']['scanCode'].indexOf(code) == -1) {
                         //判断末尾
-                        if (fNumber.lastIndexOf(
+                        /*if (fNumber.lastIndexOf(
                                 element[0]['value']['value'].toString()) ==
                             (hobbyIndex - 1)) {
                           var item = barCodeScan[0].toString() +
@@ -733,7 +735,7 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
                           ;
                           element[0]['value']['kingDeeCode'].add(item);
                           element[0]['value']['scanCode'].add(code);
-                        } else {
+                        } else {*/
                           //判断剩余数量是否大于扫码数量
                           if (element[0]['value']['surplus'] >= residue) {
                             var item = barCodeScan[0].toString() +
@@ -759,6 +761,7 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
                             ;
                             element[0]['value']['kingDeeCode'].add(item);
                             element[0]['value']['scanCode'].add(code);
+                            break;
                           } else {
                             var item = barCodeScan[0].toString() +
                                 "-" +
@@ -790,7 +793,7 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
                             element[0]['value']['kingDeeCode'].add(item);
                             element[0]['value']['scanCode'].add(code);
                           }
-                        }
+                        //}
                       }
                     }
                   }
@@ -1003,29 +1006,29 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
                   //判断条码是否重复
                   if (element[0]['value']['scanCode'].indexOf(code) == -1) {
                     //判断末尾
-                    if (fNumber.lastIndexOf(
-                        element[0]['value']['value'].toString()) ==
-                        (hobbyIndex - 1)) {
-                      var item = fsn;
-                      element[10]['value']['label'] = residue.toString();
-                      element[10]['value']['value'] = residue.toString();
-                      element[3]['value']['label'] =
-                          (double.parse(element[3]['value']['label']) + residue)
-                              .toString();
-                      element[3]['value']['value'] =
-                      element[3]['value']['label'];
-                      residue = (residue * 100 -
-                          double.parse(element[10]['value']['value']) *
-                              100) /
-                          100;
-                      element[0]['value']['surplus'] =
-                          (element[9]['value']['value'] * 100 -
-                              double.parse(element[3]['value']['label']) *
-                                  100) /
-                              100;
-                      element[0]['value']['kingDeeCode'].add(item);
-                      element[0]['value']['scanCode'].add(code);
-                    } else {
+                    // if (fNumber.lastIndexOf(
+                    //     element[0]['value']['value'].toString()) ==
+                    //     (hobbyIndex - 1)) {
+                    //   var item = fsn;
+                    //   element[10]['value']['label'] = residue.toString();
+                    //   element[10]['value']['value'] = residue.toString();
+                    //   element[3]['value']['label'] =
+                    //       (double.parse(element[3]['value']['label']) + residue)
+                    //           .toString();
+                    //   element[3]['value']['value'] =
+                    //   element[3]['value']['label'];
+                    //   residue = (residue * 100 -
+                    //       double.parse(element[10]['value']['value']) *
+                    //           100) /
+                    //       100;
+                    //   element[0]['value']['surplus'] =
+                    //       (element[9]['value']['value'] * 100 -
+                    //           double.parse(element[3]['value']['label']) *
+                    //               100) /
+                    //           100;
+                    //   element[0]['value']['kingDeeCode'].add(item);
+                    //   element[0]['value']['scanCode'].add(code);
+                    // } else {
                       //判断剩余数量是否大于扫码数量
                       if (element[0]['value']['surplus'] >= residue) {
                         var item = fsn;
@@ -1045,6 +1048,7 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
                                 100;
                         element[0]['value']['kingDeeCode'].add(item);
                         element[0]['value']['scanCode'].add(code);
+                        break;
                       } else {
                         var item = fsn;
                         element[10]['value']['label'] =
@@ -1070,7 +1074,7 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
                         element[0]['value']['scanCode'].add(code);
                       }
                     }
-                  }
+                  //}
                 }
               }
             } else {
@@ -1120,31 +1124,31 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
                     //判断条码是否重复
                     if (element[0]['value']['scanCode'].indexOf(code) == -1) {
                       //判断末尾
-                      if (fNumber.lastIndexOf(
-                          element[0]['value']['value'].toString()) ==
-                          (hobbyIndex - 1)) {
-                        var item = fsn;
-                        element[10]['value']['label'] = residue.toString();
-                        element[10]['value']['value'] = residue.toString();
-                        element[3]['value']['label'] =
-                            (double.parse(element[3]['value']['label']) +
-                                residue)
-                                .toString();
-                        element[3]['value']['value'] =
-                        element[3]['value']['label'];
-                        residue = (residue * 100 -
-                            double.parse(element[10]['value']['value']) *
-                                100) /
-                            100;
-                        element[0]['value']['surplus'] =
-                            (element[9]['value']['value'] * 100 -
-                                double.parse(element[3]['value']['label']) *
-                                    100) /
-                                100;
-                        ;
-                        element[0]['value']['kingDeeCode'].add(item);
-                        element[0]['value']['scanCode'].add(code);
-                      } else {
+                      // if (fNumber.lastIndexOf(
+                      //     element[0]['value']['value'].toString()) ==
+                      //     (hobbyIndex - 1)) {
+                      //   var item = fsn;
+                      //   element[10]['value']['label'] = residue.toString();
+                      //   element[10]['value']['value'] = residue.toString();
+                      //   element[3]['value']['label'] =
+                      //       (double.parse(element[3]['value']['label']) +
+                      //           residue)
+                      //           .toString();
+                      //   element[3]['value']['value'] =
+                      //   element[3]['value']['label'];
+                      //   residue = (residue * 100 -
+                      //       double.parse(element[10]['value']['value']) *
+                      //           100) /
+                      //       100;
+                      //   element[0]['value']['surplus'] =
+                      //       (element[9]['value']['value'] * 100 -
+                      //           double.parse(element[3]['value']['label']) *
+                      //               100) /
+                      //           100;
+                      //   ;
+                      //   element[0]['value']['kingDeeCode'].add(item);
+                      //   element[0]['value']['scanCode'].add(code);
+                      // } else {
                         //判断剩余数量是否大于扫码数量
                         if (element[0]['value']['surplus'] >= residue) {
                           var item = fsn;
@@ -1165,6 +1169,7 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
                               100;
                           element[0]['value']['kingDeeCode'].add(item);
                           element[0]['value']['scanCode'].add(code);
+                          break;
                         } else {
                           var item = fsn;
                           element[10]['value']['label'] =
@@ -1191,7 +1196,7 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
                           element[0]['value']['scanCode'].add(code);
                         }
                       }
-                    }
+                    //}
                   }
                 }
               } else {
@@ -1210,7 +1215,7 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
                       //判断条码是否重复
                       if (element[0]['value']['scanCode'].indexOf(code) == -1) {
                         //判断末尾
-                        if (fNumber.lastIndexOf(
+                        /*if (fNumber.lastIndexOf(
                             element[0]['value']['value'].toString()) ==
                             (hobbyIndex - 1)) {
                           var item = fsn;
@@ -1235,7 +1240,7 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
                           ;
                           element[0]['value']['kingDeeCode'].add(item);
                           element[0]['value']['scanCode'].add(code);
-                        } else {
+                        } else {*/
                           //判断剩余数量是否大于扫码数量
                           if (element[0]['value']['surplus'] >= residue) {
                             var item = fsn;
@@ -1257,6 +1262,7 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
                             ;
                             element[0]['value']['kingDeeCode'].add(item);
                             element[0]['value']['scanCode'].add(code);
+                            break;
                           } else {
                             var item = fsn;
                             element[10]['value']['label'] =
@@ -1285,7 +1291,7 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
                             element[0]['value']['scanCode'].add(code);
                           }
                         }
-                      }
+                      //}
                     }
                   }
                 }
@@ -1403,7 +1409,7 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
                   //判断条码是否重复
                   if (element[0]['value']['scanCode'].indexOf(code) == -1) {
                     //判断末尾
-                    if (fNumber.lastIndexOf(
+                    /*if (fNumber.lastIndexOf(
                         element[0]['value']['value'].toString()) ==
                         (hobbyIndex - 1)) {
                       var item = fsn;
@@ -1425,7 +1431,7 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
                               100;
                       element[0]['value']['kingDeeCode'].add(item);
                       element[0]['value']['scanCode'].add(code);
-                    } else {
+                    } else {*/
                       //判断剩余数量是否大于扫码数量
                       if (element[0]['value']['surplus'] >= residue) {
                         var item = fsn;
@@ -1445,6 +1451,7 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
                                 100;
                         element[0]['value']['kingDeeCode'].add(item);
                         element[0]['value']['scanCode'].add(code);
+                        break;
                       } else {
                         var item = fsn;
                         element[10]['value']['label'] =
@@ -1470,7 +1477,7 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
                         element[0]['value']['scanCode'].add(code);
                       }
                     }
-                  }
+                  //}
                 }
               }
             } else {
@@ -1520,7 +1527,7 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
                     //判断条码是否重复
                     if (element[0]['value']['scanCode'].indexOf(code) == -1) {
                       //判断末尾
-                      if (fNumber.lastIndexOf(
+                      /*if (fNumber.lastIndexOf(
                           element[0]['value']['value'].toString()) ==
                           (hobbyIndex - 1)) {
                         var item = fsn;
@@ -1544,7 +1551,7 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
                         ;
                         element[0]['value']['kingDeeCode'].add(item);
                         element[0]['value']['scanCode'].add(code);
-                      } else {
+                      } else {*/
                         //判断剩余数量是否大于扫码数量
                         if (element[0]['value']['surplus'] >= residue) {
                           var item = fsn;
@@ -1565,6 +1572,7 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
                               100;
                           element[0]['value']['kingDeeCode'].add(item);
                           element[0]['value']['scanCode'].add(code);
+                          break;
                         } else {
                           var item = fsn;
                           element[10]['value']['label'] =
@@ -1591,7 +1599,7 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
                           element[0]['value']['scanCode'].add(code);
                         }
                       }
-                    }
+                    //}
                   }
                 }
               } else {
@@ -1610,7 +1618,7 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
                       //判断条码是否重复
                       if (element[0]['value']['scanCode'].indexOf(code) == -1) {
                         //判断末尾
-                        if (fNumber.lastIndexOf(
+                        /*if (fNumber.lastIndexOf(
                             element[0]['value']['value'].toString()) ==
                             (hobbyIndex - 1)) {
                           var item = fsn;
@@ -1635,7 +1643,7 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
                           ;
                           element[0]['value']['kingDeeCode'].add(item);
                           element[0]['value']['scanCode'].add(code);
-                        } else {
+                        } else {*/
                           //判断剩余数量是否大于扫码数量
                           if (element[0]['value']['surplus'] >= residue) {
                             var item = fsn;
@@ -1657,6 +1665,7 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
                             ;
                             element[0]['value']['kingDeeCode'].add(item);
                             element[0]['value']['scanCode'].add(code);
+                            break;
                           } else {
                             var item = fsn;
                             element[10]['value']['label'] =
@@ -1685,7 +1694,7 @@ class _RetrievalDetailState extends State<RetrievalDetail> {
                             element[0]['value']['scanCode'].add(code);
                           }
                         }
-                      }
+                      //}
                     }
                   }
                 }
