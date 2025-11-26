@@ -104,7 +104,7 @@ class _PurchaseOutSourcingPageState extends State<PurchaseOutSourcingPage> {
     userMap['FormId'] = 'PUR_PurchaseOrder';
     userMap['OrderString'] = 'FBillNo ASC,FMaterialId.FNumber ASC';
     userMap['FieldKeys'] =
-    'FBillNo,FSupplierId.FNumber,FSupplierId.FName,FDate,FPOOrderEntry_FEntryId,FMaterialId.FNumber,FMaterialId.FName,FMaterialId.FSpecification,FPurchaseOrgId.FNumber,FPurchaseOrgId.FName,FUnitId.FNumber,FUnitId.FName,FQty,FSrcBillNo,FID';
+    'FBillNo,FSupplierId.FNumber,FSupplierId.FName,FDate,FPOOrderEntry_FEntryId,FMaterialId.FNumber,FMaterialId.FName,FMaterialId.FSpecification,FPurchaseOrgId.FNumber,FPurchaseOrgId.FName,FUnitId.FNumber,FUnitId.FName,FRemainReceiveQty,FSrcBillNo,FID';
     Map<String, dynamic> dataMap = Map();
     dataMap['data'] = userMap;
     String order = await CurrencyEntity.polling(dataMap);
@@ -152,7 +152,7 @@ class _PurchaseOutSourcingPageState extends State<PurchaseOutSourcingPage> {
           "value": {"label": value[11], "value": value[10]}
         });
         arr.add({
-          "title": "数量",
+          "title": "剩余收料数量",
           "name": "FQty",
           "isHide": false,
           "value": {"label": value[12], "value": value[12]}

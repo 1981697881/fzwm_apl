@@ -337,8 +337,7 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
       });
       ToastUtil.showInfo('无数据');
     }
-    //_onEvent("B.03.2501014;20230627;;40;PDA-WGRK23070052;2");
-    //_onEvent("B.03.2501014;20230701;;40;PDA-WGRK23070057;2");
+    //_onEvent("F.17.1200013;23080003;;20;WGRK23080686,;2");
     getStockList();
   }
 
@@ -359,7 +358,7 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
           barcodeMap['FilterString'] = "FBarCodeEn='" + event + "'";
           barcodeMap['FormId'] = 'QDEP_Cust_BarCodeList';
           barcodeMap['FieldKeys'] =
-              'FID,FInQtyTotal,FOutQtyTotal,FEntity_FEntryId,FRemainQty,FBarCodeQty,FStockID.FName,FStockID.FNumber,FMATERIALID.FNUMBER,FOwnerID.FNumber,FBarCode,FSN';
+              'FID,FInQtyTotal,FOutQtyTotal,FEntity_FEntryId,FRemainQty,FBarCodeQty,FStockID.FName,FStockID.FNumber,FMATERIALID.FNUMBER,FOwnerID.FNumber,FBarCode,FSN,FStockLocNumberH,FStockID.FIsOpenLocation';
           Map<String, dynamic> dataMap = Map();
           dataMap['data'] = barcodeMap;
           String order = await CurrencyEntity.polling(dataMap);
@@ -383,7 +382,7 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
               _code = event;
 
               this.getMaterialList(
-                  barcodeData, barcodeData[0][10], barcodeData[0][11]);
+                  barcodeData, barcodeData[0][10], barcodeData[0][11], barcodeData[0][12], barcodeData[0][13]);
             } else {
               ToastUtil.showInfo(msg);
             }
@@ -397,13 +396,13 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
       }
     } else {
       _code = event;
-      this.getMaterialList("", _code, "");
+      this.getMaterialList("", _code, "", "", false);
       print("ChannelPage: $event");
     }
     print("ChannelPage: $event");
   }
 
-  getMaterialList(barcodeData, code, fsn) async {
+  getMaterialList(barcodeData, code, fsn, fLoc,fIsOpenLocation) async {
     Map<String, dynamic> userMap = Map();
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     var menuData = sharedPreferences.getString('MenuPermissions');
@@ -457,6 +456,7 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
       } else {
         barCodeScan = scanCode;
       }
+      var errorTitle = "";
       var barcodeNum = scanCode[3];
       for (var element in hobby) {
         var residue = 0.0;
@@ -470,6 +470,22 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
               }
               if (scanCode[5] == "N") {
                 if (element[0]['value']['scanCode'].indexOf(code) == -1) {
+                  if(fIsOpenLocation){
+                    element[6]['value']['hide'] = fIsOpenLocation;
+                    if (element[6]['value']['value'] == "") {
+                      element[6]['value']['label'] = fLoc == null? "":fLoc;
+                      element[6]['value']['value'] =fLoc == null? "":fLoc;
+                    }
+                  }
+                  //判断是否启用仓位
+                  if (element[6]['value']['hide']) {
+                    if (element[6]['value']['label'] == fLoc) {
+                      errorTitle = "";
+                    } else {
+                      errorTitle = "仓位不一致";
+                      continue;
+                    }
+                  }
                   element[3]['value']['label'] =
                       (double.parse(element[3]['value']['label']) +
                               double.parse(barcodeNum))
@@ -502,6 +518,22 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
                       element[9]['value']['rateValue']) {
                     //判断条码是否重复
                     if (element[0]['value']['scanCode'].indexOf(code) == -1) {
+                      if(fIsOpenLocation){
+                        element[6]['value']['hide'] = fIsOpenLocation;
+                        if (element[6]['value']['value'] == "") {
+                          element[6]['value']['label'] = fLoc == null? "":fLoc;
+                          element[6]['value']['value'] =fLoc == null? "":fLoc;
+                        }
+                      }
+                      //判断是否启用仓位
+                      if (element[6]['value']['hide']) {
+                        if (element[6]['value']['label'] == fLoc) {
+                          errorTitle = "";
+                        } else {
+                          errorTitle = "仓位不一致";
+                          continue;
+                        }
+                      }
                       var item = barCodeScan[0].toString() +
                           "-" +
                           (element[9]['value']['rateValue'] -
@@ -538,6 +570,22 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
                     //数量不超出
                     //判断条码是否重复
                     if (element[0]['value']['scanCode'].indexOf(code) == -1) {
+                      if(fIsOpenLocation){
+                        element[6]['value']['hide'] = fIsOpenLocation;
+                        if (element[6]['value']['value'] == "") {
+                          element[6]['value']['label'] = fLoc == null? "":fLoc;
+                          element[6]['value']['value'] =fLoc == null? "":fLoc;
+                        }
+                      }
+                      //判断是否启用仓位
+                      if (element[6]['value']['hide']) {
+                        if (element[6]['value']['label'] == fLoc) {
+                          errorTitle = "";
+                        } else {
+                          errorTitle = "仓位不一致";
+                          continue;
+                        }
+                      }
                       element[3]['value']['label'] =
                           (double.parse(element[3]['value']['label']) +
                                   double.parse(barcodeNum))
@@ -574,6 +622,22 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
               }
               if (scanCode[5] == "N") {
                 if (element[0]['value']['scanCode'].indexOf(code) == -1) {
+                  if(fIsOpenLocation){
+                    element[6]['value']['hide'] = fIsOpenLocation;
+                    if (element[6]['value']['value'] == "") {
+                      element[6]['value']['label'] = fLoc == null? "":fLoc;
+                      element[6]['value']['value'] =fLoc == null? "":fLoc;
+                    }
+                  }
+                  //判断是否启用仓位
+                  if (element[6]['value']['hide']) {
+                    if (element[6]['value']['label'] == fLoc) {
+                      errorTitle = "";
+                    } else {
+                      errorTitle = "仓位不一致";
+                      continue;
+                    }
+                  }
                   if (element[5]['value']['value'] == "") {
                     element[5]['value']['label'] = scanCode[1];
                     element[5]['value']['value'] = scanCode[1];
@@ -611,6 +675,22 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
                         element[9]['value']['rateValue']) {
                       //判断条码是否重复
                       if (element[0]['value']['scanCode'].indexOf(code) == -1) {
+                        if(fIsOpenLocation){
+                          element[6]['value']['hide'] = fIsOpenLocation;
+                          if (element[6]['value']['value'] == "") {
+                            element[6]['value']['label'] = fLoc == null? "":fLoc;
+                            element[6]['value']['value'] =fLoc == null? "":fLoc;
+                          }
+                        }
+                        //判断是否启用仓位
+                        if (element[6]['value']['hide']) {
+                          if (element[6]['value']['label'] == fLoc) {
+                            errorTitle = "";
+                          } else {
+                            errorTitle = "仓位不一致";
+                            continue;
+                          }
+                        }
                         var item = barCodeScan[0].toString() +
                             "-" +
                             (element[9]['value']['rateValue'] -
@@ -647,6 +727,22 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
                       //数量不超出
                       //判断条码是否重复
                       if (element[0]['value']['scanCode'].indexOf(code) == -1) {
+                        if(fIsOpenLocation){
+                          element[6]['value']['hide'] = fIsOpenLocation;
+                          if (element[6]['value']['value'] == "") {
+                            element[6]['value']['label'] = fLoc == null? "":fLoc;
+                            element[6]['value']['value'] =fLoc == null? "":fLoc;
+                          }
+                        }
+                        //判断是否启用仓位
+                        if (element[6]['value']['hide']) {
+                          if (element[6]['value']['label'] == fLoc) {
+                            errorTitle = "";
+                          } else {
+                            errorTitle = "仓位不一致";
+                            continue;
+                          }
+                        }
                         element[3]['value']['label'] =
                             (double.parse(element[3]['value']['label']) +
                                     double.parse(barcodeNum))
@@ -689,6 +785,22 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
                         //判断条码是否重复
                         if (element[0]['value']['scanCode'].indexOf(code) ==
                             -1) {
+                          if(fIsOpenLocation){
+                            element[6]['value']['hide'] = fIsOpenLocation;
+                            if (element[6]['value']['value'] == "") {
+                              element[6]['value']['label'] = fLoc == null? "":fLoc;
+                              element[6]['value']['value'] =fLoc == null? "":fLoc;
+                            }
+                          }
+                          //判断是否启用仓位
+                          if (element[6]['value']['hide']) {
+                            if (element[6]['value']['label'] == fLoc) {
+                              errorTitle = "";
+                            } else {
+                              errorTitle = "仓位不一致";
+                              continue;
+                            }
+                          }
                           var item = barCodeScan[0].toString() +
                               "-" +
                               (element[9]['value']['rateValue'] -
@@ -729,6 +841,22 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
                         //判断条码是否重复
                         if (element[0]['value']['scanCode'].indexOf(code) ==
                             -1) {
+                          if(fIsOpenLocation){
+                            element[6]['value']['hide'] = fIsOpenLocation;
+                            if (element[6]['value']['value'] == "") {
+                              element[6]['value']['label'] = fLoc == null? "":fLoc;
+                              element[6]['value']['value'] =fLoc == null? "":fLoc;
+                            }
+                          }
+                          //判断是否启用仓位
+                          if (element[6]['value']['hide']) {
+                            if (element[6]['value']['label'] == fLoc) {
+                              errorTitle = "";
+                            } else {
+                              errorTitle = "仓位不一致";
+                              continue;
+                            }
+                          }
                           element[3]['value']['label'] =
                               (double.parse(element[3]['value']['label']) +
                                       double.parse(barcodeNum))
@@ -1683,6 +1811,9 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
               if (element == p) {
                 hobby['value']['value'] = stockListObj[elementIndex][2];
                 stock[6]['value']['hide'] = stockListObj[elementIndex][3];
+                stock[6]['value']['value'] = "";
+                stock[6]['value']['label'] = "";
+                //hobby['value']['dimension'] = stockListObj[elementIndex][4];
               }
               elementIndex++;
             });
@@ -2154,9 +2285,30 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
             FEntityItem['FSettleOrgId'] = {"FNumber": this.fOrgID};
             FEntityItem['FStockId'] = {"FNumber": element[4]['value']['value']};
             FEntityItem['FLot'] = {"FNumber": element[5]['value']['value']};
-            FEntityItem['FStockLocId'] = {
-              "FSTOCKLOCID__FF100011": {"FNumber": element[6]['value']['value']}
-            };
+            if (element[6]['value']['hide']) {
+              Map<String, dynamic> stockMap = Map();
+              stockMap['FormId'] = 'BD_STOCK';
+              stockMap['FieldKeys'] =
+              'FFlexNumber';
+              stockMap['FilterString'] = "FNumber = '" +
+                  element[4]['value']['value'] +
+                  "'";
+              Map<String, dynamic> stockDataMap = Map();
+              stockDataMap['data'] = stockMap;
+              String res = await CurrencyEntity.polling(stockDataMap);
+              var stockRes = jsonDecode(res);
+              if (stockRes.length > 0) {
+                var postionList = element[6]['value']['value'].split(".");
+                FEntityItem['FStockLocId'] = {};
+                var positonIndex = 0;
+                for(var dimension in postionList){
+                  FEntityItem['FStockLocId']["FSTOCKLOCID__" + stockRes[positonIndex][0]] = {
+                    "FNumber": dimension
+                  };
+                  positonIndex++;
+                }
+              }
+            }
             var fSerialSub = [];
             var kingDeeCode = element[0]['value']['kingDeeCode'];
             for (int subj = 0; subj < kingDeeCode.length; subj++) {
@@ -2271,6 +2423,36 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
                             codeFEntityItem['FEntryStockID'] = {
                               "FNUMBER": this.hobby[i][4]['value']['value']
                             };
+                            if (this.hobby[i][6]['value']['hide']) {
+                              codeModel['FStockLocNumberH'] = this.hobby[i][6]['value']['value'];
+                              codeFEntityItem['FStockLocNumber'] = this.hobby[i][6]['value']['value'];
+                              Map<String, dynamic> stockMap = Map();
+                              stockMap['FormId'] = 'BD_STOCK';
+                              stockMap['FieldKeys'] =
+                              'FFlexNumber';
+                              stockMap['FilterString'] = "FNumber = '" +
+                                  this.hobby[i][4]['value']['value'] +
+                                  "'";
+                              Map<String, dynamic> stockDataMap = Map();
+                              stockDataMap['data'] = stockMap;
+                              String res = await CurrencyEntity.polling(stockDataMap);
+                              var stockRes = jsonDecode(res);
+                              if (stockRes.length > 0) {
+                                var postionList = this.hobby[i][6]['value']['value'].split(".");
+                                codeModel['FStockLocIDH'] = {};
+                                codeFEntityItem['FStockLocID'] = {};
+                                var positonIndex = 0;
+                                for(var dimension in postionList){
+                                  codeModel['FStockLocIDH']["FSTOCKLOCIDH__" + stockRes[positonIndex][0]] = {
+                                    "FNumber": dimension
+                                  };
+                                  codeFEntityItem['FStockLocID']["FSTOCKLOCID__" + stockRes[positonIndex][0]] = {
+                                    "FNumber": dimension
+                                  };
+                                  positonIndex++;
+                                }
+                              }
+                            }
                             var codeFEntity = [codeFEntityItem];
                             codeModel['FEntity'] = codeFEntity;
                             orderCodeMap['Model'] = codeModel;

@@ -108,6 +108,7 @@ class _ExWarehouseDetailState extends State<ExWarehouseDetail> {
    /* getTypeList();*/
     getCustomer();
     getDepartmentList();
+    //_onEvent("C.02.9901117;25110004;;7;SLTZ25110167,2037580737;2");
   }
   //获取部门
   getDepartmentList() async {
@@ -297,7 +298,7 @@ class _ExWarehouseDetailState extends State<ExWarehouseDetail> {
       barcodeMap['FilterString'] = "FBarCodeEn='"+event+"'";
       barcodeMap['FormId'] = 'QDEP_Cust_BarCodeList';
       barcodeMap['FieldKeys'] =
-      'FID,FInQtyTotal,FOutQtyTotal,FEntity_FEntryId,FRemainQty,FBarCodeQty,FStockID.FName,FStockID.FNumber,FMATERIALID.FNUMBER,FOwnerID.FNumber,FBarCode,FSN';
+      'FID,FInQtyTotal,FOutQtyTotal,FEntity_FEntryId,FRemainQty,FBarCodeQty,FStockID.FName,FStockID.FNumber,FMATERIALID.FNUMBER,FOwnerID.FNumber,FBarCode,FSN,FStockLocNumberH,FStockID.FIsOpenLocation';
       Map<String, dynamic> dataMap = Map();
       dataMap['data'] = barcodeMap;
       String order = await CurrencyEntity.polling(dataMap);
@@ -306,7 +307,7 @@ class _ExWarehouseDetailState extends State<ExWarehouseDetail> {
         print(barcodeData);
         if(barcodeData[0][4]>0){
           _code = event;
-          this.getMaterialList(barcodeData,barcodeData[0][10], barcodeData[0][11]);
+          this.getMaterialList(barcodeData,barcodeData[0][10], barcodeData[0][11], barcodeData[0][12], barcodeData[0][13]);
           print("ChannelPage: $event");
         }else{
           ToastUtil.showInfo('该条码已出库或没入库，数量为零');
@@ -316,7 +317,7 @@ class _ExWarehouseDetailState extends State<ExWarehouseDetail> {
       }
     }else{
       _code = event;
-      this.getMaterialList("",_code,"");
+      this.getMaterialList("",_code,"", "", false);
       print("ChannelPage: $event");
     }
   }
@@ -326,7 +327,7 @@ class _ExWarehouseDetailState extends State<ExWarehouseDetail> {
       _code = "扫描异常";
     });
   }
-  getMaterialList(barcodeData,code, fsn) async {
+  getMaterialList(barcodeData,code, fsn, fLoc,fIsOpenLocation) async {
     Map<String, dynamic> userMap = Map();
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     var menuData = sharedPreferences.getString('MenuPermissions');
@@ -354,6 +355,7 @@ class _ExWarehouseDetailState extends State<ExWarehouseDetail> {
       }else{
         barCodeScan = scanCode;
       }
+      var errorTitle = "";
       var barcodeNum = scanCode[3];
       for (var element in hobby) {
         var residue = 0.0;
@@ -369,6 +371,22 @@ class _ExWarehouseDetailState extends State<ExWarehouseDetail> {
               if((double.parse(element[3]['value']['label'])+double.parse(barcodeNum)) > 0 && double.parse(barcodeNum)>0){
                 //判断条码是否重复
                 if(element[0]['value']['scanCode'].indexOf(code) == -1){
+                  if(fIsOpenLocation){
+                    element[6]['value']['hide'] = fIsOpenLocation;
+                    if (element[6]['value']['value'] == "") {
+                      element[6]['value']['label'] = fLoc == null? "":fLoc;
+                      element[6]['value']['value'] =fLoc == null? "":fLoc;
+                    }
+                  }
+                  //判断是否启用仓位
+                  if (element[6]['value']['hide']) {
+                    if (element[6]['value']['label'] == fLoc) {
+                      errorTitle = "";
+                    } else {
+                      errorTitle = "仓位不一致";
+                      continue;
+                    }
+                  }
                   element[3]['value']['label']=(double.parse(element[3]['value']['label'])+double.parse(barcodeNum)).toString();
                   element[3]['value']['value']=element[3]['value']['label'];
                   var item = barCodeScan[0].toString() + "-" + barcodeNum + "-" + fsn;
@@ -403,6 +421,22 @@ class _ExWarehouseDetailState extends State<ExWarehouseDetail> {
                 if((double.parse(element[3]['value']['label'])+double.parse(barcodeNum)) > 0 && double.parse(barcodeNum)>0){
                   //判断条码是否重复
                   if(element[0]['value']['scanCode'].indexOf(code) == -1){
+                    if(fIsOpenLocation){
+                      element[6]['value']['hide'] = fIsOpenLocation;
+                      if (element[6]['value']['value'] == "") {
+                        element[6]['value']['label'] = fLoc == null? "":fLoc;
+                        element[6]['value']['value'] =fLoc == null? "":fLoc;
+                      }
+                    }
+                    //判断是否启用仓位
+                    if (element[6]['value']['hide']) {
+                      if (element[6]['value']['label'] == fLoc) {
+                        errorTitle = "";
+                      } else {
+                        errorTitle = "仓位不一致";
+                        continue;
+                      }
+                    }
                     element[3]['value']['label']=(double.parse(element[3]['value']['label'])+double.parse(barcodeNum)).toString();
                     element[3]['value']['value']=element[3]['value']['label'];
                     var item = barCodeScan[0].toString() + "-" + barcodeNum + "-" + fsn;
@@ -427,6 +461,22 @@ class _ExWarehouseDetailState extends State<ExWarehouseDetail> {
                   if((double.parse(element[3]['value']['label'])+double.parse(barcodeNum)) > 0 && double.parse(barcodeNum)>0){
                     //判断条码是否重复
                     if(element[0]['value']['scanCode'].indexOf(code) == -1){
+                      if(fIsOpenLocation){
+                        element[6]['value']['hide'] = fIsOpenLocation;
+                        if (element[6]['value']['value'] == "") {
+                          element[6]['value']['label'] = fLoc == null? "":fLoc;
+                          element[6]['value']['value'] =fLoc == null? "":fLoc;
+                        }
+                      }
+                      //判断是否启用仓位
+                      if (element[6]['value']['hide']) {
+                        if (element[6]['value']['label'] == fLoc) {
+                          errorTitle = "";
+                        } else {
+                          errorTitle = "仓位不一致";
+                          continue;
+                        }
+                      }
                       element[3]['value']['label']=(double.parse(element[3]['value']['label'])+double.parse(barcodeNum)).toString();
                       element[3]['value']['value']=element[3]['value']['label'];
                       var item = barCodeScan[0].toString() + "-" + barcodeNum + "-" + fsn;
@@ -649,12 +699,14 @@ class _ExWarehouseDetailState extends State<ExWarehouseDetail> {
           hobby['value']['label'] = p;
         });;
             });
-            print(hobby['value']['label']);
             var elementIndex = 0;
             data.forEach((element) {
               if (element == p) {
                 hobby['value']['value'] = stockListObj[elementIndex][2];
                 stock[6]['value']['hide'] = stockListObj[elementIndex][3];
+                stock[6]['value']['value'] = "";
+                stock[6]['value']['label'] = "";
+                //hobby['value']['dimension'] = stockListObj[elementIndex][4];
               }
               elementIndex++;
             });
@@ -711,6 +763,55 @@ class _ExWarehouseDetailState extends State<ExWarehouseDetail> {
             comList.add(
               _item('仓库:', stockList, this.hobby[i][j]['value']['label'],
                   this.hobby[i][j],stock:this.hobby[i]),
+            );
+          }else if (j == 6) {
+            comList.add(
+              Visibility(
+                maintainSize: false,
+                maintainState: false,
+                maintainAnimation: false,
+                visible: this.hobby[i][j]["value"]["hide"],
+                child: Column(children: [
+                  Container(
+                    color: Colors.white,
+                    child: ListTile(
+                        title: Text(this.hobby[i][j]["title"] +
+                            '：' +
+                            this.hobby[i][j]["value"]["label"].toString()),
+                        trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: <Widget>[
+                              IconButton(
+                                icon: new Icon(Icons.filter_center_focus),
+                                tooltip: '点击扫描',
+                                onPressed: () {
+                                  this._textNumber.text = this
+                                      .hobby[i][j]["value"]["label"]
+                                      .toString();
+                                  this._FNumber = this
+                                      .hobby[i][j]["value"]["label"]
+                                      .toString();
+                                  checkItem = 'position';
+                                  this.show = false;
+                                  checkData = i;
+                                  checkDataChild = j;
+                                  scanDialog();
+                                  print(this.hobby[i][j]["value"]["label"]);
+                                  if (this.hobby[i][j]["value"]["label"] != 0) {
+                                    this._textNumber.value =
+                                        _textNumber.value.copyWith(
+                                          text: this
+                                              .hobby[i][j]["value"]["label"]
+                                              .toString(),
+                                        );
+                                  }
+                                },
+                              ),
+                            ])),
+                  ),
+                  divider,
+                ]),
+              ),
             );
           } else if (j == 7) {
             comList.add(
@@ -923,7 +1024,13 @@ class _ExWarehouseDetailState extends State<ExWarehouseDetail> {
                               }else{
                                 ToastUtil.showInfo('无条码信息，输入失败');
                               }
+                            }else{
+                              this.hobby[checkData][checkDataChild]["value"]
+                              ["label"] = _FNumber;
+                              this.hobby[checkData][checkDataChild]['value']
+                              ["value"] = _FNumber;
                             }
+                            checkItem = '';
                           });
                         },
                         child: Text(
@@ -984,7 +1091,7 @@ class _ExWarehouseDetailState extends State<ExWarehouseDetail> {
       Model['FNote'] = this._remarkContent.text;
       var FEntity = [];
       var hobbyIndex = 0;
-      this.hobby.forEach((element) {
+      for(var element in this.hobby){
         if (element[3]['value']['value'] != '0' &&
             element[4]['value']['value'] != '') {
           Map<String, dynamic> FEntityItem = Map();
@@ -1000,11 +1107,30 @@ class _ExWarehouseDetailState extends State<ExWarehouseDetail> {
           FEntityItem['FStockId'] = {
             "FNumber": element[4]['value']['value']
           };
-          FEntityItem['FStockLocId'] = {
-            "FSTOCKLOCID__FF100011": {
-              "FNumber": element[6]['value']['value']
+          if (element[6]['value']['hide']) {
+            Map<String, dynamic> stockMap = Map();
+            stockMap['FormId'] = 'BD_STOCK';
+            stockMap['FieldKeys'] =
+            'FFlexNumber';
+            stockMap['FilterString'] = "FNumber = '" +
+                element[4]['value']['value'] +
+                "'";
+            Map<String, dynamic> stockDataMap = Map();
+            stockDataMap['data'] = stockMap;
+            String res = await CurrencyEntity.polling(stockDataMap);
+            var stockRes = jsonDecode(res);
+            if (stockRes.length > 0) {
+              var postionList = element[6]['value']['value'].split(".");
+              FEntityItem['FStockLocId'] = {};
+              var positonIndex = 0;
+              for(var dimension in postionList){
+                FEntityItem['FStockLocId']["FSTOCKLOCID__" + stockRes[positonIndex][0]] = {
+                  "FNumber": dimension
+                };
+                positonIndex++;
+              }
             }
-          };
+          }
           /*FEntityItem['FReturnType'] = 1;*/
           FEntityItem['FQty'] = element[3]['value']['value'];
           FEntityItem['FOWNERTYPEID'] = "BD_OwnerOrg";
@@ -1032,7 +1158,7 @@ class _ExWarehouseDetailState extends State<ExWarehouseDetail> {
           FEntity.add(FEntityItem);
         }
         hobbyIndex++;
-      });
+      };
       if (FEntity.length == 0) {
         this.isSubmit = false;
         ToastUtil.showInfo('请输入数量,仓库,出库类别');
@@ -1097,12 +1223,37 @@ class _ExWarehouseDetailState extends State<ExWarehouseDetail> {
                         };*/
                         /*codeModel['FLastCheckTime'] = formatDate(DateTime.now(), [yyyy, "-", mm, "-", dd,]);*/
                         Map<String, dynamic> codeFEntityItem = Map();
-                        codeFEntityItem['FBillDate'] = FDate;
-                        codeFEntityItem['FOutQty'] = itemCode[1];
-                        codeFEntityItem['FEntryBillNo'] = res['Result']['ResponseStatus']['SuccessEntitys'][0]['Number'];
                         codeFEntityItem['FEntryStockID'] ={
                           "FNUMBER": this.hobby[i][4]['value']['value']
                         };
+                        if (this.hobby[i][6]['value']['hide']) {
+                          codeFEntityItem['FStockLocNumber'] = this.hobby[i][6]['value']['value'];
+                          Map<String, dynamic> stockMap = Map();
+                          stockMap['FormId'] = 'BD_STOCK';
+                          stockMap['FieldKeys'] =
+                          'FFlexNumber';
+                          stockMap['FilterString'] = "FNumber = '" +
+                              this.hobby[i][4]['value']['value'] +
+                              "'";
+                          Map<String, dynamic> stockDataMap = Map();
+                          stockDataMap['data'] = stockMap;
+                          String res = await CurrencyEntity.polling(stockDataMap);
+                          var stockRes = jsonDecode(res);
+                          if (stockRes.length > 0) {
+                            var postionList = this.hobby[i][6]['value']['value'].split(".");
+                            codeFEntityItem['FStockLocID'] = {};
+                            var positonIndex = 0;
+                            for(var dimension in postionList){
+                              codeFEntityItem['FStockLocID']["FSTOCKLOCID__" + stockRes[positonIndex][0]] = {
+                                "FNumber": dimension
+                              };
+                              positonIndex++;
+                            }
+                          }
+                        }
+                        codeFEntityItem['FBillDate'] = FDate;
+                        codeFEntityItem['FOutQty'] = itemCode[1];
+                        codeFEntityItem['FEntryBillNo'] = res['Result']['ResponseStatus']['SuccessEntitys'][0]['Number'];
                         var codeFEntity = [codeFEntityItem];
                         codeModel['FEntity'] = codeFEntity;
                         orderCodeMap['Model'] = codeModel;

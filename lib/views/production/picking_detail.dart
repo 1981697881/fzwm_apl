@@ -388,7 +388,7 @@ class _PickingDetailState extends State<PickingDetail> {
         arr.add({
           "title": "仓位",
           "name": "FStockLocID",
-          "isHide": true,
+          "isHide": false,
           "value": {"label": "", "value": "", "hide": false}
         });
         arr.add({
@@ -430,7 +430,7 @@ class _PickingDetailState extends State<PickingDetail> {
       ToastUtil.showInfo('无数据');
       getStockList();
     }
-     //_onEvent("023002062-20240703-202407030040");
+     //_onEvent("F.17.1200013;25100030;;50;WGRK23090827,1903047088;2");
   }
 
   void _onEvent(event) async {
@@ -451,7 +451,7 @@ class _PickingDetailState extends State<PickingDetail> {
           barcodeMap['FilterString'] = "FBarCodeEn='" + event + "'";
           barcodeMap['FormId'] = 'QDEP_Cust_BarCodeList';
           barcodeMap['FieldKeys'] =
-              'FID,FInQtyTotal,FOutQtyTotal,FEntity_FEntryId,FRemainQty,FBarCodeQty,FStockID.FName,FStockID.FNumber,FMATERIALID.FNUMBER,FOwnerID.FNumber,FBarCode,FSN';
+              'FID,FInQtyTotal,FOutQtyTotal,FEntity_FEntryId,FRemainQty,FBarCodeQty,FStockID.FName,FStockID.FNumber,FMATERIALID.FNUMBER,FOwnerID.FNumber,FBarCode,FSN,FStockLocNumberH,FStockID.FIsOpenLocation';
           Map<String, dynamic> dataMap = Map();
           dataMap['data'] = barcodeMap;
           String order = await CurrencyEntity.polling(dataMap);
@@ -478,7 +478,7 @@ class _PickingDetailState extends State<PickingDetail> {
               if (msg == "") {
                 _code = event;
                 this.getMaterialList(
-                    barcodeData, barcodeData[0][10], barcodeData[0][11]);
+                    barcodeData, barcodeData[0][10], barcodeData[0][11], barcodeData[0][12], barcodeData[0][13]);
               } else {
                 ToastUtil.showInfo(msg);
               }
@@ -490,18 +490,17 @@ class _PickingDetailState extends State<PickingDetail> {
           }
         } else {
           getMaterialListTH(event, event.substring(9, 15));
-
         }
       }
     } else {
       _code = event;
-      this.getMaterialList("", _code, '');
+      this.getMaterialList("", _code, '', '', false);
       print("ChannelPage: $event");
     }
     print("ChannelPage: $event");
   }
 
-  getMaterialList(barcodeData, code, fsn) async {
+  getMaterialList(barcodeData, code, fsn, fLoc,fIsOpenLocation) async {
     Map<String, dynamic> userMap = Map();
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     var menuData = sharedPreferences.getString('MenuPermissions');
@@ -541,7 +540,8 @@ class _PickingDetailState extends State<PickingDetail> {
       } else {
         barCodeScan = scanCode;
       }
-      var barcodeNum = scanCode[3];
+      var barcodeNum = barCodeScan[4];
+      var errorTitle = "";
       for (var element in hobby) {
         var residue = 0.0;
         //判断是否启用批号
@@ -555,6 +555,26 @@ class _PickingDetailState extends State<PickingDetail> {
               }
               if (scanCode[5] == "N") {
                 if (element[0]['value']['scanCode'].indexOf(code) == -1) {
+                  if (element[4]['value']['value'] == "") {
+                    element[4]['value']['label'] = barcodeData[0][6] == null? "":barcodeData[0][6];
+                    element[4]['value']['value'] = barcodeData[0][7] == null? "":barcodeData[0][7];
+                  }
+                  if(fIsOpenLocation){
+                    element[6]['value']['hide'] = fIsOpenLocation;
+                    if (element[6]['value']['value'] == "") {
+                      element[6]['value']['label'] = fLoc == null? "":fLoc;
+                      element[6]['value']['value'] =fLoc == null? "":fLoc;
+                    }
+                  }
+                  //判断是否启用仓位
+                  if (element[6]['value']['hide']) {
+                    if (element[6]['value']['label'] == fLoc) {
+                      errorTitle = "";
+                    } else {
+                      errorTitle = "仓位不一致";
+                      continue;
+                    }
+                  }
                   element[3]['value']['label'] =
                       (double.parse(element[3]['value']['label']) +
                               double.parse(barcodeNum))
@@ -582,6 +602,26 @@ class _PickingDetailState extends State<PickingDetail> {
                 if (fNumber.indexOf(element[0]['value']['value']) ==
                     fNumber.lastIndexOf(element[0]['value']['value'])) {
                   if (element[0]['value']['scanCode'].indexOf(code) == -1) {
+                    if (element[4]['value']['value'] == "") {
+                      element[4]['value']['label'] = barcodeData[0][6] == null? "":barcodeData[0][6];
+                      element[4]['value']['value'] = barcodeData[0][7] == null? "":barcodeData[0][7];
+                    }
+                    if(fIsOpenLocation){
+                      element[6]['value']['hide'] = fIsOpenLocation;
+                      if (element[6]['value']['value'] == "") {
+                        element[6]['value']['label'] = fLoc == null? "":fLoc;
+                        element[6]['value']['value'] =fLoc == null? "":fLoc;
+                      }
+                    }
+                    //判断是否启用仓位
+                    if (element[6]['value']['hide']) {
+                      if (element[6]['value']['label'] == fLoc) {
+                        errorTitle = "";
+                      } else {
+                        errorTitle = "仓位不一致";
+                        continue;
+                      }
+                    }
                     element[3]['value']['label'] =
                         (double.parse(element[3]['value']['label']) +
                                 double.parse(barcodeNum))
@@ -614,6 +654,26 @@ class _PickingDetailState extends State<PickingDetail> {
                         element[9]['value']['label']) {
                       //判断条码是否重复
                       if (element[0]['value']['scanCode'].indexOf(code) == -1) {
+                        if (element[4]['value']['value'] == "") {
+                          element[4]['value']['label'] = barcodeData[0][6] == null? "":barcodeData[0][6];
+                          element[4]['value']['value'] = barcodeData[0][7] == null? "":barcodeData[0][7];
+                        }
+                        if(fIsOpenLocation){
+                          element[6]['value']['hide'] = fIsOpenLocation;
+                          if (element[6]['value']['value'] == "") {
+                            element[6]['value']['label'] = fLoc == null? "":fLoc;
+                            element[6]['value']['value'] =fLoc == null? "":fLoc;
+                          }
+                        }
+                        //判断是否启用仓位
+                        if (element[6]['value']['hide']) {
+                          if (element[6]['value']['label'] == fLoc) {
+                            errorTitle = "";
+                          } else {
+                            errorTitle = "仓位不一致";
+                            continue;
+                          }
+                        }
                         var item = barCodeScan[0].toString() +
                             "-" +
                             (element[9]['value']['label'] -
@@ -651,6 +711,26 @@ class _PickingDetailState extends State<PickingDetail> {
                       //数量不超出
                       //判断条码是否重复
                       if (element[0]['value']['scanCode'].indexOf(code) == -1) {
+                        if (element[4]['value']['value'] == "") {
+                          element[4]['value']['label'] = barcodeData[0][6] == null? "":barcodeData[0][6];
+                          element[4]['value']['value'] = barcodeData[0][7] == null? "":barcodeData[0][7];
+                        }
+                        if(fIsOpenLocation){
+                          element[6]['value']['hide'] = fIsOpenLocation;
+                          if (element[6]['value']['value'] == "") {
+                            element[6]['value']['label'] = fLoc == null? "":fLoc;
+                            element[6]['value']['value'] =fLoc == null? "":fLoc;
+                          }
+                        }
+                        //判断是否启用仓位
+                        if (element[6]['value']['hide']) {
+                          if (element[6]['value']['label'] == fLoc) {
+                            errorTitle = "";
+                          } else {
+                            errorTitle = "仓位不一致";
+                            continue;
+                          }
+                        }
                         element[3]['value']['label'] =
                             (double.parse(element[3]['value']['label']) +
                                     double.parse(barcodeNum))
@@ -691,6 +771,26 @@ class _PickingDetailState extends State<PickingDetail> {
               }
               if (scanCode[5] == "N") {
                 if (element[0]['value']['scanCode'].indexOf(code) == -1) {
+                  if (element[4]['value']['value'] == "") {
+                    element[4]['value']['label'] = barcodeData[0][6] == null? "":barcodeData[0][6];
+                    element[4]['value']['value'] = barcodeData[0][7] == null? "":barcodeData[0][7];
+                  }
+                  if(fIsOpenLocation){
+                    element[6]['value']['hide'] = fIsOpenLocation;
+                    if (element[6]['value']['value'] == "") {
+                      element[6]['value']['label'] = fLoc == null? "":fLoc;
+                      element[6]['value']['value'] =fLoc == null? "":fLoc;
+                    }
+                  }
+                  //判断是否启用仓位
+                  if (element[6]['value']['hide']) {
+                    if (element[6]['value']['label'] == fLoc) {
+                      errorTitle = "";
+                    } else {
+                      errorTitle = "仓位不一致";
+                      continue;
+                    }
+                  }
                   if (element[5]['value']['value'] == "") {
                     element[5]['value']['label'] = scanCode[1];
                     element[5]['value']['value'] = scanCode[1];
@@ -718,6 +818,26 @@ class _PickingDetailState extends State<PickingDetail> {
                   //判断物料是否重复 首个下标是否对应末尾下标
                   if (fNumber.indexOf(element[0]['value']['value']) == fNumber.lastIndexOf(element[0]['value']['value'])) {
                     if (element[0]['value']['scanCode'].indexOf(code) == -1) {
+                      if (element[4]['value']['value'] == "") {
+                        element[4]['value']['label'] = barcodeData[0][6] == null? "":barcodeData[0][6];
+                        element[4]['value']['value'] = barcodeData[0][7] == null? "":barcodeData[0][7];
+                      }
+                      if(fIsOpenLocation){
+                        element[6]['value']['hide'] = fIsOpenLocation;
+                        if (element[6]['value']['value'] == "") {
+                          element[6]['value']['label'] = fLoc == null? "":fLoc;
+                          element[6]['value']['value'] =fLoc == null? "":fLoc;
+                        }
+                      }
+                      //判断是否启用仓位
+                      if (element[6]['value']['hide']) {
+                        if (element[6]['value']['label'] == fLoc) {
+                          errorTitle = "";
+                        } else {
+                          errorTitle = "仓位不一致";
+                          continue;
+                        }
+                      }
                       element[3]['value']['label'] = (double.parse(element[3]['value']['label']) + double.parse(barcodeNum)).toString();
                       element[3]['value']['value'] = element[3]['value']['label'];
                       var item = barCodeScan[0].toString() +
@@ -748,6 +868,26 @@ class _PickingDetailState extends State<PickingDetail> {
                         //判断条码是否重复
                         if (element[0]['value']['scanCode'].indexOf(code) ==
                             -1) {
+                          if (element[4]['value']['value'] == "") {
+                            element[4]['value']['label'] = barcodeData[0][6] == null? "":barcodeData[0][6];
+                            element[4]['value']['value'] = barcodeData[0][7] == null? "":barcodeData[0][7];
+                          }
+                          if(fIsOpenLocation){
+                            element[6]['value']['hide'] = fIsOpenLocation;
+                            if (element[6]['value']['value'] == "") {
+                              element[6]['value']['label'] = fLoc == null? "":fLoc;
+                              element[6]['value']['value'] =fLoc == null? "":fLoc;
+                            }
+                          }
+                          //判断是否启用仓位
+                          if (element[6]['value']['hide']) {
+                            if (element[6]['value']['label'] == fLoc) {
+                              errorTitle = "";
+                            } else {
+                              errorTitle = "仓位不一致";
+                              continue;
+                            }
+                          }
                           var item = barCodeScan[0].toString() +
                               "-" +
                               (element[9]['value']['label'] -
@@ -789,6 +929,26 @@ class _PickingDetailState extends State<PickingDetail> {
                         //判断条码是否重复
                         if (element[0]['value']['scanCode'].indexOf(code) ==
                             -1) {
+                          if (element[4]['value']['value'] == "") {
+                            element[4]['value']['label'] = barcodeData[0][6] == null? "":barcodeData[0][6];
+                            element[4]['value']['value'] = barcodeData[0][7] == null? "":barcodeData[0][7];
+                          }
+                          if(fIsOpenLocation){
+                            element[6]['value']['hide'] = fIsOpenLocation;
+                            if (element[6]['value']['value'] == "") {
+                              element[6]['value']['label'] = fLoc == null? "":fLoc;
+                              element[6]['value']['value'] =fLoc == null? "":fLoc;
+                            }
+                          }
+                          //判断是否启用仓位
+                          if (element[6]['value']['hide']) {
+                            if (element[6]['value']['label'] == fLoc) {
+                              errorTitle = "";
+                            } else {
+                              errorTitle = "仓位不一致";
+                              continue;
+                            }
+                          }
                           element[3]['value']['label'] =
                               (double.parse(element[3]['value']['label']) +
                                       double.parse(barcodeNum))
@@ -827,6 +987,26 @@ class _PickingDetailState extends State<PickingDetail> {
                     if (fNumber.indexOf(element[0]['value']['value']) ==
                         fNumber.lastIndexOf(element[0]['value']['value'])) {
                       if (element[0]['value']['scanCode'].indexOf(code) == -1) {
+                        if (element[4]['value']['value'] == "") {
+                          element[4]['value']['label'] = barcodeData[0][6] == null? "":barcodeData[0][6];
+                          element[4]['value']['value'] = barcodeData[0][7] == null? "":barcodeData[0][7];
+                        }
+                        if(fIsOpenLocation){
+                          element[6]['value']['hide'] = fIsOpenLocation;
+                          if (element[6]['value']['value'] == "") {
+                            element[6]['value']['label'] = fLoc == null? "":fLoc;
+                            element[6]['value']['value'] =fLoc == null? "":fLoc;
+                          }
+                        }
+                        //判断是否启用仓位
+                        if (element[6]['value']['hide']) {
+                          if (element[6]['value']['label'] == fLoc) {
+                            errorTitle = "";
+                          } else {
+                            errorTitle = "仓位不一致";
+                            continue;
+                          }
+                        }
                         element[3]['value']['label'] =
                             (double.parse(element[3]['value']['label']) +
                                     double.parse(barcodeNum))
@@ -861,6 +1041,26 @@ class _PickingDetailState extends State<PickingDetail> {
                           //判断条码是否重复
                           if (element[0]['value']['scanCode'].indexOf(code) ==
                               -1) {
+                            if (element[4]['value']['value'] == "") {
+                              element[4]['value']['label'] = barcodeData[0][6] == null? "":barcodeData[0][6];
+                              element[4]['value']['value'] = barcodeData[0][7] == null? "":barcodeData[0][7];
+                            }
+                            if(fIsOpenLocation){
+                              element[6]['value']['hide'] = fIsOpenLocation;
+                              if (element[6]['value']['value'] == "") {
+                                element[6]['value']['label'] = fLoc == null? "":fLoc;
+                                element[6]['value']['value'] =fLoc == null? "":fLoc;
+                              }
+                            }
+                            //判断是否启用仓位
+                            if (element[6]['value']['hide']) {
+                              if (element[6]['value']['label'] == fLoc) {
+                                errorTitle = "";
+                              } else {
+                                errorTitle = "仓位不一致";
+                                continue;
+                              }
+                            }
                             var item = barCodeScan[0].toString() +
                                 "-" +
                                 (element[9]['value']['label'] -
@@ -902,6 +1102,26 @@ class _PickingDetailState extends State<PickingDetail> {
                           //判断条码是否重复
                           if (element[0]['value']['scanCode'].indexOf(code) ==
                               -1) {
+                            if (element[4]['value']['value'] == "") {
+                              element[4]['value']['label'] = barcodeData[0][6] == null? "":barcodeData[0][6];
+                              element[4]['value']['value'] = barcodeData[0][7] == null? "":barcodeData[0][7];
+                            }
+                            if(fIsOpenLocation){
+                              element[6]['value']['hide'] = fIsOpenLocation;
+                              if (element[6]['value']['value'] == "") {
+                                element[6]['value']['label'] = fLoc == null? "":fLoc;
+                                element[6]['value']['value'] =fLoc == null? "":fLoc;
+                              }
+                            }
+                            //判断是否启用仓位
+                            if (element[6]['value']['hide']) {
+                              if (element[6]['value']['label'] == fLoc) {
+                                errorTitle = "";
+                              } else {
+                                errorTitle = "仓位不一致";
+                                continue;
+                              }
+                            }
                             element[3]['value']['label'] =
                                 (double.parse(element[3]['value']['label']) +
                                         double.parse(barcodeNum))
@@ -1761,15 +1981,22 @@ class _PickingDetailState extends State<PickingDetail> {
         print('longer >>> 返回数据：$p');
         print('longer >>> 返回数据类型：${p.runtimeType}');
         setState(() {
-          hobby['value']['label'] = p;
+          setState(() {
+            hobby['value']['label'] = p;
+          });
+          var elementIndex = 0;
+          data.forEach((element) {
+            print(element);
+            if (element == p) {
+              hobby['value']['value'] = stockListObj[elementIndex][2];
+              stock[6]['value']['hide'] = stockListObj[elementIndex][3];
+              stock[6]['value']['value'] = "";
+              stock[6]['value']['label'] = "";
+            }
+            elementIndex++;
+          });
         });
-        var ele;
-        for (var i = 0; i < data.length; i++) {
-          if (data[i] == p) {
-            hobby['value']['value'] = stockListObj[i][2];
-            break;
-          }
-        }
+
       },
     );
   }
@@ -1891,6 +2118,51 @@ class _PickingDetailState extends State<PickingDetail> {
               _item('仓库:', stockList, this.hobby[i][j]['value']['label'],
                   this.hobby[i][j],
                   stock: this.hobby[i]),
+            );
+          }else if(j == 6){
+            comList.add(
+              Visibility(
+                maintainSize: false,
+                maintainState: false,
+                maintainAnimation: false,
+                visible: this.hobby[i][j]["value"]["hide"],
+                child: Column(children: [
+                  Container(
+                    color: Colors.white,
+                    child: ListTile(
+                        title: Text(this.hobby[i][j]["title"] +
+                            '：' +
+                            this.hobby[i][j]["value"]["label"].toString()),
+                        trailing:
+                        Row(mainAxisSize: MainAxisSize.min, children: <Widget>[
+                          IconButton(
+                            icon: new Icon(Icons.filter_center_focus),
+                            tooltip: '点击扫描',
+                            onPressed: () {
+                              this._textNumber.text =
+                                  this.hobby[i][j]["value"]["label"].toString();
+                              this._FNumber =
+                                  this.hobby[i][j]["value"]["label"].toString();
+                              checkItem = 'FNumber';
+                              this.show = false;
+                              checkData = i;
+                              checkDataChild = j;
+                              scanDialog();
+                              print(this.hobby[i][j]["value"]["label"]);
+                              if (this.hobby[i][j]["value"]["label"] != 0) {
+                                this._textNumber.value = _textNumber.value.copyWith(
+                                  text:
+                                  this.hobby[i][j]["value"]["label"].toString(),
+                                );
+                              }
+                            },
+                          ),
+                        ])),
+                  ),
+                  divider,
+                ]),
+              ),
+
             );
           } else {
             comList.add(
@@ -2159,6 +2431,31 @@ class _PickingDetailState extends State<PickingDetail> {
                   codeFEntityItem['FEntryStockID'] = {
                     "FNUMBER": this.hobby[i][4]['value']['value']
                   };
+                  if (this.hobby[i][6]['value']['hide']) {
+                          codeFEntityItem['FStockLocNumber'] = this.hobby[i][6]['value']['value'];
+                          Map<String, dynamic> stockMap = Map();
+                          stockMap['FormId'] = 'BD_STOCK';
+                          stockMap['FieldKeys'] =
+                          'FFlexNumber';
+                          stockMap['FilterString'] = "FNumber = '" +
+                              this.hobby[i][4]['value']['value'] +
+                              "'";
+                          Map<String, dynamic> stockDataMap = Map();
+                          stockDataMap['data'] = stockMap;
+                          String res = await CurrencyEntity.polling(stockDataMap);
+                          var stockRes = jsonDecode(res);
+                          if (stockRes.length > 0) {
+                            var postionList = this.hobby[i][6]['value']['value'].split(".");
+                            codeFEntityItem['FStockLocID'] = {};
+                            var positonIndex = 0;
+                            for(var dimension in postionList){
+                              codeFEntityItem['FStockLocID']["FSTOCKLOCID__" + stockRes[positonIndex][0]] = {
+                                "FNumber": dimension
+                              };
+                              positonIndex++;
+                            }
+                          }
+                        }
                   var codeFEntity = [codeFEntityItem];
                   codeModel['FEntity'] = codeFEntity;
                   orderCodeMap['Model'] = codeModel;
@@ -2272,6 +2569,30 @@ class _PickingDetailState extends State<PickingDetail> {
         };*/
             //FEntityItem['FStockStatusId'] = {"FNumber": "KCZT01_SYS"};
             FEntityItem['FStockId'] = {"FNumber": element[4]['value']['value']};
+            if (element[6]['value']['hide']) {
+              Map<String, dynamic> stockMap = Map();
+              stockMap['FormId'] = 'BD_STOCK';
+              stockMap['FieldKeys'] =
+              'FFlexNumber';
+              stockMap['FilterString'] = "FNumber = '" +
+                  element[4]['value']['value'] +
+                  "'";
+              Map<String, dynamic> stockDataMap = Map();
+              stockDataMap['data'] = stockMap;
+              String res = await CurrencyEntity.polling(stockDataMap);
+              var stockRes = jsonDecode(res);
+              if (stockRes.length > 0) {
+                var postionList = element[6]['value']['value'].split(".");
+                FEntityItem['FStockLocId'] = {};
+                var positonIndex = 0;
+                for(var dimension in postionList){
+                  FEntityItem['FStockLocId']["FSTOCKLOCID__" + stockRes[positonIndex][0]] = {
+                    "FNumber": dimension
+                  };
+                  positonIndex++;
+                }
+              }
+            }
             FEntityItem['FLot'] = {"FNumber": element[5]['value']['value']};
             var fSerialSub = [];
             var kingDeeCode = element[0]['value']['kingDeeCode'];

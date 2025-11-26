@@ -237,7 +237,7 @@ class _PickingOutSourcingDetailState extends State<PickingOutSourcingDetail> {
         arr.add({
           "title": "仓位",
           "name": "FStockLocID",
-          "isHide": true,
+          "isHide": false,
           "value": {"label": "", "value": "", "hide": false}
         });
         arr.add({
@@ -279,10 +279,7 @@ class _PickingOutSourcingDetailState extends State<PickingOutSourcingDetail> {
       ToastUtil.showInfo('无数据');
       getStockList();
     }
-    /*_onEvent("F.30.5300111;20230618;;1;WGRK23060404;21");
-    _onEvent("F.19.3310013;20230618;;1;WGRK23060405;10");*/
-    /*_onEvent("rS4GuhddcEFEvSmlcNFjAivre7CCpUswnKQnOEY84ZaZ2PTOStw@X5EK5QB7mp3W");
-    _onEvent("+jMm0lf+AcNa9wQEoM+AfooanM4bL4d4swxgkvIXh9qwJ1MjtmIX4A==");*/
+    //_onEvent("F.19.3500005;23080007;;3;WGRK23080932,1812441198;2");
   }
 
   void _onEvent(event) async {
@@ -302,7 +299,7 @@ class _PickingOutSourcingDetailState extends State<PickingOutSourcingDetail> {
           barcodeMap['FilterString'] = "FBarCodeEn='" + event + "'";
           barcodeMap['FormId'] = 'QDEP_Cust_BarCodeList';
           barcodeMap['FieldKeys'] =
-          'FID,FInQtyTotal,FOutQtyTotal,FEntity_FEntryId,FRemainQty,FBarCodeQty,FStockID.FName,FStockID.FNumber,FMATERIALID.FNUMBER,FOwnerID.FNumber,FBarCode,FSN';
+          'FID,FInQtyTotal,FOutQtyTotal,FEntity_FEntryId,FRemainQty,FBarCodeQty,FStockID.FName,FStockID.FNumber,FMATERIALID.FNUMBER,FOwnerID.FNumber,FBarCode,FSN,FStockLocNumberH,FStockID.FIsOpenLocation';
           Map<String, dynamic> dataMap = Map();
           dataMap['data'] = barcodeMap;
           String order = await CurrencyEntity.polling(dataMap);
@@ -327,7 +324,7 @@ class _PickingOutSourcingDetailState extends State<PickingOutSourcingDetail> {
             };
             if(msg ==  ""){
               _code = event;
-              this.getMaterialList(barcodeData, barcodeData[0][10], barcodeData[0][11]);
+              this.getMaterialList(barcodeData, barcodeData[0][10], barcodeData[0][11], barcodeData[0][12], barcodeData[0][13]);
               print("ChannelPage: $event");
             }else{
               ToastUtil.showInfo(msg);
@@ -344,12 +341,12 @@ class _PickingOutSourcingDetailState extends State<PickingOutSourcingDetail> {
       }
     } else {
       _code = event;
-      this.getMaterialList("", _code, '');
+      this.getMaterialList("", _code, '', "", false);
       print("ChannelPage: $event");
     }
     print("ChannelPage: $event");
   }
-  getMaterialList(barcodeData, code, fsn) async {
+  getMaterialList(barcodeData, code, fsn, fLoc,fIsOpenLocation) async {
     Map<String, dynamic> userMap = Map();
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     var menuData = sharedPreferences.getString('MenuPermissions');
@@ -376,6 +373,7 @@ class _PickingOutSourcingDetailState extends State<PickingOutSourcingDetail> {
       } else {
         barCodeScan = scanCode;
       }
+      var errorTitle = "";
       var barcodeNum = scanCode[3];
       for (var element in hobby) {
         var residue = 0.0;
@@ -390,6 +388,26 @@ class _PickingOutSourcingDetailState extends State<PickingOutSourcingDetail> {
               }
               if (scanCode[5] == "N") {
                 if (element[0]['value']['scanCode'].indexOf(code) == -1) {
+                  if (element[4]['value']['value'] == "") {
+                    element[4]['value']['label'] = barcodeData[0][6] == null? "":barcodeData[0][6];
+                    element[4]['value']['value'] = barcodeData[0][7] == null? "":barcodeData[0][7];
+                  }
+                  if(fIsOpenLocation){
+                    element[6]['value']['hide'] = fIsOpenLocation;
+                    if (element[6]['value']['value'] == "") {
+                      element[6]['value']['label'] = fLoc == null? "":fLoc;
+                      element[6]['value']['value'] =fLoc == null? "":fLoc;
+                    }
+                  }
+                  //判断是否启用仓位
+                  if (element[6]['value']['hide']) {
+                    if (element[6]['value']['label'] == fLoc) {
+                      errorTitle = "";
+                    } else {
+                      errorTitle = "仓位不一致";
+                      continue;
+                    }
+                  }
                   element[3]['value']['label'] =
                       (double.parse(element[3]['value']['label']) +
                           double.parse(barcodeNum))
@@ -416,6 +434,26 @@ class _PickingOutSourcingDetailState extends State<PickingOutSourcingDetail> {
                 if (fNumber.indexOf(element[0]['value']['value']) ==
                     fNumber.lastIndexOf(element[0]['value']['value'])) {
                   if (element[0]['value']['scanCode'].indexOf(code) == -1) {
+                    if (element[4]['value']['value'] == "") {
+                      element[4]['value']['label'] = barcodeData[0][6] == null? "":barcodeData[0][6];
+                      element[4]['value']['value'] = barcodeData[0][7] == null? "":barcodeData[0][7];
+                    }
+                    if(fIsOpenLocation){
+                      element[6]['value']['hide'] = fIsOpenLocation;
+                      if (element[6]['value']['value'] == "") {
+                        element[6]['value']['label'] = fLoc == null? "":fLoc;
+                        element[6]['value']['value'] =fLoc == null? "":fLoc;
+                      }
+                    }
+                    //判断是否启用仓位
+                    if (element[6]['value']['hide']) {
+                      if (element[6]['value']['label'] == fLoc) {
+                        errorTitle = "";
+                      } else {
+                        errorTitle = "仓位不一致";
+                        continue;
+                      }
+                    }
                     element[3]['value']['label'] =
                         (double.parse(element[3]['value']['label']) +
                             double.parse(barcodeNum))
@@ -444,6 +482,26 @@ class _PickingOutSourcingDetailState extends State<PickingOutSourcingDetail> {
                         element[9]['value']['label']) {
                       //判断条码是否重复
                       if (element[0]['value']['scanCode'].indexOf(code) == -1) {
+                        if (element[4]['value']['value'] == "") {
+                          element[4]['value']['label'] = barcodeData[0][6] == null? "":barcodeData[0][6];
+                          element[4]['value']['value'] = barcodeData[0][7] == null? "":barcodeData[0][7];
+                        }
+                        if(fIsOpenLocation){
+                          element[6]['value']['hide'] = fIsOpenLocation;
+                          if (element[6]['value']['value'] == "") {
+                            element[6]['value']['label'] = fLoc == null? "":fLoc;
+                            element[6]['value']['value'] =fLoc == null? "":fLoc;
+                          }
+                        }
+                        //判断是否启用仓位
+                        if (element[6]['value']['hide']) {
+                          if (element[6]['value']['label'] == fLoc) {
+                            errorTitle = "";
+                          } else {
+                            errorTitle = "仓位不一致";
+                            continue;
+                          }
+                        }
                         var item = barCodeScan[0].toString() +
                             "-" +
                             (element[9]['value']['label'] -
@@ -479,6 +537,26 @@ class _PickingOutSourcingDetailState extends State<PickingOutSourcingDetail> {
                       //数量不超出
                       //判断条码是否重复
                       if (element[0]['value']['scanCode'].indexOf(code) == -1) {
+                        if (element[4]['value']['value'] == "") {
+                          element[4]['value']['label'] = barcodeData[0][6] == null? "":barcodeData[0][6];
+                          element[4]['value']['value'] = barcodeData[0][7] == null? "":barcodeData[0][7];
+                        }
+                        if(fIsOpenLocation){
+                          element[6]['value']['hide'] = fIsOpenLocation;
+                          if (element[6]['value']['value'] == "") {
+                            element[6]['value']['label'] = fLoc == null? "":fLoc;
+                            element[6]['value']['value'] =fLoc == null? "":fLoc;
+                          }
+                        }
+                        //判断是否启用仓位
+                        if (element[6]['value']['hide']) {
+                          if (element[6]['value']['label'] == fLoc) {
+                            errorTitle = "";
+                          } else {
+                            errorTitle = "仓位不一致";
+                            continue;
+                          }
+                        }
                         element[3]['value']['label'] =
                             (double.parse(element[3]['value']['label']) +
                                 double.parse(barcodeNum))
@@ -516,6 +594,26 @@ class _PickingOutSourcingDetailState extends State<PickingOutSourcingDetail> {
               }
               if (scanCode[5] == "N") {
                 if (element[0]['value']['scanCode'].indexOf(code) == -1) {
+                  if (element[4]['value']['value'] == "") {
+                    element[4]['value']['label'] = barcodeData[0][6] == null? "":barcodeData[0][6];
+                    element[4]['value']['value'] = barcodeData[0][7] == null? "":barcodeData[0][7];
+                  }
+                  if(fIsOpenLocation){
+                    element[6]['value']['hide'] = fIsOpenLocation;
+                    if (element[6]['value']['value'] == "") {
+                      element[6]['value']['label'] = fLoc == null? "":fLoc;
+                      element[6]['value']['value'] =fLoc == null? "":fLoc;
+                    }
+                  }
+                  //判断是否启用仓位
+                  if (element[6]['value']['hide']) {
+                    if (element[6]['value']['label'] == fLoc) {
+                      errorTitle = "";
+                    } else {
+                      errorTitle = "仓位不一致";
+                      continue;
+                    }
+                  }
                   if(element[5]['value']['value'] == "") {
                     element[5]['value']['label'] = scanCode[1];
                     element[5]['value']['value'] = scanCode[1];
@@ -546,6 +644,26 @@ class _PickingOutSourcingDetailState extends State<PickingOutSourcingDetail> {
                   if (fNumber.indexOf(element[0]['value']['value']) ==
                       fNumber.lastIndexOf(element[0]['value']['value'])) {
                     if (element[0]['value']['scanCode'].indexOf(code) == -1) {
+                      if (element[4]['value']['value'] == "") {
+                        element[4]['value']['label'] = barcodeData[0][6] == null? "":barcodeData[0][6];
+                        element[4]['value']['value'] = barcodeData[0][7] == null? "":barcodeData[0][7];
+                      }
+                      if(fIsOpenLocation){
+                        element[6]['value']['hide'] = fIsOpenLocation;
+                        if (element[6]['value']['value'] == "") {
+                          element[6]['value']['label'] = fLoc == null? "":fLoc;
+                          element[6]['value']['value'] =fLoc == null? "":fLoc;
+                        }
+                      }
+                      //判断是否启用仓位
+                      if (element[6]['value']['hide']) {
+                        if (element[6]['value']['label'] == fLoc) {
+                          errorTitle = "";
+                        } else {
+                          errorTitle = "仓位不一致";
+                          continue;
+                        }
+                      }
                       element[3]['value']['label'] =
                           (double.parse(element[3]['value']['label']) +
                               double.parse(barcodeNum))
@@ -574,6 +692,26 @@ class _PickingOutSourcingDetailState extends State<PickingOutSourcingDetail> {
                         //判断条码是否重复
                         if (element[0]['value']['scanCode'].indexOf(code) ==
                             -1) {
+                          if (element[4]['value']['value'] == "") {
+                            element[4]['value']['label'] = barcodeData[0][6] == null? "":barcodeData[0][6];
+                            element[4]['value']['value'] = barcodeData[0][7] == null? "":barcodeData[0][7];
+                          }
+                          if(fIsOpenLocation){
+                            element[6]['value']['hide'] = fIsOpenLocation;
+                            if (element[6]['value']['value'] == "") {
+                              element[6]['value']['label'] = fLoc == null? "":fLoc;
+                              element[6]['value']['value'] =fLoc == null? "":fLoc;
+                            }
+                          }
+                          //判断是否启用仓位
+                          if (element[6]['value']['hide']) {
+                            if (element[6]['value']['label'] == fLoc) {
+                              errorTitle = "";
+                            } else {
+                              errorTitle = "仓位不一致";
+                              continue;
+                            }
+                          }
                           var item = barCodeScan[0].toString() +
                               "-" +
                               (element[9]['value']['label'] -
@@ -613,6 +751,26 @@ class _PickingOutSourcingDetailState extends State<PickingOutSourcingDetail> {
                         //判断条码是否重复
                         if (element[0]['value']['scanCode'].indexOf(code) ==
                             -1) {
+                          if (element[4]['value']['value'] == "") {
+                            element[4]['value']['label'] = barcodeData[0][6] == null? "":barcodeData[0][6];
+                            element[4]['value']['value'] = barcodeData[0][7] == null? "":barcodeData[0][7];
+                          }
+                          if(fIsOpenLocation){
+                            element[6]['value']['hide'] = fIsOpenLocation;
+                            if (element[6]['value']['value'] == "") {
+                              element[6]['value']['label'] = fLoc == null? "":fLoc;
+                              element[6]['value']['value'] =fLoc == null? "":fLoc;
+                            }
+                          }
+                          //判断是否启用仓位
+                          if (element[6]['value']['hide']) {
+                            if (element[6]['value']['label'] == fLoc) {
+                              errorTitle = "";
+                            } else {
+                              errorTitle = "仓位不一致";
+                              continue;
+                            }
+                          }
                           element[3]['value']['label'] =
                               (double.parse(element[3]['value']['label']) +
                                   double.parse(barcodeNum))
@@ -648,6 +806,26 @@ class _PickingOutSourcingDetailState extends State<PickingOutSourcingDetail> {
                     if (fNumber.indexOf(element[0]['value']['value']) ==
                         fNumber.lastIndexOf(element[0]['value']['value'])) {
                       if (element[0]['value']['scanCode'].indexOf(code) == -1) {
+                        if (element[4]['value']['value'] == "") {
+                          element[4]['value']['label'] = barcodeData[0][6] == null? "":barcodeData[0][6];
+                          element[4]['value']['value'] = barcodeData[0][7] == null? "":barcodeData[0][7];
+                        }
+                        if(fIsOpenLocation){
+                          element[6]['value']['hide'] = fIsOpenLocation;
+                          if (element[6]['value']['value'] == "") {
+                            element[6]['value']['label'] = fLoc == null? "":fLoc;
+                            element[6]['value']['value'] =fLoc == null? "":fLoc;
+                          }
+                        }
+                        //判断是否启用仓位
+                        if (element[6]['value']['hide']) {
+                          if (element[6]['value']['label'] == fLoc) {
+                            errorTitle = "";
+                          } else {
+                            errorTitle = "仓位不一致";
+                            continue;
+                          }
+                        }
                         element[3]['value']['label'] =
                             (double.parse(element[3]['value']['label']) +
                                 double.parse(barcodeNum))
@@ -678,6 +856,26 @@ class _PickingOutSourcingDetailState extends State<PickingOutSourcingDetail> {
                           //判断条码是否重复
                           if (element[0]['value']['scanCode'].indexOf(code) ==
                               -1) {
+                            if (element[4]['value']['value'] == "") {
+                              element[4]['value']['label'] = barcodeData[0][6] == null? "":barcodeData[0][6];
+                              element[4]['value']['value'] = barcodeData[0][7] == null? "":barcodeData[0][7];
+                            }
+                            if(fIsOpenLocation){
+                              element[6]['value']['hide'] = fIsOpenLocation;
+                              if (element[6]['value']['value'] == "") {
+                                element[6]['value']['label'] = fLoc == null? "":fLoc;
+                                element[6]['value']['value'] =fLoc == null? "":fLoc;
+                              }
+                            }
+                            //判断是否启用仓位
+                            if (element[6]['value']['hide']) {
+                              if (element[6]['value']['label'] == fLoc) {
+                                errorTitle = "";
+                              } else {
+                                errorTitle = "仓位不一致";
+                                continue;
+                              }
+                            }
                             var item = barCodeScan[0].toString() +
                                 "-" +
                                 (element[9]['value']['label'] -
@@ -717,6 +915,26 @@ class _PickingOutSourcingDetailState extends State<PickingOutSourcingDetail> {
                           //判断条码是否重复
                           if (element[0]['value']['scanCode'].indexOf(code) ==
                               -1) {
+                            if (element[4]['value']['value'] == "") {
+                              element[4]['value']['label'] = barcodeData[0][6] == null? "":barcodeData[0][6];
+                              element[4]['value']['value'] = barcodeData[0][7] == null? "":barcodeData[0][7];
+                            }
+                            if(fIsOpenLocation){
+                              element[6]['value']['hide'] = fIsOpenLocation;
+                              if (element[6]['value']['value'] == "") {
+                                element[6]['value']['label'] = fLoc == null? "":fLoc;
+                                element[6]['value']['value'] =fLoc == null? "":fLoc;
+                              }
+                            }
+                            //判断是否启用仓位
+                            if (element[6]['value']['hide']) {
+                              if (element[6]['value']['label'] == fLoc) {
+                                errorTitle = "";
+                              } else {
+                                errorTitle = "仓位不一致";
+                                continue;
+                              }
+                            }
                             element[3]['value']['label'] =
                                 (double.parse(element[3]['value']['label']) +
                                     double.parse(barcodeNum))
@@ -1336,15 +1554,22 @@ class _PickingOutSourcingDetailState extends State<PickingOutSourcingDetail> {
         print('longer >>> 返回数据：$p');
         print('longer >>> 返回数据类型：${p.runtimeType}');
         setState(() {
-          hobby['value']['label'] = p;
+          setState(() {
+            hobby['value']['label'] = p;
+          });
+          var elementIndex = 0;
+          data.forEach((element) {
+            print(element);
+            if (element == p) {
+              hobby['value']['value'] = stockListObj[elementIndex][2];
+              stock[6]['value']['hide'] = stockListObj[elementIndex][3];
+              stock[6]['value']['value'] = "";
+              stock[6]['value']['label'] = "";
+            }
+            elementIndex++;
+          });
         });
-        var ele;
-        for(var i = 0;i<data.length;i++){
-          if (data[i] == p) {
-            hobby['value']['value'] = stockListObj[i][2];
-            break;
-          }
-        }
+
       },
     );
   }
@@ -1463,6 +1688,50 @@ class _PickingOutSourcingDetailState extends State<PickingOutSourcingDetail> {
               _item('仓库:', stockList, this.hobby[i][j]['value']['label'],
                   this.hobby[i][j],
                   stock: this.hobby[i]),
+            );
+          }else if(j == 6){
+            comList.add(
+              Visibility(
+                maintainSize: false,
+                maintainState: false,
+                maintainAnimation: false,
+                visible: this.hobby[i][j]["value"]["hide"],
+                child: Column(children: [
+                  Container(
+                    color: Colors.white,
+                    child: ListTile(
+                        title: Text(this.hobby[i][j]["title"] +
+                            '：' +
+                            this.hobby[i][j]["value"]["label"].toString()),
+                        trailing:
+                        Row(mainAxisSize: MainAxisSize.min, children: <Widget>[
+                          IconButton(
+                            icon: new Icon(Icons.filter_center_focus),
+                            tooltip: '点击扫描',
+                            onPressed: () {
+                              this._textNumber.text =
+                                  this.hobby[i][j]["value"]["label"].toString();
+                              this._FNumber =
+                                  this.hobby[i][j]["value"]["label"].toString();
+                              checkItem = 'position';
+                              this.show = false;
+                              checkData = i;
+                              checkDataChild = j;
+                              scanDialog();
+                              print(this.hobby[i][j]["value"]["label"]);
+                              if (this.hobby[i][j]["value"]["label"] != 0) {
+                                this._textNumber.value = _textNumber.value.copyWith(
+                                  text:
+                                  this.hobby[i][j]["value"]["label"].toString(),
+                                );
+                              }
+                            },
+                          ),
+                        ])),
+                  ),
+                  divider,
+                ]),
+              ),
             );
           }else {
             comList.add(
@@ -1805,16 +2074,33 @@ class _PickingOutSourcingDetailState extends State<PickingOutSourcingDetail> {
             Map<String, dynamic> FEntityItem = Map();
             FEntityItem['FActualQty'] = element[3]['value']['value'];
             FEntityItem['FEntryID'] = collarOrder[1];
-            /* FEntityItem['FUnitId'] = {"FNumber": element[2]['value']['value']};*/
-            /* FEntityItem['FStockId'] = {
-          "FNumber": fBillNo.substring(0, 2) == "FO"
-              ? 'XBC001'
-              : collarOrderDate[hobbyIndex][2]
-        };*/
-            //FEntityItem['FStockStatusId'] = {"FNumber": "KCZT01_SYS"};
             FEntityItem['FStockId'] = {
               "FNumber": element[4]['value']['value']
             };
+            if (this.hobby[element][6]['value']['hide']) {
+              Map<String, dynamic> stockMap = Map();
+              stockMap['FormId'] = 'BD_STOCK';
+              stockMap['FieldKeys'] =
+              'FFlexNumber';
+              stockMap['FilterString'] = "FNumber = '" +
+                  this.hobby[element][4]['value']['value'] +
+                  "'";
+              Map<String, dynamic> stockDataMap = Map();
+              stockDataMap['data'] = stockMap;
+              String res = await CurrencyEntity.polling(stockDataMap);
+              var stockRes = jsonDecode(res);
+              if (stockRes.length > 0) {
+                var postionList = this.hobby[element][6]['value']['value'].split(".");
+                FEntityItem['FStockLocId'] = {};
+                var positonIndex = 0;
+                for(var dimension in postionList){
+                  FEntityItem['FStockLocId']["FSTOCKLOCID__" + stockRes[positonIndex][0]] = {
+                    "FNumber": dimension
+                  };
+                  positonIndex++;
+                }
+              }
+            }
             FEntityItem['FLot'] = {
               "FNumber": element[5]['value']['value']
             };
@@ -1891,7 +2177,6 @@ class _PickingOutSourcingDetailState extends State<PickingOutSourcingDetail> {
       pushMap['Ids'] = orderDate[0][13];
       pushMap['RuleId'] = "SUB_PPBOM_Pick";
       pushMap['TargetFormId'] = "SUB_PickMtrl";
-      print(pushMap);
       var downData =
       await SubmitEntity.pushDown({"formid": "SUB_PPBOM", "data": pushMap});
       print(downData);

@@ -208,7 +208,7 @@ class _PurchaseOutSourcingDetailState extends State<PurchaseOutSourcingDetail> {
     userMap['FormId'] = 'PUR_PurchaseOrder';
     userMap['OrderString'] = 'FMaterialId.FNumber ASC';
     userMap['FieldKeys'] =
-    'FBillNo,FSupplierId.FNumber,FSupplierId.FName,FDate,FPOOrderEntry_FEntryId,FMaterialId.FNumber,FMaterialId.FName,FMaterialId.FSpecification,FPurchaseOrgId.FNumber,FPurchaseOrgId.FName,FUnitId.FNumber,FUnitId.FName,FQty,FSrcBillNo,FID,FMaterialId.FIsBatchManage,FCorrespondOrgId.FNumber,FStockUnitID.FNumber,FTaxPrice,FEntryTaxRate';
+    'FBillNo,FSupplierId.FNumber,FSupplierId.FName,FDate,FPOOrderEntry_FEntryId,FMaterialId.FNumber,FMaterialId.FName,FMaterialId.FSpecification,FPurchaseOrgId.FNumber,FPurchaseOrgId.FName,FUnitId.FNumber,FUnitId.FName,FRemainReceiveQty,FSrcBillNo,FID,FMaterialId.FIsBatchManage,FCorrespondOrgId.FNumber,FStockUnitID.FNumber,FTaxPrice,FEntryTaxRate';
     Map<String, dynamic> dataMap = Map();
     dataMap['data'] = userMap;
     String order = await CurrencyEntity.polling(dataMap);
@@ -241,7 +241,7 @@ class _PurchaseOutSourcingDetailState extends State<PurchaseOutSourcingDetail> {
           "value": {"label": value[11], "value": value[10]}
         });
         arr.add({
-          "title": "实收数量",
+          "title": "收料数量",
           "name": "FRealQty",
           "isHide": false,/*value[12]*/
           "value": {"label": "0", "value": "0"}
@@ -277,7 +277,7 @@ class _PurchaseOutSourcingDetailState extends State<PurchaseOutSourcingDetail> {
           "value": {"label": value[18], "value": value[18]}
         });
         arr.add({
-          "title": "实到数量",
+          "title": "剩余收料数量",
           "name": "",
           "isHide": false,
           "value": {"label": value[12], "value": value[12], "rateValue": value[12]}/*+value[12]*0.1*/
@@ -305,7 +305,7 @@ class _PurchaseOutSourcingDetailState extends State<PurchaseOutSourcingDetail> {
       ToastUtil.showInfo('无数据');
     }
     getStockList();
-    //_onEvent("68051032538-20230505-202305050080");
+    //_onEvent("G.02.D000045;20230617;;45;JGRK23060007;961");
     /*_onEvent("rS4GuhddcEFEvSmlcNFjAtxm2vFej9cMprp+v8IEavh9BLgADkWBno@Q7q7UCICJ");*/
   }
 
@@ -326,7 +326,7 @@ class _PurchaseOutSourcingDetailState extends State<PurchaseOutSourcingDetail> {
           barcodeMap['FilterString'] = "FBarCodeEn='" + event + "'";
           barcodeMap['FormId'] = 'QDEP_Cust_BarCodeList';
           barcodeMap['FieldKeys'] =
-          'FID,FInQtyTotal,FOutQtyTotal,FEntity_FEntryId,FRemainQty,FBarCodeQty,FStockID.FName,FStockID.FNumber,FMATERIALID.FNUMBER,FOwnerID.FNumber,FBarCode,FSN';
+          'FID,FInQtyTotal,FOutQtyTotal,FEntity_FEntryId,FRemainQty,FBarCodeQty,FStockID.FName,FStockID.FNumber,FMATERIALID.FNUMBER,FOwnerID.FNumber,FBarCode,FSN,FStockLocNumberH,FStockID.FIsOpenLocation';
           Map<String, dynamic> dataMap = Map();
           dataMap['data'] = barcodeMap;
           String order = await CurrencyEntity.polling(dataMap);
@@ -347,7 +347,7 @@ class _PurchaseOutSourcingDetailState extends State<PurchaseOutSourcingDetail> {
             };
             if(msg ==  ""){
               _code = event;
-              this.getMaterialList(barcodeData, barcodeData[0][10], barcodeData[0][11]);
+              this.getMaterialList(barcodeData, barcodeData[0][10], barcodeData[0][11], barcodeData[0][12], barcodeData[0][13]);
               print("ChannelPage: $event");
             }else{
               ToastUtil.showInfo(msg);
@@ -361,12 +361,12 @@ class _PurchaseOutSourcingDetailState extends State<PurchaseOutSourcingDetail> {
       }
     } else {
       _code = event;
-      this.getMaterialList("", _code,"");
+      this.getMaterialList("", _code,"", "", false);
       print("ChannelPage: $event");
     }
     print("ChannelPage: $event");
   }
-  getMaterialList(barcodeData, code, fsn) async {
+  getMaterialList(barcodeData, code, fsn, fLoc,fIsOpenLocation) async {
     Map<String, dynamic> userMap = Map();
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     var menuData = sharedPreferences.getString('MenuPermissions');
@@ -392,6 +392,7 @@ class _PurchaseOutSourcingDetailState extends State<PurchaseOutSourcingDetail> {
       }else{
         barCodeScan = scanCode;
       }
+      var errorTitle = "";
       var barcodeNum = scanCode[3];
       for (var element in hobby) {
         var residue = 0.0;
@@ -1188,6 +1189,9 @@ class _PurchaseOutSourcingDetailState extends State<PurchaseOutSourcingDetail> {
               if (element == p) {
                 hobby['value']['value'] = stockListObj[elementIndex][2];
                 stock[6]['value']['hide'] = stockListObj[elementIndex][3];
+                stock[6]['value']['value'] = "";
+                stock[6]['value']['label'] = "";
+                //hobby['value']['dimension'] = stockListObj[elementIndex][4];
               }
               elementIndex++;
             });
@@ -1423,8 +1427,8 @@ class _PurchaseOutSourcingDetailState extends State<PurchaseOutSourcingDetail> {
     pushMap['EntryIds'] = val;
     pushMap['RuleId'] = "PUR_PurchaseOrder-PUR_ReceiveBill";
     pushMap['TargetFormId'] = "PUR_ReceiveBill";
-    pushMap['IsEnableDefaultRule'] = "false";
-    pushMap['IsDraftWhenSaveFail'] = "false";
+    pushMap['IsEnableDefaultRule'] = "true";
+    pushMap['IsDraftWhenSaveFail'] = "true";
     var downData =
     await SubmitEntity.pushDown({"formid": "PUR_PurchaseOrder", "data": pushMap});
     var res = jsonDecode(downData);
@@ -1459,11 +1463,35 @@ class _PurchaseOutSourcingDetailState extends State<PurchaseOutSourcingDetail> {
             Map<String, dynamic> FEntityItem = Map();
             FEntityItem['FEntryID'] = resData[entity][0];
             FEntityItem['FStockStatusId'] = {"FNumber": "KCZT01_SYS"};
-            FEntityItem['FActlandQty'] =
+            FEntityItem['FActReceiveQty'] =
             this.hobby[element][3]['value']['value'];
-            FEntityItem['FStockId'] = {
+            FEntityItem['FStockID'] = {
               "FNumber": this.hobby[element][4]['value']['value']
             };
+            if (this.hobby[element][6]['value']['hide']) {
+              Map<String, dynamic> stockMap = Map();
+              stockMap['FormId'] = 'BD_STOCK';
+              stockMap['FieldKeys'] =
+              'FFlexNumber';
+              stockMap['FilterString'] = "FNumber = '" +
+                  this.hobby[element][4]['value']['value'] +
+                  "'";
+              Map<String, dynamic> stockDataMap = Map();
+              stockDataMap['data'] = stockMap;
+              String res = await CurrencyEntity.polling(stockDataMap);
+              var stockRes = jsonDecode(res);
+              if (stockRes.length > 0) {
+                var postionList = this.hobby[element][6]['value']['value'].split(".");
+                FEntityItem['FStockLocId'] = {};
+                var positonIndex = 0;
+                for(var dimension in postionList){
+                  FEntityItem['FStockLocId']["FSTOCKLOCID__" + stockRes[positonIndex][0]] = {
+                    "FNumber": dimension
+                  };
+                  positonIndex++;
+                }
+              }
+            }
             var fSerialSub = [];
             var kingDeeCode = this.hobby[element][0]['value']['kingDeeCode'];
             for (int subj = 0; subj < kingDeeCode.length; subj++) {
@@ -1487,7 +1515,7 @@ class _PurchaseOutSourcingDetailState extends State<PurchaseOutSourcingDetail> {
           }
         }
       }
-      Model['FEntity'] = FEntity;
+      Model['FDetailEntity'] = FEntity;
       orderMap['Model'] = Model;
       dataMap = {"formid": "PUR_ReceiveBill", "data": orderMap, "isBool": true};
       print(jsonEncode(dataMap));
@@ -1534,104 +1562,145 @@ class _PurchaseOutSourcingDetailState extends State<PurchaseOutSourcingDetail> {
             'Ids': resCheck['data']['Model']['FID']
           }
         };
-        //提交
-        HandlerOrder.orderHandler(
-            context,
-            submitMap,
-            1,
-            "PUR_ReceiveBill",
-            SubmitEntity.submit(submitMap))
-            .then((submitResult) {
-          if (submitResult) {
-            //审核
-            HandlerOrder.orderHandler(
-                context,
-                submitMap,
-                1,
-                "PUR_ReceiveBill",
-                SubmitEntity.audit(submitMap))
-                .then((auditResult) async{
-              if (auditResult) {
-                var errorMsg = "";
-                if(fBarCodeList == 1){
-                  for (int i = 0; i < this.hobby.length; i++) {
-                    if (this.hobby[i][3]['value']['value'] != '0' &&
-                        this.hobby[i][4]['value']['value'] != '') {
-                      var kingDeeCode = this.hobby[i][0]['value']['kingDeeCode'];
-                      for(int j = 0;j<kingDeeCode.length;j++){
-                        Map<String, dynamic> dataCodeMap = Map();
-                        dataCodeMap['formid'] = 'QDEP_Cust_BarCodeList';
-                        Map<String, dynamic> orderCodeMap = Map();
-                        orderCodeMap['NeedReturnFields'] = [];
-                        orderCodeMap['IsDeleteEntry'] = false;
-                        Map<String, dynamic> codeModel = Map();
-                        var itemCode = kingDeeCode[j].split("-");
-                        codeModel['FID'] = itemCode[0];
-                        codeModel['FOwnerID'] = {
-                          "FNUMBER": deptData[1]
-                        };
-                        codeModel['FStockOrgID'] = {
-                          "FNUMBER": deptData[1]
-                        };
-                        codeModel['FStockID'] = {
-                          "FNUMBER": this.hobby[i][4]['value']['value']
-                        };
-                        Map<String, dynamic> codeFEntityItem = Map();
-                        codeFEntityItem['FBillDate'] = FDate;
-                        codeFEntityItem['FInQty'] = itemCode[1];
-                        codeFEntityItem['FEntryBillNo'] = orderDate[i][0];
-                        codeFEntityItem['FEntryStockID'] ={
-                          "FNUMBER": this.hobby[i][4]['value']['value']
-                        };
-                        var codeFEntity = [codeFEntityItem];
-                        codeModel['FEntity'] = codeFEntity;
-                        orderCodeMap['Model'] = codeModel;
-                        dataCodeMap['data'] = orderCodeMap;
-                        print(dataCodeMap);
-                        String codeRes = await SubmitEntity.save(dataCodeMap);
-                        var barcodeRes = jsonDecode(codeRes);
-                        if(!barcodeRes['Result']['ResponseStatus']['IsSuccess']){
-                          errorMsg +="错误反馈："+itemCode[1]+":"+barcodeRes['Result']['ResponseStatus']['Errors'][0]['Message'];
+        String order = await SubmitEntity.save(resCheck);
+        var res = jsonDecode(order);
+        if (res['Result']['ResponseStatus']['IsSuccess']) {
+          //提交
+          HandlerOrder.orderHandler(
+              context,
+              submitMap,
+              1,
+              "PUR_ReceiveBill",
+              SubmitEntity.submit(submitMap))
+              .then((submitResult) {
+            if (submitResult) {
+              //审核
+              HandlerOrder.orderHandler(
+                  context,
+                  submitMap,
+                  1,
+                  "PUR_ReceiveBill",
+                  SubmitEntity.audit(submitMap))
+                  .then((auditResult) async{
+                if (auditResult) {
+                  var errorMsg = "";
+                  if(fBarCodeList == 1){
+                    for (int i = 0; i < this.hobby.length; i++) {
+                      if (this.hobby[i][3]['value']['value'] != '0' &&
+                          this.hobby[i][4]['value']['value'] != '') {
+                        var kingDeeCode = this.hobby[i][0]['value']['kingDeeCode'];
+                        for(int j = 0;j<kingDeeCode.length;j++){
+                          Map<String, dynamic> dataCodeMap = Map();
+                          dataCodeMap['formid'] = 'QDEP_Cust_BarCodeList';
+                          Map<String, dynamic> orderCodeMap = Map();
+                          orderCodeMap['NeedReturnFields'] = [];
+                          orderCodeMap['IsDeleteEntry'] = false;
+                          Map<String, dynamic> codeModel = Map();
+                          var itemCode = kingDeeCode[j].split("-");
+                          codeModel['FID'] = itemCode[0];
+                          codeModel['FOwnerID'] = {
+                            "FNUMBER": deptData[1]
+                          };
+                          codeModel['FStockOrgID'] = {
+                            "FNUMBER": deptData[1]
+                          };
+                          codeModel['FStockID'] = {
+                            "FNUMBER": this.hobby[i][4]['value']['value']
+                          };
+                          Map<String, dynamic> codeFEntityItem = Map();
+                          if (this.hobby[i][6]['value']['hide']) {
+                            codeModel['FStockLocNumberH'] = this.hobby[i][6]['value']['value'];
+                            codeFEntityItem['FStockLocNumber'] = this.hobby[i][6]['value']['value'];
+                            Map<String, dynamic> stockMap = Map();
+                            stockMap['FormId'] = 'BD_STOCK';
+                            stockMap['FieldKeys'] =
+                            'FFlexNumber';
+                            stockMap['FilterString'] = "FNumber = '" +
+                                this.hobby[i][4]['value']['value'] +
+                                "'";
+                            Map<String, dynamic> stockDataMap = Map();
+                            stockDataMap['data'] = stockMap;
+                            String res = await CurrencyEntity.polling(stockDataMap);
+                            var stockRes = jsonDecode(res);
+                            if (stockRes.length > 0) {
+                              var postionList = this.hobby[i][6]['value']['value'].split(".");
+                              codeModel['FStockLocIDH'] = {};
+                              codeFEntityItem['FStockLocID'] = {};
+                              var positonIndex = 0;
+                              for(var dimension in postionList){
+                                codeModel['FStockLocIDH']["FSTOCKLOCIDH__" + stockRes[positonIndex][0]] = {
+                                  "FNumber": dimension
+                                };
+                                codeFEntityItem['FStockLocID']["FSTOCKLOCID__" + stockRes[positonIndex][0]] = {
+                                  "FNumber": dimension
+                                };
+                                positonIndex++;
+                              }
+                            }
+                          }
+                          codeFEntityItem['FBillDate'] = FDate;
+                          codeFEntityItem['FInQty'] = itemCode[1];
+                          codeFEntityItem['FEntryBillNo'] = orderDate[i][0];
+                          codeFEntityItem['FEntryStockID'] ={
+                            "FNUMBER": this.hobby[i][4]['value']['value']
+                          };
+                          var codeFEntity = [codeFEntityItem];
+                          codeModel['FEntity'] = codeFEntity;
+                          orderCodeMap['Model'] = codeModel;
+                          dataCodeMap['data'] = orderCodeMap;
+                          print(dataCodeMap);
+                          String codeRes = await SubmitEntity.save(dataCodeMap);
+                          var barcodeRes = jsonDecode(codeRes);
+                          if(!barcodeRes['Result']['ResponseStatus']['IsSuccess']){
+                            errorMsg +="错误反馈："+itemCode[1]+":"+barcodeRes['Result']['ResponseStatus']['Errors'][0]['Message'];
+                          }
+                          print(codeRes);
                         }
-                        print(codeRes);
                       }
                     }
                   }
-                }
-                if(errorMsg !=""){
-                  ToastUtil.errorDialog(context,
-                      errorMsg);
-                  this.isSubmit = false;
-                }
-                //提交清空页面
-                setState(() {
-                  this.hobby = [];
-                  this.orderDate = [];
-                  this.FBillNo = '';
-                  ToastUtil.showInfo('提交成功');
-                  Navigator.of(context).pop("refresh");
-                });
-              } else {
-                //失败后反审
-                HandlerOrder.orderHandler(
-                    context,
-                    submitMap,
-                    0,
-                    "PUR_ReceiveBill",
-                    SubmitEntity.unAudit(submitMap))
-                    .then((unAuditResult) {
-                  if (unAuditResult) {
-                    this.isSubmit = false;
-                  }else{
+                  if(errorMsg !=""){
+                    ToastUtil.errorDialog(context,
+                        errorMsg);
                     this.isSubmit = false;
                   }
-                });
-              }
-            });
-          } else {
+                  //提交清空页面
+                  setState(() {
+                    this.hobby = [];
+                    this.orderDate = [];
+                    this.FBillNo = '';
+                    ToastUtil.showInfo('提交成功');
+                    Navigator.of(context).pop("refresh");
+                  });
+                } else {
+                  //失败后反审
+                  HandlerOrder.orderHandler(
+                      context,
+                      submitMap,
+                      0,
+                      "PUR_ReceiveBill",
+                      SubmitEntity.unAudit(submitMap))
+                      .then((unAuditResult) {
+                    if (unAuditResult) {
+                      this.isSubmit = false;
+                    }else{
+                      this.isSubmit = false;
+                    }
+                  });
+                }
+              });
+            } else {
+              this.isSubmit = false;
+            }
+          });
+        } else {
+          setState(() {
             this.isSubmit = false;
-          }
-        });
+            ToastUtil.errorDialog(
+                context, res['Result']['ResponseStatus']['Errors'][0]['Message']);
+          });
+        }
+
       } else {
         setState(() {
           this.isSubmit = false;

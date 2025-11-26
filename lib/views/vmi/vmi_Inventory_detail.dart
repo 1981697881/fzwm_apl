@@ -20,7 +20,6 @@ import 'package:flutter_pickers/utils/check.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:fzwm_apl/components/my_text.dart';
 import 'package:intl/intl.dart';
-import 'package:qrscan/qrscan.dart' as scanner;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class VmiInventoryDetail extends StatefulWidget {
@@ -84,7 +83,7 @@ class _VmiInventoryDetailState extends State<VmiInventoryDetail> {
   final rightIcon = Icon(Icons.keyboard_arrow_right);
   final scanIcon = Icon(Icons.filter_center_focus);
   static const scannerPlugin =
-      const EventChannel('com.shinow.pda_scanner/plugin');
+  const EventChannel('com.shinow.pda_scanner/plugin');
   StreamSubscription? _subscription;
   var _code;
   var _FNumber;
@@ -116,8 +115,7 @@ class _VmiInventoryDetailState extends State<VmiInventoryDetail> {
           .listen(_onEvent, onError: _onError);
     }
     getOrganizationsList();
-    getSchemeList();
-    getStockList();
+
   }
 
   //获取缓存
@@ -138,7 +136,7 @@ class _VmiInventoryDetailState extends State<VmiInventoryDetail> {
       if (resData.length > 0) {
         fID = resData[0][0];
         SqfLiteQueueDataScheme.searchDates(
-                "select * from scheme_Inventory where schemeNumber='$schemeNumber'")
+            "select * from scheme_Inventory where schemeNumber='$schemeNumber'")
             .then((value) {
           var res = jsonEncode(value);
           if (jsonDecode(res).length > 0) {
@@ -150,18 +148,35 @@ class _VmiInventoryDetailState extends State<VmiInventoryDetail> {
         ToastUtil.showInfo('该盘点作业无数据');
       }
     }
+    /*SqfLiteQueueDataScheme.deleteDataTable();*/
+    //SqfLiteQueueData.insertData(orderDate[0][15], orderDate[0][1], orderDate[0][1], orderDate[0][1], orderDate[0][1], orderDate[0][1], orderDate[0][1], 0, orderDate[0][1], orderDate[0][1], orderDate[0][1], orderDate[0][1], orderDate[0][1], orderDate[0][1], orderDate[0][1], orderDate[0][1]);
+    /*SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    var inventoryData = sharedPreferences.getString('inventory');
+    if (inventoryData != null) {
+      var inventory = jsonDecode(inventoryData);
+      inventory.forEach((element) {
+        if (this.organizationsNumber != null &&
+            this.schemeNumber != null &&
+            this.stockNumber != null) {
+          if (this.organizationsNumber ==
+              element["organizations"]["number"] &&
+              this.schemeNumber == element["programme"]["number"] &&
+              this.stockNumber == element["stock"]["number"]) {
+            _showInventoryDialog(element);
+          }
+        }
+      });
+    }*/
   } //获取盘点方案
-
   getSchemeList() async {
+    this.schemeList = [];
     Map<String, dynamic> userMap = Map();
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-    var menuData = sharedPreferences.getString('MenuPermissions');
-    var deptData = jsonDecode(menuData)[0];
     userMap['FormId'] = 'STK_StockCountScheme';
     userMap['FieldKeys'] = 'FStockOrgId,FName,FBillNo';
     userMap['FilterString'] =
-        " FCloseStatus ='0' and FStockOrgId.FNumber ='" +
-            deptData[1] +
+        "FDocumentStatus = 'C' and FCloseStatus ='0' and FStockOrgId.FNumber ='" +
+            organizationsNumber +
             "'";
     Map<String, dynamic> dataMap = Map();
     dataMap['data'] = userMap;
@@ -213,19 +228,16 @@ class _VmiInventoryDetailState extends State<VmiInventoryDetail> {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     var menuData = sharedPreferences.getString('MenuPermissions');
     var deptData = jsonDecode(menuData)[0];
-    userMap['FilterString'] =
-        "FForbidStatus = 'A' and FUseOrgId.FNumber ='" +
-            deptData[1]+
-            "'";
+    userMap['FilterString'] = "FForbidStatus = 'A' and FDocumentStatus = 'C' and FUseOrgId.FNumber ='" + deptData[1] + "'";//
     Map<String, dynamic> dataMap = Map();
     dataMap['data'] = userMap;
     String res = await CurrencyEntity.polling(dataMap);
-    stockListObj = jsonDecode(res);
-    stockListObj.forEach((element) {
+    var initial = jsonDecode(res);
+    initial.forEach((element) {
       stockList.add(element[1]);
     });
+    stockListObj = initial;
   }
-
   @override
   void dispose() {
     this._textNumber.dispose();
@@ -246,7 +258,7 @@ class _VmiInventoryDetailState extends State<VmiInventoryDetail> {
     userMap['FilterString'] = "FRemainStockINQty>0 and FBillNo='$fBillNo'";
     userMap['FormId'] = 'PUR_PurchaseOrder';
     userMap['FieldKeys'] =
-        'FBillNo,FSupplierId.FNumber,FSupplierId.FName,FDate,FDetailEntity_FEntryId,FMaterialId.FNumber,FMaterialId.FName,FMaterialId.FSpecification,FPurOrgId.FNumber,FPurOrgId.FName,FUnitId.FNumber,FUnitId.FName,FInStockQty,FSrcBillNo,FID,FStockId.FNumber,FStockOrgId.FNumber,FStockStatusId.FNumber,FKeeperTypeId,FKeeperId.FNumber,FOwnerId.FNumber';
+    'FBillNo,FSupplierId.FNumber,FSupplierId.FName,FDate,FDetailEntity_FEntryId,FMaterialId.FNumber,FMaterialId.FName,FMaterialId.FSpecification,FPurOrgId.FNumber,FPurOrgId.FName,FUnitId.FNumber,FUnitId.FName,FInStockQty,FSrcBillNo,FID,FStockId.FNumber,FStockOrgId.FNumber,FStockStatusId.FNumber,FKeeperTypeId,FKeeperId.FNumber,FOwnerId.FNumber';
     Map<String, dynamic> dataMap = Map();
     dataMap['data'] = userMap;
     String order = await CurrencyEntity.polling(dataMap);
@@ -336,36 +348,56 @@ class _VmiInventoryDetailState extends State<VmiInventoryDetail> {
       ToastUtil.showInfo('请选择盘点方案、货主和仓库');
     } else {
       SharedPreferences sharedPreferences =
-          await SharedPreferences.getInstance();
+      await SharedPreferences.getInstance();
       var deptData = sharedPreferences.getString('menuList');
       var menuList = new Map<dynamic, dynamic>.from(jsonDecode(deptData));
       fBarCodeList = menuList['FBarCodeList'];
       if (fBarCodeList == 1) {
-        Map<String, dynamic> barcodeMap = Map();
-        barcodeMap['FilterString'] = "FBarCode='" + event + "'";
-        /*barcodeMap['FilterString'] = "FID=115853";*/
-        barcodeMap['FormId'] = 'QDEP_Cust_BarCodeList';
-        barcodeMap['FieldKeys'] =
-            'FID,FInQtyTotal,FOutQtyTotal,FEntity_FEntryId,FRemainQty';
-        Map<String, dynamic> dataMap = Map();
-        dataMap['data'] = barcodeMap;
-        String order = await CurrencyEntity.polling(dataMap);
-        var barcodeData = jsonDecode(order);
-        if (barcodeData.length > 0) {
-          setState(() {
-            _code = event;
-          });
-          this.getMaterialList(barcodeData, _code);
-          print("ChannelPage: $event");
-          ToastUtil.showInfo('查询标签成功');
-        } else {
-          ToastUtil.showInfo('条码不在条码清单中');
+        var barcodeList = [];
+        if(event.split(';').length>1){
+          barcodeList = [[event]];
+        }else{
+          Map<String, dynamic> barcodeMap = Map();
+          barcodeMap['FilterString'] = "FPackageNo='" + event + "' and FBarCodeEn!='" + event + "'";
+          barcodeMap['FormId'] = 'QDEP_Cust_BarCodeList';
+          barcodeMap['FieldKeys'] =
+          'FBarCodeEn';
+          Map<String, dynamic> dataMap = Map();
+          dataMap['data'] = barcodeMap;
+          String order = await CurrencyEntity.polling(dataMap);
+          var barcodeData = jsonDecode(order);
+          if (barcodeData.length > 0) {
+            barcodeList = barcodeData;
+          } else {
+            barcodeList = [[event]];
+          }
+        }
+        for(var item in barcodeList){
+          Map<String, dynamic> barcodeMap = Map();
+          barcodeMap['FilterString'] = "FBarCodeEn='"+item[0]+"' and FStockID.FNumber= '"+stockNumber+"'";
+          barcodeMap['FormId'] = 'QDEP_Cust_BarCodeList';
+          barcodeMap['FieldKeys'] =
+          'FID,FInQtyTotal,FOutQtyTotal,FEntity_FEntryId,FRemainQty,FStockLocNumberH,FStockID.FIsOpenLocation,FPackageSpec,FProduceDate,FExpiryDate';
+          Map<String, dynamic> dataMap = Map();
+          dataMap['data'] = barcodeMap;
+          String order = await CurrencyEntity.polling(dataMap);
+          var barcodeData = jsonDecode(order);
+          if (barcodeData.length > 0) {
+            setState(() {
+              _code = event;
+            });
+            this.getMaterialList(barcodeData, _code,barcodeData[0][5].trim(), barcodeData[0][6], barcodeData[0][7], barcodeData[0][8].substring(0, 10), barcodeData[0][9].substring(0, 10));
+            print("ChannelPage: $event");
+            ToastUtil.showInfo('查询标签成功');
+          } else {
+            ToastUtil.showInfo('条码不在条码清单中或与盘点仓库不一致');
+          }
         }
       } else {
         setState(() {
           _code = event;
         });
-        this.getMaterialList("", _code);
+        this.getMaterialList("", _code, "", false,"","","");
         EasyLoading.show(status: 'loading...');
         print("ChannelPage: $event");
       }
@@ -379,31 +411,32 @@ class _VmiInventoryDetailState extends State<VmiInventoryDetail> {
     });
   }
 
-  getMaterialList(barcodeData, code) async {
+  getMaterialList(barcodeData, code, fLoc,fIsOpenLocation,fAuxPropId, fProduceDate, fExpiryDate) async {
     Map<String, dynamic> userMap = Map();
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     var menuData = sharedPreferences.getString('MenuPermissions');
     var deptData = jsonDecode(menuData)[0];
     var scanCode = code.split(";");
-    userMap['FilterString'] = "FMaterialId.FNumber='" +
-        scanCode[0] +
-        "' and FStockId.FNumber = '$stockNumber' and FSchemeNo = '$schemeNumber' and FOwnerId.FNumber = '$organizationsNumber'";
+    var postionList = fLoc.split(".");
     if (scanCode.length > 1) {
-      if (scanCode[1] == '') {
-        userMap['FilterString'] = "FMaterialId.FNumber='" +
-            scanCode[0] +
-            "' and FStockId.FNumber = '$stockNumber' and FSchemeNo = '$schemeNumber' and FOwnerId.FNumber = '$organizationsNumber'";
-      } else {
-        userMap['FilterString'] = "FMaterialId.FNumber='" +
-            scanCode[0] +
-            "' and FLot.FNumber='" +
-            scanCode[1] +
-            "' and FStockId.FNumber = '$stockNumber' and FSchemeNo = '$schemeNumber' FOwnerId.FNumber = '$organizationsNumber'";
+      if(fIsOpenLocation && fLoc!=''){
+        if (scanCode[1] == '') {
+          userMap['FilterString'] = "FMaterialId.FNumber='" + scanCode[0] + "' and FStockId.FNumber = '$stockNumber' and FSchemeNo = '$schemeNumber' and FOwnerId.FNumber = '$organizationsNumber' and FStockLocId.FF100002.FNumber = '" + postionList[0] + "'";
+        } else {
+          userMap['FilterString'] = "FMaterialId.FNumber='" + scanCode[0] + "' and FLot.FNumber='" + scanCode[1] + "' and FStockId.FNumber = '$stockNumber' and FSchemeNo = '$schemeNumber' and FOwnerId.FNumber = '$organizationsNumber' and FStockLocId.FF100002.FNumber = '" + postionList[0] + "'";
+        }
+      }else{
+        if (scanCode[1] == '') {
+          userMap['FilterString'] = "FMaterialId.FNumber='" + scanCode[0] + "' and FStockId.FNumber = '$stockNumber' and FSchemeNo = '$schemeNumber' and FOwnerId.FNumber = '$organizationsNumber'";
+        } else {
+          userMap['FilterString'] = "FMaterialId.FNumber='" + scanCode[0] + "' and FLot.FNumber='" + scanCode[1] + "' and FStockId.FNumber = '$stockNumber' and FSchemeNo = '$schemeNumber' and FOwnerId.FNumber = '$organizationsNumber'";
+        }
       }
+
     }
     userMap['FormId'] = 'STK_StockCountInput';
     userMap['FieldKeys'] =
-        'FStockOrgId.FNumber,FMaterialId.FName,FMaterialId.FNumber,FMaterialId.FSpecification,FBaseUnitId.FName,FBaseUnitId.FNumber,FStockId.FNumber,FAcctQty,FStockName,FLot.FNumber,FStockStatusId.FNumber,FKeeperTypeId,FKeeperId.FNumber,FOwnerId.FNumber,FBillEntry_FEntryID,FID';
+    'FStockOrgId.FNumber,FMaterialId.FName,FMaterialId.FNumber,FMaterialId.FSpecification,FBaseUnitId.FName,FBaseUnitId.FNumber,FStockId.FNumber,FAcctQty,FStockName,FLot.FNumber,FStockStatusId.FNumber,FKeeperTypeId,FKeeperId.FNumber,FOwnerId.FNumber,FBillEntry_FEntryID,FID,FStockLocId.FF100002.FNumber,FStockLocId.FF100002.FNumber,FStockLocId.FF100002.FNumber,FStockLocId.FF100002.FNumber,FStockID.FIsOpenLocation,FMaterialId.FSpecification,FProduceDate,FExpiryDate';
     Map<String, dynamic> dataMap = Map();
     dataMap['data'] = userMap;
     String order = await CurrencyEntity.polling(dataMap);
@@ -438,7 +471,7 @@ class _VmiInventoryDetailState extends State<VmiInventoryDetail> {
       fID = this.orderDate[0][15];
       for (var element in hobby) {
         if (element[0]['value']['barcode']
-                .indexOf(barCodeScan[0].toString() + "-" + code) !=
+            .indexOf(barCodeScan[0].toString() + "-" + code) !=
             -1) {
           number++;
           ToastUtil.showInfo('该标签已扫描');
@@ -470,10 +503,10 @@ class _VmiInventoryDetailState extends State<VmiInventoryDetail> {
             }
           });
           arr.add({
-            "title": "规格型号",
+            "title": "包装规格",
             "isHide": false,
             "name": "FMaterialIdFSpecification",
-            "value": {"label": value[3], "value": value[3]}
+            "value": {"label": value[21], "value": value[21]}
           });
           arr.add({
             "title": "单位名称",
@@ -563,10 +596,34 @@ class _VmiInventoryDetailState extends State<VmiInventoryDetail> {
           arr.add({
             "title": "最后扫描数量",
             "name": "FLastQty",
-            "isHide": false,
+            "isHide": true,
             "value": {
               "label": barCodeScan[4].toString(),
               "value": barCodeScan[4].toString()
+            }
+          });
+          arr.add({
+            "title": "仓位",
+            "name": "FStockID",
+            "isHide": !value[20],
+            "value": {"label": value[16], "value": value[16]}
+          });
+          arr.add({
+            "title": "生产日期",
+            "name": "FProduceDate",
+            "isHide": true,
+            "value": {
+              "label": value[22],
+              "value": value[22]
+            }
+          });
+          arr.add({
+            "title": "有效期至",
+            "name": "FExpiryDate",
+            "isHide": true,
+            "value": {
+              "label": value[23],
+              "value": value[23]
             }
           });
           hobby.add(arr);
@@ -593,7 +650,7 @@ class _VmiInventoryDetailState extends State<VmiInventoryDetail> {
           "'";
       materialMap['FormId'] = 'BD_MATERIAL';
       materialMap['FieldKeys'] =
-          'FMATERIALID,FName,FNumber,FSpecification,FBaseUnitId.FName,FBaseUnitId.FNumber,FIsBatchManage';
+      'FMATERIALID,FName,FNumber,FSpecification,FBaseUnitId.FName,FBaseUnitId.FNumber,FIsBatchManage';
       Map<String, dynamic> materialDataMap = Map();
       materialDataMap['data'] = materialMap;
       String order = await CurrencyEntity.polling(materialDataMap);
@@ -604,7 +661,7 @@ class _VmiInventoryDetailState extends State<VmiInventoryDetail> {
         var number = 0;
         for (var element in hobby) {
           if (element[0]['value']['barcode']
-                  .indexOf(barCodeScan[0].toString() + "-" + code) !=
+              .indexOf(barCodeScan[0].toString() + "-" + code) !=
               -1) {
             number++;
             ToastUtil.showInfo('该标签已扫描');
@@ -613,7 +670,7 @@ class _VmiInventoryDetailState extends State<VmiInventoryDetail> {
           if (element[0]['value']['value'] /*+ "-" + element[6]['value']['value']*/ == scanCode[0] /*+ "-" + scanCode[1]*/) {
             element[4]['value']['label'] =
                 (double.parse(element[4]['value']['label']) +
-                        double.parse(barCodeScan[4]))
+                    double.parse(barCodeScan[4]))
                     .toString();
             element[4]['value']['value'] = element[4]['value']['label'];
             element[14]['value']['label'] = barCodeScan[4].toString();
@@ -731,6 +788,30 @@ class _VmiInventoryDetailState extends State<VmiInventoryDetail> {
                 "value": barCodeScan[4].toString()
               }
             });
+            arr.add({
+              "title": "仓位",
+              "name": "FStockID",
+              "isHide": !fIsOpenLocation,
+              "value": {"label": fLoc, "value": fLoc}
+            });
+            arr.add({
+              "title": "生产日期",
+              "name": "FProduceDate",
+              "isHide": true,
+              "value": {
+                "label": fProduceDate,
+                "value": fProduceDate
+              }
+            });
+            arr.add({
+              "title": "有效期至",
+              "name": "FExpiryDate",
+              "isHide": true,
+              "value": {
+                "label": fExpiryDate,
+                "value": fExpiryDate
+              }
+            });
             hobby.add(arr);
           });
         }
@@ -760,7 +841,7 @@ class _VmiInventoryDetailState extends State<VmiInventoryDetail> {
             title: Text(title),
             onTap: () => data.length > 0
                 ? _onClickItem(data, selectData, hobby,
-                    label: label, stock: stock)
+                label: label, stock: stock)
                 : {ToastUtil.showInfo('无数据')},
             trailing: Row(mainAxisSize: MainAxisSize.min, children: <Widget>[
               MyText(selectData.toString() == "" ? '暂无' : selectData.toString(),
@@ -885,20 +966,23 @@ class _VmiInventoryDetailState extends State<VmiInventoryDetail> {
             data.forEach((element) {
               if (element == p) {
                 stockNumber = stockListObj[elementIndex][2];
+                //_onEvent("31831;AQ50114310N1;2025-01-14;200;MO002611,0838433912;20");
               }
               elementIndex++;
             });
-            //getInventorySessions();
+            getInventorySessions();
           } else if (hobby == 'organizations') {
             organizationsName = p;
             var elementIndex = 0;
             data.forEach((element) {
               if (element == p) {
                 organizationsNumber = organizationsListObj[elementIndex][2];
+                getSchemeList();
+                getStockList();
               }
               elementIndex++;
             });
-            //getInventorySessions();
+            getInventorySessions();
           } else if (hobby == 'cumulative') {
             isCumulative = p;
           } else if (hobby == 'scheme') {
@@ -910,7 +994,7 @@ class _VmiInventoryDetailState extends State<VmiInventoryDetail> {
               }
               elementIndex++;
             });
-            //getInventorySessions();
+            getInventorySessions();
           } else {
             setState(() {
               hobby['value']['label'] = p;
@@ -1014,7 +1098,7 @@ class _VmiInventoryDetailState extends State<VmiInventoryDetail> {
                         '：' +
                         this.hobby[i][j]["value"]["label"].toString()),
                     trailing:
-                        Row(mainAxisSize: MainAxisSize.min, children: <Widget>[
+                    Row(mainAxisSize: MainAxisSize.min, children: <Widget>[
                       /* MyText(orderDate[i][j],
                         color: Colors.grey, rightpadding: 18),*/
                     ]),
@@ -1064,18 +1148,18 @@ class _VmiInventoryDetailState extends State<VmiInventoryDetail> {
                       padding: EdgeInsets.only(top: 8),
                       child: Card(
                           child: Column(children: <Widget>[
-                        TextField(
-                          style: TextStyle(color: Colors.black87),
-                          keyboardType: TextInputType.number,
-                          controller: this._textNumber,
-                          decoration: InputDecoration(hintText: "输入"),
-                          onChanged: (value) {
-                            setState(() {
-                              this._FNumber = value;
-                            });
-                          },
-                        ),
-                      ]))),
+                            TextField(
+                              style: TextStyle(color: Colors.black87),
+                              keyboardType: TextInputType.number,
+                              controller: this._textNumber,
+                              decoration: InputDecoration(hintText: "输入"),
+                              onChanged: (value) {
+                                setState(() {
+                                  this._FNumber = value;
+                                });
+                              },
+                            ),
+                          ]))),
                   Padding(
                     padding: EdgeInsets.only(top: 15, bottom: 8),
                     child: FlatButton(
@@ -1085,9 +1169,9 @@ class _VmiInventoryDetailState extends State<VmiInventoryDetail> {
                           Navigator.pop(context);
                           setState(() {
                             this.hobby[checkData][checkDataChild]["value"]
-                                ["label"] = _FNumber;
+                            ["label"] = _FNumber;
                             this.hobby[checkData][checkDataChild]['value']
-                                ["value"] = _FNumber;
+                            ["value"] = _FNumber;
                           });
                         },
                         child: Text(
@@ -1187,9 +1271,9 @@ class _VmiInventoryDetailState extends State<VmiInventoryDetail> {
                     this.hobby = inventoryData["inventory"];
                     this.sessionDate = inventoryData["time"];*/
                     this.organizationsName =
-                        inventoryData[0]['organizationsName'];
+                    inventoryData[0]['organizationsName'];
                     this.organizationsNumber =
-                        inventoryData[0]["organizationsNumber"];
+                    inventoryData[0]["organizationsNumber"];
                     this.schemeName = inventoryData[0]["schemeName"];
                     this.schemeNumber = inventoryData[0]["schemeNumber"];
                     this.stockName = inventoryData[0]["stockIdName"];
@@ -1211,7 +1295,7 @@ class _VmiInventoryDetailState extends State<VmiInventoryDetail> {
                         }
                       });
                       arr.add({
-                        "title": "规格型号",
+                        "title": "包装规格",
                         "isHide": false,
                         "name": "FMaterialIdFSpecification",
                         "value": {
@@ -1330,6 +1414,30 @@ class _VmiInventoryDetailState extends State<VmiInventoryDetail> {
                         "isHide": false,
                         "value": {"label": "0", "value": "0"}
                       });
+                      arr.add({
+                        "title": "仓位",
+                        "name": "FStockID",
+                        "isHide": !(element["position"] != null && element["position"] != ''),
+                        "value": {"label": element["position"], "value": element["position"]}
+                      });
+                      arr.add({
+                        "title": "生产日期",
+                        "name": "FProduceDate",
+                        "isHide": !(element["produceDate"] != null && element["produceDate"] != ''),
+                        "value": {
+                          "label": element["produceDate"],
+                          "value": element["produceDate"]
+                        }
+                      });
+                      arr.add({
+                        "title": "有效期至",
+                        "name": "FExpiryDate",
+                        "isHide": !(element["expiryDate"] != null && element["expiryDate"] != ''),
+                        "value": {
+                          "label": element["expiryDate"],
+                          "value": element["expiryDate"]
+                        }
+                      });
                       hobby.add(arr);
                     }
                     this._getHobby();
@@ -1363,7 +1471,7 @@ class _VmiInventoryDetailState extends State<VmiInventoryDetail> {
       Model['FID'] = fID;
       /*Model['FDate'] = FDate;*/
       SharedPreferences sharedPreferences =
-          await SharedPreferences.getInstance();
+      await SharedPreferences.getInstance();
       var menuData = sharedPreferences.getString('MenuPermissions');
       var deptData = jsonDecode(menuData)[0];
       /*Model['FStockOrgId'] = {"FNumber": this.orderDate[0][0]};
@@ -1379,20 +1487,23 @@ class _VmiInventoryDetailState extends State<VmiInventoryDetail> {
               var materialDate = [];
               //查询盘点方案
               Map<String, dynamic> schemeMap = Map();
-              /*if (element[6]['value']['value'] == "") {*/
-                schemeMap['FilterString'] = "FMaterialId.FNumber='" +
-                    element[0]['value']['value'] +
-                    "' and FStockId.FNumber = '$stockNumber' and FSchemeNo = '$schemeNumber' and FOwnerId.FNumber = '$organizationsNumber'";
-              /*} else {
-                schemeMap['FilterString'] = "FMaterialId.FNumber='" +
-                    element[0]['value']['value'] +
-                    "' and FLot.FNumber='" +
-                    element[6]['value']['value'] +
-                    "' and FStockId.FNumber = '$stockNumber' and FSchemeNo = '$schemeNumber' and FOwnerId.FNumber = '$organizationsNumber'";
-              }*/
+              if (element[6]['value']['value'] == "") {
+                if(!element[15]['isHide']){
+                  var postionList = element[15]['value']['value'].split(".");
+                  schemeMap['FilterString'] = "FMaterialId.FNumber='" + element[0]['value']['value'] + "' and FStockId.FNumber = '$stockNumber' and FSchemeNo = '$schemeNumber' and FOwnerId.FNumber = '$organizationsNumber' and FStockLocId.FF100002.FNumber = '" + postionList[0] + "'";
+                }else{
+                  schemeMap['FilterString'] = "FMaterialId.FNumber='" + element[0]['value']['value'] + "' and FStockId.FNumber = '$stockNumber' and FSchemeNo = '$schemeNumber' and FOwnerId.FNumber = '$organizationsNumber'";
+                }
+              } else {
+                if(!element[15]['isHide']){
+                  var postionList = element[15]['value']['value'].split(".");
+                  schemeMap['FilterString'] = "FMaterialId.FNumber='" + element[0]['value']['value'] + "' and FLot.FNumber='" + element[6]['value']['value'] + "' and FStockId.FNumber = '$stockNumber' and FSchemeNo = '$schemeNumber' and FOwnerId.FNumber = '$organizationsNumber' and FStockLocId.FF100002.FNumber = '" + postionList[0] + "'";
+                }else{
+                  schemeMap['FilterString'] = "FMaterialId.FNumber='" + element[0]['value']['value'] + "' and FLot.FNumber='" + element[6]['value']['value'] + "' and FStockId.FNumber = '$stockNumber' and FSchemeNo = '$schemeNumber' and FOwnerId.FNumber = '$organizationsNumber'";
+                }
+              }
               schemeMap['FormId'] = 'STK_StockCountInput';
-              schemeMap['FieldKeys'] =
-                  'FMaterialId.FName,FMaterialId.FNumber,FStockId.FNumber,FAcctQty,FStockName,FLot.FNumber,FBillEntry_FEntryID,FCountQty';
+              schemeMap['FieldKeys'] = 'FMaterialId.FName,FMaterialId.FNumber,FStockId.FNumber,FAcctQty,FStockName,FLot.FNumber,FBillEntry_FEntryID,FCountQty';
               Map<String, dynamic> schemeDataMap = Map();
               schemeDataMap['data'] = schemeMap;
               String order = await CurrencyEntity.polling(schemeDataMap);
@@ -1406,27 +1517,31 @@ class _VmiInventoryDetailState extends State<VmiInventoryDetail> {
                 if (this.isCumulative == "是") {
                   element[4]['value']['label'] =
                       (double.parse(element[4]['value']['label']) +
-                              orderData[0][7])
+                          orderData[0][7])
                           .toString();
                   element[4]['value']['value'] = element[4]['value']['label'];
                 }
               }
             } else {
               Map<String, dynamic> schemeMap = Map();
-              //if (element[6]['value']['value'] == "") {
-                schemeMap['FilterString'] = "FMaterialId.FNumber='" +
-                    element[0]['value']['value'] +
-                    "' and FStockId.FNumber = '$stockNumber' and FSchemeNo = '$schemeNumber' and FOwnerId.FNumber = '$organizationsNumber'";
-             /* } else {
-                schemeMap['FilterString'] = "FMaterialId.FNumber='" +
-                    element[0]['value']['value'] +
-                    "' and FLot.FNumber='" +
-                    element[6]['value']['value'] +
-                    "' and FStockId.FNumber = '$stockNumber' and FSchemeNo = '$schemeNumber' and FOwnerId.FNumber = '$organizationsNumber'";
-              }*/
+              if (element[6]['value']['value'] == "") {
+                if(!element[15]['isHide']){
+                  var postionList = element[15]['value']['value'].split(".");
+                  schemeMap['FilterString'] = "FMaterialId.FNumber='" + element[0]['value']['value'] + "' and FStockId.FNumber = '$stockNumber' and FSchemeNo = '$schemeNumber' and FOwnerId.FNumber = '$organizationsNumber' and FStockLocId.FF100002.FNumber = '" + postionList[0] + "'";
+                }else{
+                  schemeMap['FilterString'] = "FMaterialId.FNumber='" + element[0]['value']['value'] + "' and FStockId.FNumber = '$stockNumber' and FSchemeNo = '$schemeNumber' and FOwnerId.FNumber = '$organizationsNumber'";
+                }
+              } else {
+                if(!element[15]['isHide']){
+                  var postionList = element[15]['value']['value'].split(".");
+                  schemeMap['FilterString'] = "FMaterialId.FNumber='" + element[0]['value']['value'] + "' and FLot.FNumber='" + element[6]['value']['value'] + "' and FStockId.FNumber = '$stockNumber' and FSchemeNo = '$schemeNumber' and FOwnerId.FNumber = '$organizationsNumber' and FStockLocId.FF100002.FNumber = '" + postionList[0] + "'";
+                }else{
+                  schemeMap['FilterString'] = "FMaterialId.FNumber='" + element[0]['value']['value'] + "' and FLot.FNumber='" + element[6]['value']['value'] + "' and FStockId.FNumber = '$stockNumber' and FSchemeNo = '$schemeNumber' and FOwnerId.FNumber = '$organizationsNumber'";
+                }
+              }
               schemeMap['FormId'] = 'STK_StockCountInput';
               schemeMap['FieldKeys'] =
-                  'FMaterialId.FName,FMaterialId.FNumber,FStockId.FNumber,FAcctQty,FStockName,FLot.FNumber,FBillEntry_FEntryID,FCountQty';
+              'FMaterialId.FName,FMaterialId.FNumber,FStockId.FNumber,FAcctQty,FStockName,FLot.FNumber,FBillEntry_FEntryID,FCountQty';
               Map<String, dynamic> schemeDataMap = Map();
               schemeDataMap['data'] = schemeMap;
               print(schemeDataMap.toString());
@@ -1441,7 +1556,7 @@ class _VmiInventoryDetailState extends State<VmiInventoryDetail> {
                 if (this.isCumulative == "是") {
                   element[4]['value']['label'] =
                       (double.parse(element[4]['value']['label']) +
-                              orderData[0][7])
+                          orderData[0][7])
                           .toString();
                   element[4]['value']['value'] = element[4]['value']['label'];
                 }
@@ -1449,22 +1564,50 @@ class _VmiInventoryDetailState extends State<VmiInventoryDetail> {
             }
           }
           Map<String, dynamic> FEntityItem = Map();
+
           FEntityItem['FEntryID'] = element[13]['value']['value'];
-          /*FEntityItem['FMaterialId'] = {
-            "FNumber": element[0]['value']['value']
-          };
-          FEntityItem['FUnitID'] = {"FNumber": element[2]['value']['value']};
-          FEntityItem['FStockId'] = {"FNumber": element[5]['value']['value']};
-          FEntityItem['FOwnerId'] = {"FNumber": element[9]['value']['value']};
-         // FEntityItem['FLot'] = {"FNumber": element[6]['value']['value']};
-          FEntityItem['FStockStatusId'] = {
-            "FNumber": element[10]['value']['value']
-          };
-          FEntityItem['FKeeperTypeId'] = element[11]['value']['value'];
-          FEntityItem['FKeeperId'] = {"FNumber": element[12]['value']['value']};*/
-          /*FEntityItem['FReturnType'] = 1;*/
+          if(element[13]['value']['value'] == "0"){
+            FEntityItem['FMaterialId'] = {
+              "FNumber": element[0]['value']['value']
+            };
+            FEntityItem['FUnitID'] = {"FNumber": element[2]['value']['value']};
+            FEntityItem['FStockId'] = {"FNumber": element[5]['value']['value']};
+            if (!element[15]['isHide']) {
+              Map<String, dynamic> stockMap = Map();
+              stockMap['FormId'] = 'BD_STOCK';
+              stockMap['FieldKeys'] =
+              'FFlexNumber';
+              stockMap['FilterString'] = "FNumber = '" +
+                  element[5]['value']['value'] +
+                  "'";
+              Map<String, dynamic> stockDataMap = Map();
+              stockDataMap['data'] = stockMap;
+              String res = await CurrencyEntity.polling(stockDataMap);
+              var stockRes = jsonDecode(res);
+              if (stockRes.length > 0) {
+                var postionList = element[15]['value']['value'].split(".");
+                FEntityItem['FStockLocId'] = {};
+                var positonIndex = 0;
+                for(var dimension in postionList){
+                  FEntityItem['FStockLocId']["FSTOCKLOCID__" + stockRes[positonIndex][0]] = {
+                    "FNumber": dimension
+                  };
+                  positonIndex++;
+                }
+              }
+            }
+            FEntityItem['FOwnerId'] = {"FNumber": element[9]['value']['value']};
+            FEntityItem['FStockStatusId'] = {
+              "FNumber": element[10]['value']['value']
+            };
+            FEntityItem['FLot'] = {"FNumber": element[6]['value']['value']};
+            FEntityItem['FProduceDate'] = element[16]['value']['value'];
+            FEntityItem['FExpiryDate'] = element[17]['value']['value'];
+            FEntityItem['FKeeperTypeId'] = element[11]['value']['value'];
+            FEntityItem['FKeeperId'] = {"FNumber": element[12]['value']['value']};
+            FEntityItem['FOwnerTypeId'] = "BD_OwnerOrg";
+          }
           FEntityItem['FCountQty'] = element[4]['value']['value'];
-          /*FEntityItem['FOwnerTypeId'] = "BD_OwnerOrg";*/
           FEntity.add(FEntityItem);
         }
         hobbyIndex++;
@@ -1480,7 +1623,7 @@ class _VmiInventoryDetailState extends State<VmiInventoryDetail> {
       Model['FBillEntry'] = FEntity;
       orderMap['Model'] = Model;
       dataMap['data'] = orderMap;
-      var saveData = jsonEncode(dataMap);
+      var params = jsonEncode(dataMap);
       String order = await SubmitEntity.save(dataMap);
       var res = jsonDecode(order);
       if (res['Result']['ResponseStatus']['IsSuccess']) {
@@ -1533,7 +1676,7 @@ class _VmiInventoryDetailState extends State<VmiInventoryDetail> {
                     itemCode[1] +
                     ":" +
                     barcodeRes['Result']['ResponseStatus']['Errors'][0]
-                        ['Message'];
+                    ['Message'];
               }
               print(codeRes);
             }
@@ -1566,26 +1709,11 @@ class _VmiInventoryDetailState extends State<VmiInventoryDetail> {
       ToastUtil.showInfo('无提交数据');
     }
   }
-//扫码函数,最简单的那种
-  Future scan() async {
-    String cameraScanResult = await scanner.scan(); //通过扫码获取二维码中的数据
-    getScan(cameraScanResult); //将获取到的参数通过HTTP请求发送到服务器
-    print(cameraScanResult); //在控制台打印
-  }
 
-//用于验证数据(也可以在控制台直接打印，但模拟器体验不好)
-  void getScan(String scan) async {
-    _onEvent(scan);
-  }
   @override
   Widget build(BuildContext context) {
     return FlutterEasyLoading(
       child: Scaffold(
-          floatingActionButton: FloatingActionButton(
-            onPressed: scan,
-            tooltip: 'Increment',
-            child: Icon(Icons.filter_center_focus),
-          ),
           appBar: AppBar(
             title: Text("盘点"),
             centerTitle: true,
@@ -1594,7 +1722,7 @@ class _VmiInventoryDetailState extends State<VmiInventoryDetail> {
             children: <Widget>[
               Expanded(
                 child:
-                    ListView(controller: _scrollController, children: <Widget>[
+                ListView(controller: _scrollController, children: <Widget>[
                   /*Column(
                     children: [
                       Container(
@@ -1608,9 +1736,9 @@ class _VmiInventoryDetailState extends State<VmiInventoryDetail> {
                     ],
                   ),*/
                   _dateItem('日期：', DateMode.YMD),
-                  _item('盘点方案', this.schemeList, this.schemeName, 'scheme'),
                   _item('货主', this.organizationsList, this.organizationsName,
                       'organizations'),
+                  _item('盘点方案', this.schemeList, this.schemeName, 'scheme'),
                   _item('仓库', this.stockList, this.stockName, 'stock'),
                   _item('累计盘点', ['否', '是'], isCumulative, "cumulative"),
                   /*Column(
@@ -1653,45 +1781,6 @@ class _VmiInventoryDetailState extends State<VmiInventoryDetail> {
                 padding: const EdgeInsets.only(top: 0),
                 child: Row(
                   children: <Widget>[
-                    /*Expanded(
-                      child: RaisedButton(
-                        padding: EdgeInsets.all(15.0),
-                        child: Text("暂存"),
-                        color: Colors.orange,
-                        textColor: Colors.white,
-                        onPressed: () async {
-                          SqfLiteQueueDataScheme.deleteData(this.schemeNumber);
-                          for (var element in this.hobby) {
-                            SqfLiteQueueDataScheme.insertData(
-                                this.fID,
-                                this.schemeName,
-                                this.schemeNumber,
-                                this.organizationsName,
-                                this.organizationsNumber,
-                                this.stockName,
-                                this.stockNumber,
-                                element[0]['value']['label'],
-                                element[0]['value']['value'],
-                                element[1]['value']['value'],
-                                element[2]['value']['label'],
-                                element[2]['value']['value'],
-                                element[3]['value']['value'],
-                                element[4]['value']['value'],
-                                element[5]['value']['label'],
-                                element[5]['value']['value'],
-                                element[6]['value']['value'],
-                                element[7]['value']['value'],
-                                element[9]['value']['value'],
-                                element[10]['value']['value'],
-                                element[11]['value']['value'],
-                                element[12]['value']['value'],
-                                element[13]['value']['value'],
-                                jsonEncode(element[0]['value']['barcode']));
-                          }
-                          ToastUtil.showInfo('暂存成功');
-                        },
-                      ),
-                    ),*/
                     Expanded(
                       child: RaisedButton(
                         padding: EdgeInsets.all(15.0),
@@ -1701,7 +1790,7 @@ class _VmiInventoryDetailState extends State<VmiInventoryDetail> {
                             : Theme.of(context).primaryColor,
                         textColor: Colors.white,
                         onPressed: () async =>
-                            this.isSubmit ? null : _showSumbitDialog(),
+                        this.isSubmit ? null : _showSumbitDialog(),
                       ),
                     ),
                   ],

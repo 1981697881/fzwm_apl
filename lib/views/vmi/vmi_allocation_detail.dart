@@ -121,6 +121,7 @@ class _RetrievalDetailState extends State<VmiAllocationDetail> {
     }
     /*getWorkShop();*/
     // _onEvent("13095;20190618考科;2019-06-18;1;,1006124995;2");
+    //_onEvent("F.17.1200013;25100030;;50;WGRK23090827,1903047088;2");
     EasyLoading.dismiss();
   }
 
@@ -428,7 +429,7 @@ class _RetrievalDetailState extends State<VmiAllocationDetail> {
         barcodeMap['FilterString'] = "FBarCodeEn='" + event.trim() + "'";
         barcodeMap['FormId'] = 'QDEP_Cust_BarCodeList';
         barcodeMap['FieldKeys'] =
-        'FID,FInQtyTotal,FOutQtyTotal,FEntity_FEntryId,FRemainQty,FBarCodeQty,FStockID.FNumber,FBatchNo,FMATERIALID.FNUMBER,FOwnerID.FNumber,FBarCode,FSN,FProduceDate,FExpiryDate,FBatchNo,FStockOrgID.FNumber';
+        'FID,FInQtyTotal,FOutQtyTotal,FEntity_FEntryId,FRemainQty,FBarCodeQty,FStockID.FNumber,FBatchNo,FMATERIALID.FNUMBER,FOwnerID.FNumber,FBarCode,FSN,FProduceDate,FExpiryDate,FBatchNo,FStockOrgID.FNumber,FStockLocNumberH,FStockID.FIsOpenLocation';
         Map<String, dynamic> dataMap = Map();
         dataMap['data'] = barcodeMap;
         String order = await CurrencyEntity.polling(dataMap);
@@ -512,7 +513,7 @@ class _RetrievalDetailState extends State<VmiAllocationDetail> {
             "' and FStockLocId." +
             stocks[0][4] +
             ".FNumber = '" +
-            barcodeData[0][7] +
+            barcodeData[0][16] +
             "' and FLot.FNumber = '" +
             fBatchNo +
             "' and FBaseQty > 0";
@@ -540,7 +541,7 @@ class _RetrievalDetailState extends State<VmiAllocationDetail> {
     }
     userMap['FormId'] = 'STK_Inventory';
     userMap['FieldKeys'] =
-    'FMATERIALID.FName,FMATERIALID.FNumber,FMATERIALID.FSpecification,FBaseUnitId.FName,FBaseUnitId.FNumber,FMATERIALID.FIsBatchManage,FLot.FNumber,FStockID.FNumber,FStockID.FName,FStockLocID,FStockLocID,FBaseQty,FProduceDate,FExpiryDate,FMATERIALID.FIsKFPeriod,FAuxPropId,FStockID.FIsOpenLocation';
+    'FMATERIALID.FName,FMATERIALID.FNumber,FMATERIALID.FSpecification,FBaseUnitId.FName,FBaseUnitId.FNumber,FMATERIALID.FIsBatchManage,FLot.FNumber,FStockID.FNumber,FStockID.FName,FStockLocId.FF100002.FName,FStockLocId.FF100002.FNumber,FBaseQty,FProduceDate,FExpiryDate,FMATERIALID.FIsKFPeriod,FAuxPropId,FStockID.FIsOpenLocation';
     Map<String, dynamic> dataMap = Map();
     dataMap['data'] = userMap;
     String order = await CurrencyEntity.polling(dataMap);
@@ -1132,7 +1133,7 @@ class _RetrievalDetailState extends State<VmiAllocationDetail> {
             "title": "移出仓位",
             "name": "FStockLocID",
             "isHide": false,
-            "value": {"label": value[9], "value": value[10], "hide": false}
+            "value": {"label": value[9], "value": value[10], "hide": value[16]}
           });
           arr.add({
             "title": "移入仓库",
@@ -1348,9 +1349,10 @@ class _RetrievalDetailState extends State<VmiAllocationDetail> {
             print(data);
             data.forEach((element) {
               if (element == p) {
-                print(stockListObj[elementIndex]);
                 hobby['value']['value'] = stockListObj[elementIndex][2];
-                hobby['value']['dimension'] = stockListObj[elementIndex][4];
+                stock[9]['value']['hide'] = stockListObj[elementIndex][3];
+                stock[9]['value']['value'] = "";
+                stock[9]['value']['label'] = "";
               }
               elementIndex++;
             });
@@ -1452,7 +1454,7 @@ class _RetrievalDetailState extends State<VmiAllocationDetail> {
                 maintainSize: false,
                 maintainState: false,
                 maintainAnimation: false,
-                visible: this.hobby[i][j]["value"]["label"] != null,
+                visible: this.hobby[i][j]["value"]["hide"],
                 child: Column(children: [
                   Container(
                     color: Colors.white,
@@ -1829,7 +1831,7 @@ class _RetrievalDetailState extends State<VmiAllocationDetail> {
       Model['FOwnerIdHead'] = {"FNumber": this.organizationsNumber2};
       var FEntity = [];
       var hobbyIndex = 0;
-      this.hobby.forEach((element) {
+      for (var element in this.hobby) {
         if (element[3]['value']['value'] != '0' && element[3]['value']['value'] != '' && element[7]['value']['value'] != '') {
           Map<String, dynamic> FEntityItem = Map();
 
@@ -1853,22 +1855,56 @@ class _RetrievalDetailState extends State<VmiAllocationDetail> {
           FEntityItem['FSrcStockId'] = {
             "FNumber": element[6]['value']['value']
           };
-          if (element[6]['value']['dimension'] != null) {
-            FEntityItem['FSrcStockLocId'] = {
-              "FSRCSTOCKLOCID__" + element[6]['value']['dimension']: {
-                "FNumber": element[7]['value']['value']
+          if (element[7]['value']['hide']) {
+            Map<String, dynamic> stockMap = Map();
+            stockMap['FormId'] = 'BD_STOCK';
+            stockMap['FieldKeys'] =
+            'FFlexNumber';
+            stockMap['FilterString'] = "FNumber = '" +
+                element[6]['value']['value'] +
+                "'";
+            Map<String, dynamic> stockDataMap = Map();
+            stockDataMap['data'] = stockMap;
+            String res = await CurrencyEntity.polling(stockDataMap);
+            var stockRes = jsonDecode(res);
+            if (stockRes.length > 0) {
+              var postionList = element[7]['value']['value'].split(".");
+              FEntityItem['FSrcStockLocId'] = {};
+              var positonIndex = 0;
+              for(var dimension in postionList){
+                FEntityItem['FSrcStockLocId']["FSRCSTOCKLOCID__" + stockRes[positonIndex][0]] = {
+                  "FNumber": dimension
+                };
+                positonIndex++;
               }
-            };
+            }
           }
           FEntityItem['FDestStockId'] = {
             "FNumber": element[8]['value']['value']
           };
-          if (element[8]['value']['dimension'] != null) {
-            FEntityItem['FDestStockLocId'] = {
-              "FDESTSTOCKLOCID__" + element[8]['value']['dimension']: {
-                "FNumber": element[9]['value']['value']
+          if (element[9]['value']['hide']) {
+            Map<String, dynamic> stockMap = Map();
+            stockMap['FormId'] = 'BD_STOCK';
+            stockMap['FieldKeys'] =
+            'FFlexNumber';
+            stockMap['FilterString'] = "FNumber = '" +
+                element[8]['value']['value'] +
+                "'";
+            Map<String, dynamic> stockDataMap = Map();
+            stockDataMap['data'] = stockMap;
+            String res = await CurrencyEntity.polling(stockDataMap);
+            var stockRes = jsonDecode(res);
+            if (stockRes.length > 0) {
+              var postionList = element[9]['value']['value'].split(".");
+              FEntityItem['FDestStockLocId'] = {};
+              var positonIndex = 0;
+              for(var dimension in postionList){
+                FEntityItem['FDestStockLocId']["FDESTSTOCKLOCID__" + stockRes[positonIndex][0]] = {
+                  "FNumber": dimension
+                };
+                positonIndex++;
               }
-            };
+            }
           }
           FEntityItem['FLot'] = {"FNumber": element[5]['value']['value']};
           FEntityItem['FDestLot'] = {"FNumber": element[5]['value']['value']};
@@ -1888,7 +1924,7 @@ class _RetrievalDetailState extends State<VmiAllocationDetail> {
           FEntity.add(FEntityItem);
         }
         hobbyIndex++;
-      });
+      };
       if (FEntity.length == 0) {
         this.isSubmit = false;
         ToastUtil.showInfo('请输入数量,仓库');
@@ -1946,14 +1982,30 @@ class _RetrievalDetailState extends State<VmiAllocationDetail> {
                         codeFEntityItem['FEntryStockID'] = {
                           "FNUMBER": this.hobby[i][6]['value']['value']
                         };
-                        if (this.hobby[i][8]['value']['dimension'] !=
-                            null) {
-                          codeFEntityItem['FStockLocID'] = {
-                            "FSTOCKLOCID__" +
-                                this.hobby[i][8]['value']['dimension']: {
-                              "FNumber": this.hobby[i][7]['value']['value']
+                        if (this.hobby[i][7]['value']['hide']) {
+                          Map<String, dynamic> stockMap = Map();
+                          stockMap['FormId'] = 'BD_STOCK';
+                          stockMap['FieldKeys'] =
+                          'FFlexNumber';
+                          stockMap['FilterString'] = "FNumber = '" +
+                              this.hobby[i][6]['value']['value'] +
+                              "'";
+                          Map<String, dynamic> stockDataMap = Map();
+                          stockDataMap['data'] = stockMap;
+                          String res = await CurrencyEntity.polling(stockDataMap);
+                          var stockRes = jsonDecode(res);
+                          if (stockRes.length > 0) {
+                            var postionList = this.hobby[i][7]['value']['value'].split(".");
+                            codeFEntityItem['FStockLocID'] = {};
+                            codeFEntityItem['FStockLocNumber'] = this.hobby[i][7]['value']['value'];
+                            var positonIndex = 0;
+                            for(var dimension in postionList){
+                              codeFEntityItem['FStockLocID']["FSTOCKLOCID__" + stockRes[positonIndex][0]] = {
+                                "FNumber": dimension
+                              };
+                              positonIndex++;
                             }
-                          };
+                          }
                         }
                         var codeFEntity = [codeFEntityItem];
                         codeModel['FEntity'] = codeFEntity;
@@ -1991,14 +2043,35 @@ class _RetrievalDetailState extends State<VmiAllocationDetail> {
                         codeFEntityItem['FEntryStockID'] = {
                           "FNUMBER": this.hobby[i][8]['value']['value']
                         };
-                        if (this.hobby[i][8]['value']['dimension'] !=
-                            null) {
-                          codeFEntityItem['FStockLocID'] = {
-                            "FSTOCKLOCID__" +
-                                this.hobby[i][8]['value']['dimension']: {
-                              "FNumber": this.hobby[i][9]['value']['value']
+                        if (this.hobby[i][9]['value']['hide']) {
+                          codeModel['FStockLocNumberH'] = this.hobby[i][9]['value']['value'];
+                          codeFEntityItem['FStockLocNumber'] = this.hobby[i][9]['value']['value'];
+                          Map<String, dynamic> stockMap = Map();
+                          stockMap['FormId'] = 'BD_STOCK';
+                          stockMap['FieldKeys'] =
+                          'FFlexNumber';
+                          stockMap['FilterString'] = "FNumber = '" +
+                              this.hobby[i][8]['value']['value'] +
+                              "'";
+                          Map<String, dynamic> stockDataMap = Map();
+                          stockDataMap['data'] = stockMap;
+                          String res = await CurrencyEntity.polling(stockDataMap);
+                          var stockRes = jsonDecode(res);
+                          if (stockRes.length > 0) {
+                            var postionList = this.hobby[i][9]['value']['value'].split(".");
+                            codeModel['FStockLocIDH'] = {};
+                            codeFEntityItem['FStockLocID'] = {};
+                            var positonIndex = 0;
+                            for(var dimension in postionList){
+                              codeModel['FStockLocIDH']["FSTOCKLOCIDH__" + stockRes[positonIndex][0]] = {
+                                "FNumber": dimension
+                              };
+                              codeFEntityItem['FStockLocID']["FSTOCKLOCID__" + stockRes[positonIndex][0]] = {
+                                "FNumber": dimension
+                              };
+                              positonIndex++;
                             }
-                          };
+                          }
                         }
                         var codeFEntity = [codeFEntityItem];
                         codeModel['FEntity'] = codeFEntity;
