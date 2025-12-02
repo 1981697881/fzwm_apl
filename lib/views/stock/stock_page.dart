@@ -91,8 +91,6 @@ class _StockPageState extends State<StockPage> {
   List hobby = [];
 
   getOrderList(keyWord, batchNo, fSn) async {
-    print(fSn);
-    print("123333");
     EasyLoading.show(status: 'loading...');
     Map<String, dynamic> userMap = Map();
     if (keyWord != '') {
@@ -122,7 +120,7 @@ class _StockPageState extends State<StockPage> {
     userMap['FormId'] = 'STK_Inventory';
     userMap['Limit'] = '50';
     userMap['FieldKeys'] =
-        'FMaterialId.FNumber,FMaterialId.FName,FMaterialId.FSpecification,FStockId.FName,FBaseQty,FLot.FNumber';
+        'FMaterialId.FNumber,FMaterialId.FName,FMaterialId.FSpecification,FStockId.FName,FBaseQty,FLot.FNumber,FStockID.FIsOpenLocation,FStockLocId.FF100002.FNumber';
     Map<String, dynamic> dataMap = Map();
     dataMap['data'] = userMap;
     String order = await CurrencyEntity.polling(dataMap);
@@ -136,26 +134,32 @@ class _StockPageState extends State<StockPage> {
         List arr = [];
         arr.add({
           "title": "编码",
+          "isHide": false,
           "name": "FMaterialFNumber",
           "value": {"label": value[0], "value": value[0]}
         });
         arr.add({
-          "title": "名称",
+          "title": "名称","isHide": false,
           "name": "FMaterialFName",
           "value": {"label": value[1], "value": value[1]}
         });
         arr.add({
-          "title": "规格",
+          "title": "规格","isHide": false,
           "name": "FMaterialIdFSpecification",
           "value": {"label": value[2], "value": value[2]}
         });
         arr.add({
-          "title": "仓库",
+          "title": "仓库","isHide": false,
           "name": "FStockIdFName",
           "value": {"label": value[3], "value": value[3]}
         });
         arr.add({
-          "title": "库存数量",
+          "title": "仓位","isHide": !value[6],
+          "name": "FStockIdFName",
+          "value": {"label": value[7] != null?value[7]:'', "value": value[7] != null?value[7]:''}
+        });
+        arr.add({
+          "title": "库存数量","isHide": false,
           "name": "FBaseQty",
           "value": {"label": value[4], "value": value[4]}
         });
@@ -179,10 +183,11 @@ class _StockPageState extends State<StockPage> {
           });
         }*/
         arr.add({
-          "title": "批号",
+          "title": "批号","isHide": false,
           "name": "FBatchNo",
           "value": {"label": value[5], "value": value[5]}
         });
+
         hobby.add(arr);
       }
       ;
@@ -356,51 +361,53 @@ class _StockPageState extends State<StockPage> {
     for (int i = 0; i < this.hobby.length; i++) {
       List<Widget> comList = [];
       for (int j = 0; j < this.hobby[i].length; j++) {
-        if (j == 5) {
-          comList.add(
-            Column(children: [
-              Container(
-                color: Colors.white,
-                child: ListTile(
+        if (!this.hobby[i][j]['isHide']) {
+          if (j == 6) {
+            comList.add(
+              Column(children: [
+                Container(
+                  color: Colors.white,
+                  child: ListTile(
+                      title: Text(this.hobby[i][j]["title"] +
+                          '：' +
+                          this.hobby[i][j]["value"]["label"].toString()),
+                      trailing:
+                          Row(mainAxisSize: MainAxisSize.min, children: <Widget>[
+                        new MaterialButton(
+                          color: Colors.blue,
+                          textColor: Colors.white,
+                          child: new Text('查看'),
+                          onPressed: () async {
+                            await _showMultiChoiceModalBottomSheet(
+                                context, this.hobby[i][j]["value"]["value"]);
+                            setState(() {});
+                          },
+                        ),
+                      ])),
+                ),
+                divider,
+              ]),
+            );
+          } else {
+            comList.add(
+              Column(children: [
+                Container(
+                  color: Colors.white,
+                  child: ListTile(
                     title: Text(this.hobby[i][j]["title"] +
                         '：' +
                         this.hobby[i][j]["value"]["label"].toString()),
                     trailing:
                         Row(mainAxisSize: MainAxisSize.min, children: <Widget>[
-                      new MaterialButton(
-                        color: Colors.blue,
-                        textColor: Colors.white,
-                        child: new Text('查看'),
-                        onPressed: () async {
-                          await _showMultiChoiceModalBottomSheet(
-                              context, this.hobby[i][j]["value"]["value"]);
-                          setState(() {});
-                        },
-                      ),
-                    ])),
-              ),
-              divider,
-            ]),
-          );
-        } else {
-          comList.add(
-            Column(children: [
-              Container(
-                color: Colors.white,
-                child: ListTile(
-                  title: Text(this.hobby[i][j]["title"] +
-                      '：' +
-                      this.hobby[i][j]["value"]["label"].toString()),
-                  trailing:
-                      Row(mainAxisSize: MainAxisSize.min, children: <Widget>[
-                    /* MyText(orderDate[i][j],
-                        color: Colors.grey, rightpadding: 18),*/
-                  ]),
+                      /* MyText(orderDate[i][j],
+                          color: Colors.grey, rightpadding: 18),*/
+                    ]),
+                  ),
                 ),
-              ),
-              divider,
-            ]),
-          );
+                divider,
+              ]),
+            );
+          }
         }
       }
       tempList.add(
