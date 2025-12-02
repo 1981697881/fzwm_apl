@@ -307,28 +307,36 @@ class _OtherWarehousingDetailState extends State<OtherWarehousingDetail> {
     if(event == ""){
       return;
     }
-    if(fBarCodeList == 1){
-      Map<String, dynamic> barcodeMap = Map();
-      barcodeMap['FilterString'] = "FBarCodeEn='"+event+"'";
-      barcodeMap['FormId'] = 'QDEP_Cust_BarCodeList';
-      barcodeMap['FieldKeys'] =
-      'FID,FInQtyTotal,FOutQtyTotal,FEntity_FEntryId,FRemainQty,FBarCodeQty,FStockID.FName,FStockID.FNumber,FMATERIALID.FNUMBER,FOwnerID.FNumber,FBarCode,FSN,FStockLocNumberH,FStockID.FIsOpenLocation';
-      Map<String, dynamic> dataMap = Map();
-      dataMap['data'] = barcodeMap;
-      String order = await CurrencyEntity.polling(dataMap);
-      var barcodeData = jsonDecode(order);
-      if (barcodeData.length>0) {
-        _code = event;
-        this.getMaterialList(barcodeData,barcodeData[0][10], barcodeData[0][11], barcodeData[0][12], barcodeData[0][13]);
-        print("ChannelPage: $event");
-      }else{
-        ToastUtil.showInfo('条码不在条码清单中');
-      }
+    if(checkItem == "position"){
+      setState(() {
+        this._FNumber = event;
+        this._textNumber.text = event;
+      });
     }else{
-      _code = event;
-      this.getMaterialList("",_code, "", "", false);
-      print("ChannelPage: $event");
+      if(fBarCodeList == 1){
+        Map<String, dynamic> barcodeMap = Map();
+        barcodeMap['FilterString'] = "FBarCodeEn='"+event+"'";
+        barcodeMap['FormId'] = 'QDEP_Cust_BarCodeList';
+        barcodeMap['FieldKeys'] =
+        'FID,FInQtyTotal,FOutQtyTotal,FEntity_FEntryId,FRemainQty,FBarCodeQty,FStockID.FName,FStockID.FNumber,FMATERIALID.FNUMBER,FOwnerID.FNumber,FBarCode,FSN,FStockLocNumberH,FStockID.FIsOpenLocation';
+        Map<String, dynamic> dataMap = Map();
+        dataMap['data'] = barcodeMap;
+        String order = await CurrencyEntity.polling(dataMap);
+        var barcodeData = jsonDecode(order);
+        if (barcodeData.length>0) {
+          _code = event;
+          this.getMaterialList(barcodeData,barcodeData[0][10], barcodeData[0][11], barcodeData[0][12], barcodeData[0][13]);
+          print("ChannelPage: $event");
+        }else{
+          ToastUtil.showInfo('条码不在条码清单中');
+        }
+      }else{
+        _code = event;
+        this.getMaterialList("",_code, "", "", false);
+        print("ChannelPage: $event");
+      }
     }
+
   }
   getMaterialList(barcodeData,code, fsn, fLoc,fIsOpenLocation) async {
     Map<String, dynamic> userMap = Map();

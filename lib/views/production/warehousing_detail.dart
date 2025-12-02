@@ -325,58 +325,66 @@ class _WarehousingDetailState extends State<WarehousingDetail> {
     if (event == "") {
       return;
     }
-    if (fBarCodeList == 1) {
-      Map<String, dynamic> barcodeMap = Map();
-      barcodeMap['FilterString'] = "FBarCodeEn='" + event + "'";
-      barcodeMap['FormId'] = 'QDEP_Cust_BarCodeList';
-      barcodeMap['FieldKeys'] =
-          'FID,FInQtyTotal,FOutQtyTotal,FEntity_FEntryId,FRemainQty,FBarCodeQty,FStockID.FName,FStockID.FNumber,FMATERIALID.FNUMBER,FOwnerID.FNumber,FBarCode,FSN,FStockLocNumberH,FStockID.FIsOpenLocation';
-      Map<String, dynamic> dataMap = Map();
-      dataMap['data'] = barcodeMap;
-      String order = await CurrencyEntity.polling(dataMap);
-      var barcodeData = jsonDecode(order);
-      if (barcodeData.length > 0) {
-        var msg = "";
-        var orderIndex = 0;
-        for (var value in orderDate) {
-          if (value[6] == barcodeData[0][8]) {
-            msg = "";
-            if (fNumber.lastIndexOf(barcodeData[0][8]) == orderIndex) {
-              break;
+    if(checkItem == "position"){
+      setState(() {
+        this._FNumber = event;
+        this._textNumber.text = event;
+      });
+    }else{
+      if (fBarCodeList == 1) {
+        Map<String, dynamic> barcodeMap = Map();
+        barcodeMap['FilterString'] = "FBarCodeEn='" + event + "'";
+        barcodeMap['FormId'] = 'QDEP_Cust_BarCodeList';
+        barcodeMap['FieldKeys'] =
+        'FID,FInQtyTotal,FOutQtyTotal,FEntity_FEntryId,FRemainQty,FBarCodeQty,FStockID.FName,FStockID.FNumber,FMATERIALID.FNUMBER,FOwnerID.FNumber,FBarCode,FSN,FStockLocNumberH,FStockID.FIsOpenLocation';
+        Map<String, dynamic> dataMap = Map();
+        dataMap['data'] = barcodeMap;
+        String order = await CurrencyEntity.polling(dataMap);
+        var barcodeData = jsonDecode(order);
+        if (barcodeData.length > 0) {
+          var msg = "";
+          var orderIndex = 0;
+          for (var value in orderDate) {
+            if (value[6] == barcodeData[0][8]) {
+              msg = "";
+              if (fNumber.lastIndexOf(barcodeData[0][8]) == orderIndex) {
+                break;
+              }
+            } else {
+              msg = '条码不在单据物料中';
+            }
+            orderIndex++;
+          }
+          ;
+          if (msg == "") {
+            _code = event;
+            Map<String, dynamic> serialMap = Map();
+            serialMap['FormId'] = 'BD_SerialMainFile';
+            serialMap['FieldKeys'] = 'FStockStatus';
+            serialMap['FilterString'] = "FNumber = '" + barcodeData[0][11] + "' and FMaterialID.FNumber = '" + barcodeData[0][8] + "'";
+            Map<String, dynamic> serialDataMap = Map();
+            serialDataMap['data'] = serialMap;
+            String serialRes = await CurrencyEntity.polling(serialDataMap);
+            var serialJson = jsonDecode(serialRes);
+            if (serialJson.length > 1  || (serialJson.length > 0 && serialJson[0][0] == "1")) {
+              ToastUtil.showInfo('该序列号已入库');
+            }else{
+              this.getMaterialList(
+                  barcodeData, barcodeData[0][10], barcodeData[0][11], barcodeData[0][12], barcodeData[0][13]);
             }
           } else {
-            msg = '条码不在单据物料中';
-          }
-          orderIndex++;
-        }
-        ;
-        if (msg == "") {
-          _code = event;
-          Map<String, dynamic> serialMap = Map();
-          serialMap['FormId'] = 'BD_SerialMainFile';
-          serialMap['FieldKeys'] = 'FStockStatus';
-          serialMap['FilterString'] = "FNumber = '" + barcodeData[0][11] + "' and FMaterialID.FNumber = '" + barcodeData[0][8] + "'";
-          Map<String, dynamic> serialDataMap = Map();
-          serialDataMap['data'] = serialMap;
-          String serialRes = await CurrencyEntity.polling(serialDataMap);
-          var serialJson = jsonDecode(serialRes);
-          if (serialJson.length > 1  || (serialJson.length > 0 && serialJson[0][0] == "1")) {
-            ToastUtil.showInfo('该序列号已入库');
-          }else{
-            this.getMaterialList(
-                barcodeData, barcodeData[0][10], barcodeData[0][11], barcodeData[0][12], barcodeData[0][13]);
+            ToastUtil.showInfo(msg);
           }
         } else {
-          ToastUtil.showInfo(msg);
+          ToastUtil.showInfo('条码不在条码清单中');
         }
       } else {
-        ToastUtil.showInfo('条码不在条码清单中');
+        _code = event;
+        this.getMaterialList("", _code, '', "", false);
+        print("ChannelPage: $event");
       }
-    } else {
-      _code = event;
-      this.getMaterialList("", _code, '', "", false);
-      print("ChannelPage: $event");
     }
+
   }
 
   getMaterialList(barcodeData, code, fsn, fLoc,fIsOpenLocation) async {
@@ -1129,7 +1137,7 @@ class _WarehousingDetailState extends State<WarehousingDetail> {
                                   this.hobby[i][j]["value"]["label"].toString();
                               this._FNumber =
                                   this.hobby[i][j]["value"]["label"].toString();
-                              checkItem = 'FNumber';
+                              checkItem = 'position';
                               this.show = false;
                               checkData = i;
                               checkDataChild = j;
@@ -1180,7 +1188,7 @@ class _WarehousingDetailState extends State<WarehousingDetail> {
                                   this.hobby[i][j]["value"]["label"].toString();
                               this._FNumber =
                                   this.hobby[i][j]["value"]["label"].toString();
-                              checkItem = 'FNumber';
+                              checkItem = 'position';
                               this.show = false;
                               checkData = i;
                               checkDataChild = j;

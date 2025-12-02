@@ -410,7 +410,12 @@ class _RetrievalDetailState extends State<VmiAllocationDetail> {
   }
 
   void _onEvent(event) async {
-    if (checkItem == 'FLoc') {
+    if(checkItem == "position"){
+      setState(() {
+        this._FNumber = event;
+        this._textNumber.text = event;
+      });
+    }else if (checkItem == 'FLoc') {
       _FNumber = event.trim();
       this._textNumber.value = _textNumber.value.copyWith(
         text: event.trim(),
@@ -1475,7 +1480,7 @@ class _RetrievalDetailState extends State<VmiAllocationDetail> {
                                   this._FNumber = this
                                       .hobby[i][j]["value"]["label"]
                                       .toString();
-                                  checkItem = 'FLoc';
+                                  checkItem = 'position';
                                   this.show = false;
                                   checkData = i;
                                   checkDataChild = j;
@@ -1633,6 +1638,7 @@ class _RetrievalDetailState extends State<VmiAllocationDetail> {
                               this.hobby[checkData][checkDataChild]['value']
                               ["value"] = _FNumber;
                             }
+                            checkItem = '';
                           });
                         },
                         child: Text(

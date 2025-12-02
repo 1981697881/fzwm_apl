@@ -349,55 +349,62 @@ class _VmiWarehousingDetailState extends State<VmiWarehousingDetail> {
     if (event == "") {
       return;
     }
-    if (fBarCodeList == 1) {
-      if (event.split('-').length > 2) {
-        getMaterialListT(event, event.split('-')[2]);
-      } else {
-        if (event.length > 15) {
-          Map<String, dynamic> barcodeMap = Map();
-          barcodeMap['FilterString'] = "FBarCodeEn='" + event + "'";
-          barcodeMap['FormId'] = 'QDEP_Cust_BarCodeList';
-          barcodeMap['FieldKeys'] =
-              'FID,FInQtyTotal,FOutQtyTotal,FEntity_FEntryId,FRemainQty,FBarCodeQty,FStockID.FName,FStockID.FNumber,FMATERIALID.FNUMBER,FOwnerID.FNumber,FBarCode,FSN,FStockLocNumberH,FStockID.FIsOpenLocation';
-          Map<String, dynamic> dataMap = Map();
-          dataMap['data'] = barcodeMap;
-          String order = await CurrencyEntity.polling(dataMap);
-          var barcodeData = jsonDecode(order);
-          if (barcodeData.length > 0) {
-            var msg = "";
-            var orderIndex = 0;
-            for (var value in orderDate) {
-              if (value[5] == barcodeData[0][8]) {
-                msg = "";
-                if (fNumber.lastIndexOf(barcodeData[0][8]) == orderIndex) {
-                  break;
+    if(checkItem == "position"){
+      setState(() {
+        this._FNumber = event;
+        this._textNumber.text = event;
+      });
+    }else{
+      if (fBarCodeList == 1) {
+        if (event.split('-').length > 2) {
+          getMaterialListT(event, event.split('-')[2]);
+        } else {
+          if (event.length > 15) {
+            Map<String, dynamic> barcodeMap = Map();
+            barcodeMap['FilterString'] = "FBarCodeEn='" + event + "'";
+            barcodeMap['FormId'] = 'QDEP_Cust_BarCodeList';
+            barcodeMap['FieldKeys'] =
+            'FID,FInQtyTotal,FOutQtyTotal,FEntity_FEntryId,FRemainQty,FBarCodeQty,FStockID.FName,FStockID.FNumber,FMATERIALID.FNUMBER,FOwnerID.FNumber,FBarCode,FSN,FStockLocNumberH,FStockID.FIsOpenLocation';
+            Map<String, dynamic> dataMap = Map();
+            dataMap['data'] = barcodeMap;
+            String order = await CurrencyEntity.polling(dataMap);
+            var barcodeData = jsonDecode(order);
+            if (barcodeData.length > 0) {
+              var msg = "";
+              var orderIndex = 0;
+              for (var value in orderDate) {
+                if (value[5] == barcodeData[0][8]) {
+                  msg = "";
+                  if (fNumber.lastIndexOf(barcodeData[0][8]) == orderIndex) {
+                    break;
+                  }
+                } else {
+                  msg = '条码不在单据物料中';
                 }
-              } else {
-                msg = '条码不在单据物料中';
+                orderIndex++;
               }
-              orderIndex++;
-            }
-            ;
-            if (msg == "") {
-              _code = event;
+              ;
+              if (msg == "") {
+                _code = event;
 
-              this.getMaterialList(
-                  barcodeData, barcodeData[0][10], barcodeData[0][11], barcodeData[0][12], barcodeData[0][13]);
+                this.getMaterialList(
+                    barcodeData, barcodeData[0][10], barcodeData[0][11], barcodeData[0][12], barcodeData[0][13]);
+              } else {
+                ToastUtil.showInfo(msg);
+              }
             } else {
-              ToastUtil.showInfo(msg);
+              ToastUtil.showInfo('条码不在条码清单中');
             }
           } else {
-            ToastUtil.showInfo('条码不在条码清单中');
-          }
-        } else {
-          getMaterialListTH(event, event.substring(9, 15));
+            getMaterialListTH(event, event.substring(9, 15));
 
+          }
         }
+      } else {
+        _code = event;
+        this.getMaterialList("", _code, "", "", false);
+        print("ChannelPage: $event");
       }
-    } else {
-      _code = event;
-      this.getMaterialList("", _code, "", "", false);
-      print("ChannelPage: $event");
     }
     print("ChannelPage: $event");
   }
@@ -1905,7 +1912,7 @@ class _VmiWarehousingDetailState extends State<VmiWarehousingDetail> {
                                   this._FNumber = this
                                       .hobby[i][j]["value"]["label"]
                                       .toString();
-                                  checkItem = 'FNumber';
+                                  checkItem = 'position';
                                   this.show = false;
                                   checkData = i;
                                   checkDataChild = j;
@@ -2037,6 +2044,7 @@ class _VmiWarehousingDetailState extends State<VmiWarehousingDetail> {
                                 ["label"] = _FNumber;
                             this.hobby[checkData][checkDataChild]['value']
                                 ["value"] = _FNumber;
+                            checkItem = '';
                           });
                         },
                         child: Text(
