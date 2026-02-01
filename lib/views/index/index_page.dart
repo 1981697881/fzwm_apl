@@ -357,6 +357,13 @@ class _IndexPageState extends State<IndexPage> {
       "color": Colors.pink.withOpacity(0.7),
       "router": MiddleLayerPage(menuId: 7, menuTitle: "VMI管理")
     });
+    menu.add({
+      "icon": Icons.shop_two,
+      "text": "寄库管理",
+      "id": 8,
+      "color": Colors.pink.withOpacity(0.7),
+      "router": MiddleLayerPage(menuId: 8, menuTitle: "寄售管理")
+    });
     return Wrap(
         /*mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,*/

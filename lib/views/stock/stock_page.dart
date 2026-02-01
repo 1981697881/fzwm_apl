@@ -95,26 +95,18 @@ class _StockPageState extends State<StockPage> {
     Map<String, dynamic> userMap = Map();
     if (keyWord != '') {
       userMap['FilterString'] =
-          "FMaterialId.FNumber='" + this.keyWord + "' and FBaseQty >0";
+          "(FMaterialId.FNumber='" + this.keyWord + "' or FStockLocId.FF100002.FNumber='" + this.keyWord + "') and FBaseQty >0";
       if (batchNo != '') {
         if (this.warehouseNumber != null) {
-          userMap['FilterString'] = "FMaterialId.FNumber='" +
-              this.keyWord +
-              "' and FStockID.FNumber='" +
+          userMap['FilterString'] += " and FStockID.FNumber='" +
               this.warehouseNumber +
-              "' and FBaseQty >0"; /*and FLot.FNumber= '"+batchNo+"'*/
-        } else {
-          userMap['FilterString'] = "FMaterialId.FNumber='" +
-              this.keyWord +
-              "' and FBaseQty >0"; /*and FLot.FNumber= '"+batchNo+"'*/
+              "'"; /*and FLot.FNumber= '"+batchNo+"'*/
         }
       }
       if (this.warehouseNumber != null) {
-        userMap['FilterString'] = "FMaterialId.FNumber='" +
-            this.keyWord +
-            "' and FStockID.FNumber='" +
+        userMap['FilterString'] += " and FStockID.FNumber='" +
             this.warehouseNumber +
-            "' and FBaseQty >0";
+            "'";
       }
     }
     userMap['FormId'] = 'STK_Inventory';

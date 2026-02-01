@@ -1,5 +1,9 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:fzwm_apl/views/consignment/consignment_allocation_page.dart';
+import 'package:fzwm_apl/views/consignment/consignment_return_page.dart';
+import 'package:fzwm_apl/views/consignment/consignment_settlement_detail.dart';
+import 'package:fzwm_apl/views/consignment/consignment_settlement_page.dart';
 import 'package:fzwm_apl/views/production/bind_SN_page.dart';
 import 'package:fzwm_apl/views/production/picking_detail.dart';
 import 'package:fzwm_apl/views/production/picking_out_sourcing_page.dart';
@@ -374,6 +378,30 @@ class MenuPermissions {
       "parentId": 7,
       "color": Colors.pink.withOpacity(0.7),
       "router": VmiInventoryDetail(),
+      "source": '',
+    });
+    menu.add({
+      "icon": Icons.loupe,
+      "text": "调拨",
+      "parentId": 8,
+      "color": Colors.pink.withOpacity(0.7),
+      "router": ConsignmentAllocationPage(),
+      "source": '',
+    });
+    menu.add({
+      "icon": Icons.loupe,
+      "text": "结算",
+      "parentId": 8,
+      "color": Colors.pink.withOpacity(0.7),
+      "router": ConsignmentSettlementPage(),
+      "source": '',
+    });
+    menu.add({
+      "icon": Icons.loupe,
+      "text": "退货",
+      "parentId": 8,
+      "color": Colors.pink.withOpacity(0.7),
+      "router": ConsignmentReturnPage(),
       "source": '',
     });
     /* menu.add({
