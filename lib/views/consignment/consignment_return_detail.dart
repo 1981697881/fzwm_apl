@@ -187,7 +187,7 @@ class _ConsignmentReturnDetailState extends State<ConsignmentReturnDetail> {
     userMap['FormId'] = 'STK_TransferDirect';
     userMap['OrderString'] = 'FMaterialId.FNumber ASC';
     userMap['FieldKeys'] =
-    'FBillNo,FSaleOrgId.FNumber,FSaleOrgId.FName,FDate,FBillEntry_FEntryId,FMaterialId.FNumber,FMaterialId.FName,FMaterialId.FSpecification,FStockOrgId.FNumber,FStockOrgId.FName,FUnitId.FNumber,FUnitId.FName,FJoinUnSettleQty,FApproveDate,FQty,FID,FKeeperId.FNumber,FKeeperId.FName,FSrcStockId.FName,FSrcStockId.FNumber,FLot.FNumber,FSrcStockId.FIsOpenLocation,FMaterialId.FIsBatchManage,FTaxPrice,FTaxRate,FBizType,FAllAmount,FSrcStockLocId.FF100002.FNumber';
+    'FBillNo,FSaleOrgId.FNumber,FSaleOrgId.FName,FDate,FBillEntry_FEntryId,FMaterialId.FNumber,FMaterialId.FName,FMaterialId.FSpecification,FStockOrgId.FNumber,FStockOrgId.FName,FUnitId.FNumber,FUnitId.FName,FJoinUnSettleQty,FApproveDate,FQty,FID,FKeeperId.FNumber,FKeeperId.FName,FDestStockId.FName,FDestStockId.FNumber,FLot.FNumber,FDestStockId.FIsOpenLocation,FMaterialId.FIsBatchManage,FTaxPrice,FTaxRate,FBizType,FAllAmount,FDestStockLocId.FF100002.FNumber';
     Map<String, dynamic> dataMap = Map();
     dataMap['data'] = userMap;
     String order = await CurrencyEntity.polling(dataMap);
@@ -231,7 +231,7 @@ class _ConsignmentReturnDetailState extends State<ConsignmentReturnDetail> {
           "title": "退回仓库",
           "name": "FStockID",
           "isHide": false,
-          "value": {"label": "", "value": ""}
+          "value": {"label": value[18], "value": value[19]}
         });
         arr.add({
           "title": "批号",
@@ -243,7 +243,7 @@ class _ConsignmentReturnDetailState extends State<ConsignmentReturnDetail> {
           "title": "退回仓位",
           "name": "FStockLocID",
           "isHide": false,
-          "value": {"label": "", "value": "","hide": value[21]}
+          "value": {"label": value[27]==null|| value[27] ==''?'':value[27], "value": value[27]==null|| value[27] ==''?'':value[27],"hide": value[21]}
         });
         arr.add({
           "title": "操作",
@@ -286,7 +286,7 @@ class _ConsignmentReturnDetailState extends State<ConsignmentReturnDetail> {
       ToastUtil.showInfo('无数据');
     }
     getStockList();
-    /* _onEvent("mB@CpNDtniQHAcIrpupGkgkzq0Y1xE@4zPLhByd@8D923Gz@1M4htw==");*/
+    //_onEvent("34TI4lY5kQPIGu5s7YaZc6RZI6b@ID5z3BcxWG8h087xMLEQStBuMphqBKnlA2TV1TYiduCdN3s=");
   }
 
   void _onEvent(event) async {
@@ -1175,18 +1175,20 @@ class _ConsignmentReturnDetailState extends State<ConsignmentReturnDetail> {
       if(this.isScanWork){
         Model['FStockOrgId'] = {"FNumber": orderDate[0][8].toString()};
         Model['FSaleOrgId'] = {"FNumber": orderDate[0][1].toString()};
-        Model['FRetcustId'] = {"FNumber": orderDate[0][16].toString()};
+        Model['FCustId'] = {"FNumber": orderDate[0][16].toString()};
       }else{
         Model['FStockOrgId'] = {"FNumber": this.fOrgID};
         Model['FSaleOrgId'] = {"FNumber": this.fOrgID};
-        Model['FRetcustId'] = {"FNumber": this.customerNumber};
+        Model['FCustId'] = {"FNumber": this.customerNumber};
       }
       var FEntity = [];
+      var FSelBill = [];
       var hobbyIndex = 0;
       for(var element in this.hobby){
         if (element[3]['value']['value'] != '0' &&
             element[4]['value']['value'] != '') {
           Map<String, dynamic> FEntityItem = Map();
+          Map<String, dynamic> FSelBillEntity = Map();
           FEntityItem['FMaterialId'] = {"FNumber": element[0]['value']['value']};
           FEntityItem['FUnitID'] = {"FNumber": element[2]['value']['value']};
           FEntityItem['FTaxPrice'] = orderDate[hobbyIndex][23];
@@ -1221,7 +1223,26 @@ class _ConsignmentReturnDetailState extends State<ConsignmentReturnDetail> {
             }
           }
           FEntityItem['FQty'] = element[3]['value']['value'];
-          FEntityItem['FSelBillEntity_Link'] = [
+          var fSerialSub = [];
+          var kingDeeCode = element[0]['value']['kingDeeCode'];
+          for (int subj = 0; subj < kingDeeCode.length; subj++) {
+            Map<String, dynamic> subObj = Map();
+            if (kingDeeCode[subj].split("-").length > 2) {
+              var itemCode = kingDeeCode[subj].split("-");
+              if(itemCode.length>2){
+                if(itemCode.length > 3){
+                  subObj['FSerialNo'] = itemCode[2]+'-'+itemCode[3];
+                }else{
+                  subObj['FSerialNo'] = itemCode[2];
+                }
+              }
+            } else {
+              subObj['FSerialNo'] = kingDeeCode[subj];
+            }
+            fSerialSub.add(subObj);
+          }
+          FSelBillEntity['FSerialSubEntity'] = fSerialSub;
+          FSelBillEntity['FSelBillEntity_Link'] = [
             {
               "FSelBillEntity_Link_FRuleId": "TransferDirect-ConsignmentSettle",
               "FSelBillEntity_Link_FSTableName": "T_STK_STKTRANSFERINENTRY",
@@ -1232,6 +1253,7 @@ class _ConsignmentReturnDetailState extends State<ConsignmentReturnDetail> {
             }
           ];
           FEntity.add(FEntityItem);
+          FSelBill.add(FSelBillEntity);
         }
         hobbyIndex++;
       };
@@ -1241,6 +1263,7 @@ class _ConsignmentReturnDetailState extends State<ConsignmentReturnDetail> {
         return;
       }
       Model['FConsigSetEntity'] = FEntity;
+      Model['FSelBillEntity'] = FSelBill;
       orderMap['Model'] = Model;
       dataMap['data'] = orderMap;
       print(jsonEncode(dataMap));

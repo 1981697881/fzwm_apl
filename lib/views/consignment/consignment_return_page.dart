@@ -10,7 +10,6 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:fzwm_apl/views/consignment/consignment_return_detail.dart';
-import 'package:fzwm_apl/views/sale/return_goods_detail.dart';
 import 'package:qrscan/qrscan.dart' as scanner;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -79,33 +78,33 @@ class _ConsignmentReturnPageState extends State<ConsignmentReturnPage> {
   getOrderList() async {
     EasyLoading.show(status: 'loading...');
     Map<String, dynamic> userMap = Map();
-    userMap['FilterString'] = "FQty>0 and FCLOSESTATUS='A'";
+    userMap['FilterString'] = "FJoinUnSettleQty>0 and FDocumentStatus ='C' and FBillTypeID.FNumber = 'ZJDB02_SYS'";
     var scanCode = keyWord.split(",");
     if (this._dateSelectText != "") {
       this.startDate = this._dateSelectText.substring(0, 10);
       this.endDate = this._dateSelectText.substring(26, 36);
       userMap['FilterString'] =
-      "FQty>0 and FCLOSESTATUS='A' and FDate>= '$startDate' and FDate <= '$endDate'";
+      "FJoinUnSettleQty>0 and FDocumentStatus ='C' and FDate>= '$startDate' and FDate <= '$endDate' and FBillTypeID.FNumber = 'ZJDB02_SYS'";
     }
     if(this.isScan){
       if (this.keyWord != '') {
         userMap['FilterString'] =
-            "FBillNo like '%"+keyWord+"%' and FCLOSESTATUS='A' and FQty>0";
+            "FBillNo like '%"+keyWord+"%' and FDocumentStatus ='C' and FJoinUnSettleQty>0 and FBillTypeID.FNumber = 'ZJDB02_SYS'";
       }
     }else{
       if (this.keyWord != '') {
         userMap['FilterString'] =
-            "FBillNo like '%"+keyWord+"%' and FCLOSESTATUS='A' and FQty>0";
+            "FBillNo like '%"+keyWord+"%' and FDocumentStatus ='C' and FJoinUnSettleQty>0 and FBillTypeID.FNumber = 'ZJDB02_SYS'";
       }else{
         userMap['FilterString'] =
-            "FBillNo like '%"+keyWord+"%' and FCLOSESTATUS='A' and FQty>0 and FDate>= '$startDate' and FDate <= '$endDate'";
+            "FBillNo like '%"+keyWord+"%' and FDocumentStatus ='C' and FJoinUnSettleQty>0 and FDate>= '$startDate' and FDate <= '$endDate' and FBillTypeID.FNumber = 'ZJDB02_SYS'";
       }
     }
     this.isScan = false;
-    userMap['FormId'] = 'STK_TRANSFERAPPLY';
+    userMap['FormId'] = 'STK_TransferDirect';
     userMap['OrderString'] = 'FBillNo ASC,FMaterialId.FNumber ASC';
     userMap['FieldKeys'] =
-    'FBillNo,FAPPORGID.FNumber,FAPPORGID.FName,FDate,FEntity_FEntryId,FMATERIALID.FNumber,FMATERIALID.FName,FMATERIALID.FSpecification,FOwnerTypeInIdHead,FOwnerTypeIdHead,FUNITID.FNumber,FUNITID.FName,FQty,FAPPROVEDATE,FNote,FID,FStockId.FNumber,FStockInId.FName';
+    'FBillNo,FStockOrgId.FNumber,FStockOrgId.FName,FDate,FBillEntry_FEntryId,FMATERIALID.FNumber,FMATERIALID.FName,FMATERIALID.FSpecification,FOwnerTypeIdHead,FOwnerTypeIdHead,FUNITID.FNumber,FUNITID.FName,FJoinUnSettleQty,FApproveDate,FNote,FID,FSrcStockId.FName,FDestStockId.FName';
     Map<String, dynamic> dataMap = Map();
     dataMap['data'] = userMap;
     String order = await CurrencyEntity.polling(dataMap);
@@ -153,7 +152,7 @@ class _ConsignmentReturnPageState extends State<ConsignmentReturnPage> {
           "value": {"label": value[11], "value": value[10]}
         });
         arr.add({
-          "title": "申请数量",
+          "title": "未结算数量",
           "name": "FBaseQty",
           "isHide": false,
           "value": {"label": value[12], "value": value[12]}

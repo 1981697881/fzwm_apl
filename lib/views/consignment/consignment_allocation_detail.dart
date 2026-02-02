@@ -38,6 +38,7 @@ class ConsignmentAllocationDetail extends StatefulWidget {
 
 class _RetrievalDetailState extends State<ConsignmentAllocationDetail> {
   var _remarkContent = new TextEditingController();
+  var _orderContent = new TextEditingController();
   GlobalKey<PartRefreshWidgetState> globalKey = GlobalKey();
   GlobalKey<TextWidgetState> textKey = GlobalKey();
   final _textNumber = TextEditingController();
@@ -275,7 +276,7 @@ class _RetrievalDetailState extends State<ConsignmentAllocationDetail> {
     userMap['FormId'] = 'SAL_DELIVERYNOTICE';
     userMap['OrderString'] = 'FMaterialId.FNumber ASC';
     userMap['FieldKeys'] =
-    'FBillNo,FSaleOrgId.FNumber,FSaleOrgId.FName,FDate,FEntity_FEntryId,FMATERIALID.FNumber,FMATERIALID.FName,FMATERIALID.FSpecification,FOwnerTypeIdHead,FOwnerTypeIdHead,FUNITID.FNumber,FUNITID.FName,FRemainOutQty,FAPPROVEDATE,FNote,FID,FBACKUPSTOCKID.FNumber,FStockId.FNumber,FBillTypeID.FNUMBER,FEntity_FSeq,FMaterialId.FIsKFPeriod,FMaterialId.FExpPeriod,FMaterialId.FIsBatchManage,FLot.FNumber,FProduceDate,FExpiryDate,FBACKUPSTOCKID.FIsOpenLocation,FStockID.FIsOpenLocation,FDeliveryOrgID.FNumber,FDeliveryOrgID.FName,FDeliveryOrgID.FNumber,FDeliveryOrgID.FName,FBACKUPSTOCKID.FName,FStockId.FName,FBACKUPSTOCKLOCID.FF100002.FNumber,FStockLocID.FF100002.FNumber';
+    'FBillNo,FSaleOrgId.FNumber,FSaleOrgId.FName,FDate,FEntity_FEntryId,FMATERIALID.FNumber,FMATERIALID.FName,FMATERIALID.FSpecification,FOwnerTypeIdHead,FOwnerTypeIdHead,FUNITID.FNumber,FUNITID.FName,FRemainOutQty,FAPPROVEDATE,FNote,FID,FBACKUPSTOCKID.FNumber,FStockId.FNumber,FBillTypeID.FNUMBER,FEntity_FSeq,FMaterialId.FIsKFPeriod,FMaterialId.FExpPeriod,FMaterialId.FIsBatchManage,FLot.FNumber,FProduceDate,FExpiryDate,FBACKUPSTOCKID.FIsOpenLocation,FStockID.FIsOpenLocation,FDeliveryOrgID.FNumber,FDeliveryOrgID.FName,FDeliveryOrgID.FNumber,FDeliveryOrgID.FName,FBACKUPSTOCKID.FName,FStockId.FName,FBACKUPSTOCKLOCID.FF100002.FNumber,FStockLocID.FF100002.FNumber,F_UYEP_Date,FCustomerID.FNumber,FPrice,FTaxPrice,FAllAmount';
     Map<String, dynamic> dataMap = Map();
     dataMap['data'] = userMap;
     String order = await CurrencyEntity.polling(dataMap);
@@ -425,6 +426,8 @@ class _RetrievalDetailState extends State<ConsignmentAllocationDetail> {
       ToastUtil.showInfo('无数据');
     }
     this.getOrganizationsList();
+    this.getStockList();
+   //_onEvent("34TI4lY5kQPIGu5s7YaZc6RZI6b@ID5z3BcxWG8h087xMLEQStBuMphqBKnlA2TV1TYiduCdN3s=");
   }
 
   void _onEvent(event) async {
@@ -513,7 +516,7 @@ class _RetrievalDetailState extends State<ConsignmentAllocationDetail> {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     var menuData = sharedPreferences.getString('MenuPermissions');
     var deptData = jsonDecode(menuData)[0];
-    var scanCode = _code.split(";");
+    var scanCode = code.split(";");
     Map<String, dynamic> stockMap = Map();
     stockMap['FormId'] = 'BD_STOCK';
     stockMap['FieldKeys'] =
@@ -617,7 +620,7 @@ class _RetrievalDetailState extends State<ConsignmentAllocationDetail> {
                           double.parse(barcodeNum))
                           .toString();
                   element[3]['value']['label'] = element[3]['value']['value'];
-                  var item = barCodeScan[0].toString() + "-" + barcodeNum;
+                  var item = barCodeScan[0].toString() + "-" + barcodeNum+ "-" + fsn;
                   element[0]['value']['kingDeeCode'].add(item);
                   element[0]['value']['scanCode'].add(code);
                   element[10]['value']['label'] = barcodeNum.toString();
@@ -678,7 +681,7 @@ class _RetrievalDetailState extends State<ConsignmentAllocationDetail> {
                             (element[4]['value']['label'] -
                                 double.parse(
                                     element[3]['value']['label']))
-                                .toString();
+                                .toString()+ "-" + fsn;
                         element[10]['value']['label'] = (element[9]['value']
                         ['label'] -
                             double.parse(element[3]['value']['value']))
@@ -720,7 +723,7 @@ class _RetrievalDetailState extends State<ConsignmentAllocationDetail> {
                         element[3]['value']['value'] =
                         element[3]['value']['label'];
                         var item =
-                            barCodeScan[0].toString() + "-" + barcodeNum;
+                            barCodeScan[0].toString() + "-" + barcodeNum+ "-" + fsn;
                         element[10]['value']['label'] = barcodeNum.toString();
                         element[10]['value']['value'] = barcodeNum.toString();
                         element[0]['value']['kingDeeCode'].add(item);
@@ -743,7 +746,7 @@ class _RetrievalDetailState extends State<ConsignmentAllocationDetail> {
                             .toString();
                     element[3]['value']['value'] =
                     element[3]['value']['label'];
-                    var item = barCodeScan[0].toString() + "-" + barcodeNum;
+                    var item = barCodeScan[0].toString() + "-" + barcodeNum+ "-" + fsn;
                     element[10]['value']['label'] = barcodeNum.toString();
                     element[10]['value']['value'] = barcodeNum.toString();
                     element[0]['value']['kingDeeCode'].add(item);
@@ -803,7 +806,7 @@ class _RetrievalDetailState extends State<ConsignmentAllocationDetail> {
                           double.parse(barcodeNum))
                           .toString();
                   element[3]['value']['label'] = element[3]['value']['value'];
-                  var item = barCodeScan[0].toString() + "-" + barcodeNum;
+                  var item = barCodeScan[0].toString() + "-" + barcodeNum+ "-" + fsn;
                   element[0]['value']['kingDeeCode'].add(item);
                   element[0]['value']['scanCode'].add(code);
                   element[10]['value']['label'] = barcodeNum.toString();
@@ -866,7 +869,7 @@ class _RetrievalDetailState extends State<ConsignmentAllocationDetail> {
                               (element[4]['value']['label'] -
                                   double.parse(
                                       element[3]['value']['label']))
-                                  .toString();
+                                  .toString()+ "-" + fsn;
                           element[10]['value']['label'] = (element[9]['value']
                           ['label'] -
                               double.parse(element[3]['value']['value']))
@@ -908,7 +911,7 @@ class _RetrievalDetailState extends State<ConsignmentAllocationDetail> {
                           element[3]['value']['value'] =
                           element[3]['value']['label'];
                           var item =
-                              barCodeScan[0].toString() + "-" + barcodeNum;
+                              barCodeScan[0].toString() + "-" + barcodeNum+ "-" + fsn;
                           element[0]['value']['kingDeeCode'].add(item);
                           element[0]['value']['scanCode'].add(code);
                           barcodeNum = (double.parse(barcodeNum) -
@@ -929,7 +932,7 @@ class _RetrievalDetailState extends State<ConsignmentAllocationDetail> {
                               .toString();
                       element[3]['value']['value'] =
                       element[3]['value']['label'];
-                      var item = barCodeScan[0].toString() + "-" + barcodeNum;
+                      var item = barCodeScan[0].toString() + "-" + barcodeNum+ "-" + fsn;
                       element[10]['value']['label'] = barcodeNum.toString();
                       element[10]['value']['value'] = barcodeNum.toString();
                       element[0]['value']['kingDeeCode'].add(item);
@@ -998,7 +1001,7 @@ class _RetrievalDetailState extends State<ConsignmentAllocationDetail> {
                                 (element[4]['value']['label'] -
                                     double.parse(
                                         element[3]['value']['label']))
-                                    .toString();
+                                    .toString()+ "-" + fsn;
                             element[10]['value']['label'] = (element[9]
                             ['value']['label'] -
                                 double.parse(
@@ -1042,7 +1045,7 @@ class _RetrievalDetailState extends State<ConsignmentAllocationDetail> {
                             element[3]['value']['value'] =
                             element[3]['value']['label'];
                             var item =
-                                barCodeScan[0].toString() + "-" + barcodeNum;
+                                barCodeScan[0].toString() + "-" + barcodeNum+ "-" + fsn;
                             element[10]['value']['label'] =
                                 barcodeNum.toString();
                             element[10]['value']['value'] =
@@ -1069,7 +1072,7 @@ class _RetrievalDetailState extends State<ConsignmentAllocationDetail> {
                         element[3]['value']['value'] =
                         element[3]['value']['label'];
                         var item =
-                            barCodeScan[0].toString() + "-" + barcodeNum;
+                            barCodeScan[0].toString() + "-" + barcodeNum+ "-" + fsn;
                         element[10]['value']['label'] = barcodeNum.toString();
                         element[10]['value']['value'] = barcodeNum.toString();
                         element[0]['value']['kingDeeCode'].add(item);
@@ -1881,20 +1884,21 @@ class _RetrievalDetailState extends State<ConsignmentAllocationDetail> {
       Model['FTransferDirect'] = "GENERAL";
       Model['FOwnerOutIdHead'] = {"FNumber": this.organizationsNumber1};
       Model['FOwnerIdHead'] = {"FNumber": this.organizationsNumber2};
+      Model['F_VZSF_YSDH'] = this._orderContent.text;
+      Model['F_VZSF_Date'] = orderDate[0][36];
+      Model['FBizType'] = "CONSIGNMENT";
       var FEntity = [];
       var hobbyIndex = 0;
       for (var element in this.hobby) {
-        if (element[3]['value']['value'] != '0' && element[3]['value']['value'] != '' && element[7]['value']['value'] != '') {
+        if (element[3]['value']['value'] != '0' && element[3]['value']['value'] != '' && element[3]['value']['value'] != 0 && element[8]['value']['value'] != '') {
           Map<String, dynamic> FEntityItem = Map();
-
           /*FEntityItem['FReturnType'] = 1;*/
           FEntityItem['FOwnerTypeId'] = "BD_OwnerOrg";
           FEntityItem['FOwnerId'] = {"FNumber": this.organizationsNumber2};
           FEntityItem['FOwnerTypeOutId'] = "BD_OwnerOrg";
           FEntityItem['FOwnerOutId'] = {"FNumber": this.organizationsNumber1};
-          FEntityItem['FKeeperTypeId'] = "BD_KeeperOrg";
-          FEntityItem['FKeeperId'] = {"FNumber": this.organizationsNumber2};
-
+          FEntityItem['FKeeperTypeId'] = "BD_Customer";
+          FEntityItem['FKeeperId'] = {"FNumber": orderDate[hobbyIndex][37]};
           FEntityItem['FMaterialId'] = {
             "FNumber": element[0]['value']['value']
           };
@@ -1964,6 +1968,29 @@ class _RetrievalDetailState extends State<ConsignmentAllocationDetail> {
           FEntityItem['FBaseQty'] = element[3]['value']['value'];
           FEntityItem['FProduceDate'] = element[11]['value']['value'];
           FEntityItem['FExpiryDate'] = element[12]['value']['value'];
+          FEntityItem['FAllAmount'] = orderDate[hobbyIndex][38];
+          FEntityItem['FTaxPrice'] = orderDate[hobbyIndex][39];
+          FEntityItem['FTaxRate'] = orderDate[hobbyIndex][40];
+
+          var fSerialSub = [];
+          var kingDeeCode = element[0]['value']['kingDeeCode'];
+          for (int subj = 0; subj < kingDeeCode.length; subj++) {
+            Map<String, dynamic> subObj = Map();
+            if (kingDeeCode[subj].split("-").length > 2) {
+              var itemCode = kingDeeCode[subj].split("-");
+              if (itemCode.length > 2) {
+                if (itemCode.length > 3) {
+                  subObj['FSerialNo'] = itemCode[2] + '-' + itemCode[3];
+                } else {
+                  subObj['FSerialNo'] = itemCode[2];
+                }
+              }
+            } else {
+              subObj['FSerialNo'] = kingDeeCode[subj];
+            }
+            fSerialSub.add(subObj);
+          }
+          FEntityItem['FSerialSubEntity'] = fSerialSub;
           FEntityItem['FBillEntry_Link'] = [
             {
               "FBillEntry_Link_FRuleId": "DeliveryNotice-StkTransferDirect",
@@ -2352,6 +2379,39 @@ class _RetrievalDetailState extends State<ConsignmentAllocationDetail> {
                       Container(
                         color: Colors.white,
                         child: ListTile(
+                          dense: true,
+                          visualDensity: VisualDensity(vertical: -4),
+                          title: TextField(
+                            //最多输入行数
+                            maxLines: 1,
+                            decoration: InputDecoration(
+                              hintText: "运输单号",
+                              //给文本框加边框
+                              border: OutlineInputBorder(),
+                            ),
+                            controller: this._orderContent,
+                            //改变回调
+                            onChanged: (value) {
+                              setState(() {
+                                _orderContent.value = TextEditingValue(
+                                    text: value,
+                                    selection: TextSelection.fromPosition(
+                                        TextPosition(
+                                            affinity: TextAffinity.downstream,
+                                            offset: value.length)));
+                              });
+                            },
+                          ),
+                        ),
+                      ),
+                      divider,
+                    ],
+                  ),
+                  /*Column(
+                    children: [
+                      Container(
+                        color: Colors.white,
+                        child: ListTile(
                           title: TextField(
                             //最多输入行数
                             maxLines: 1,
@@ -2377,7 +2437,7 @@ class _RetrievalDetailState extends State<ConsignmentAllocationDetail> {
                       ),
                       divider,
                     ],
-                  ),
+                  ),*/
                   Column(
                     children: this._getHobby(),
                   ),
