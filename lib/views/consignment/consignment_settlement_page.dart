@@ -52,6 +52,7 @@ class _ConsignmentSettlementPageState extends State<ConsignmentSettlementPage> {
           .receiveBroadcastStream()
           .listen(_onEvent, onError: _onError);
     }
+    /*_onEvent("34TI4lY5kQPIGu5s7YaZc847AmLFb4HGBbhOZQ+E9rshI9@Cv1dqJIfze+qC@ALE168T3pNi0mI=");*/
   }
   _initState() {
     isScan = false;
@@ -197,8 +198,9 @@ class _ConsignmentSettlementPageState extends State<ConsignmentSettlementPage> {
       Map<String, dynamic> barcodeMap = Map();
       barcodeMap['FilterString'] = "FBarCodeEn='" + event + "'";
       barcodeMap['FormId'] = 'QDEP_Cust_BarCodeList';
+      barcodeMap['OrderString'] = 'FEntryID DESC';
       barcodeMap['FieldKeys'] =
-      'FSrcBillNo';
+      'FEntryBillNo';
       Map<String, dynamic> dataMap = Map();
       dataMap['data'] = barcodeMap;
       String order = await CurrencyEntity.polling(dataMap);

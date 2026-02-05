@@ -80,26 +80,26 @@ class _RetrievalPageState extends State<RetrievalPage> {
   getOrderList() async {
     EasyLoading.show(status: 'loading...');
     Map<String, dynamic> userMap = Map();
-    userMap['FilterString'] = "FRemainOutQty>0 and FDocumentStatus ='C'";
+    userMap['FilterString'] = "FRemainOutQty>0 and FDocumentStatus ='C' and FBillTypeID.FNumber = 'FHTZD01_SYS'";
     var scanCode = keyWord.split(",");
     if (this._dateSelectText != "") {
       this.startDate = this._dateSelectText.substring(0, 10);
       this.endDate = this._dateSelectText.substring(26, 36);
       userMap['FilterString'] =
-          "FRemainOutQty>0 and FDocumentStatus ='C' and FDate>= '$startDate' and FDate <= '$endDate'";
+          "FRemainOutQty>0 and FDocumentStatus ='C' and FDate>= '$startDate' and FDate <= '$endDate' and FBillTypeID.FNumber = 'FHTZD01_SYS'";
     }
     if(this.isScan){
       if (this.keyWord != '') {
         userMap['FilterString'] =
-            "FBillNo like '%"+keyWord+"%' and FDocumentStatus ='C' and FRemainOutQty>0";
+            "FBillNo like '%"+keyWord+"%' and FDocumentStatus ='C' and FRemainOutQty>0 and FBillTypeID.FNumber = 'FHTZD01_SYS'";
       }
     }else{
       if (this.keyWord != '') {
         userMap['FilterString'] =
-            "FBillNo like '%"+keyWord+"%' and FDocumentStatus ='C' and FRemainOutQty>0";
+            "FBillNo like '%"+keyWord+"%' and FDocumentStatus ='C' and FRemainOutQty>0 and FBillTypeID.FNumber = 'FHTZD01_SYS'";
       }else{
         userMap['FilterString'] =
-            "FBillNo like '%"+keyWord+"%' and FDocumentStatus ='C' and FRemainOutQty>0 and FDate>= '$startDate' and FDate <= '$endDate'";
+            "FBillNo like '%"+keyWord+"%' and FDocumentStatus ='C' and FRemainOutQty>0 and FDate>= '$startDate' and FDate <= '$endDate' and FBillTypeID.FNumber = 'FHTZD01_SYS'";
       }
     }
     this.isScan = false;

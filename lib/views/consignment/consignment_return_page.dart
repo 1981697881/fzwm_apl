@@ -197,8 +197,9 @@ class _ConsignmentReturnPageState extends State<ConsignmentReturnPage> {
       Map<String, dynamic> barcodeMap = Map();
       barcodeMap['FilterString'] = "FBarCodeEn='" + event + "'";
       barcodeMap['FormId'] = 'QDEP_Cust_BarCodeList';
+      barcodeMap['OrderString'] = 'FEntryID DESC';
       barcodeMap['FieldKeys'] =
-      'FSrcBillNo';
+      'FEntryBillNo';
       Map<String, dynamic> dataMap = Map();
       dataMap['data'] = barcodeMap;
       String order = await CurrencyEntity.polling(dataMap);
