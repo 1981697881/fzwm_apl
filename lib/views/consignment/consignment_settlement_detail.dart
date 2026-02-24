@@ -187,7 +187,7 @@ class _ConsignmentSettlementDetailState extends State<ConsignmentSettlementDetai
     userMap['FormId'] = 'STK_TransferDirect';
     userMap['OrderString'] = 'FMaterialId.FNumber ASC';
     userMap['FieldKeys'] =
-    'FBillNo,FSaleOrgId.FNumber,FSaleOrgId.FName,FDate,FBillEntry_FEntryId,FMaterialId.FNumber,FMaterialId.FName,FMaterialId.FSpecification,FStockOrgId.FNumber,FStockOrgId.FName,FUnitId.FNumber,FUnitId.FName,FJoinUnSettleQty,FApproveDate,FQty,FID,FKeeperId.FNumber,FKeeperId.FName,FDestStockId.FName,FDestStockId.FNumber,FLot.FNumber,FDestStockId.FIsOpenLocation,FMaterialId.FIsBatchManage,FTaxPrice,FTaxRate,FBizType,FAllAmount,FDestStockLocId.FF100002.FNumber';
+    'FBillNo,FSaleOrgId.FNumber,FSaleOrgId.FName,FDate,FBillEntry_FEntryId,FMaterialId.FNumber,FMaterialId.FName,FMaterialId.FSpecification,FStockOrgId.FNumber,FStockOrgId.FName,FUnitId.FNumber,FUnitId.FName,FJoinUnSettleQty,FApproveDate,FQty,FID,FKeeperId.FNumber,FKeeperId.FName,FDestStockId.FName,FDestStockId.FNumber,FLot.FNumber,FDestStockId.FIsOpenLocation,FMaterialId.FIsBatchManage,FTaxPrice,FTaxRate,FBizType,FAllAmount,FDestStockLocId.FF100002.FNumber,FOrderNo,F_VZSF_Text';
     Map<String, dynamic> dataMap = Map();
     dataMap['data'] = userMap;
     String order = await CurrencyEntity.polling(dataMap);
@@ -1197,6 +1197,8 @@ class _ConsignmentSettlementDetailState extends State<ConsignmentSettlementDetai
           FEntityItem['FLot'] = {"FNumber": element[5]['value']['value']};
           FEntityItem['FSrcType'] = "STK_TransferDirect";
           FEntityItem['FSrcBillNo'] = orderDate[hobbyIndex][0];
+          FEntityItem['FOrderNo'] = orderDate[hobbyIndex][28];
+          FEntityItem['F_VZSF_Text'] = orderDate[hobbyIndex][29];
           FEntityItem['FSettleType'] = "DELIVER";
           if (element[6]['value']['hide']) {
             Map<String, dynamic> stockMap = Map();

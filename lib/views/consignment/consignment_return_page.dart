@@ -78,33 +78,33 @@ class _ConsignmentReturnPageState extends State<ConsignmentReturnPage> {
   getOrderList() async {
     EasyLoading.show(status: 'loading...');
     Map<String, dynamic> userMap = Map();
-    userMap['FilterString'] = "FJoinUnSettleQty>0 and FDocumentStatus ='C' and FBillTypeID.FNumber = 'ZJDB02_SYS'";
+    userMap['FilterString'] = "FJoinSettleQty>0 and FDocumentStatus ='C' and FBillTypeID.FNumber = 'ZJDB02_SYS'";
     var scanCode = keyWord.split(",");
     if (this._dateSelectText != "") {
       this.startDate = this._dateSelectText.substring(0, 10);
       this.endDate = this._dateSelectText.substring(26, 36);
       userMap['FilterString'] =
-      "FJoinUnSettleQty>0 and FDocumentStatus ='C' and FDate>= '$startDate' and FDate <= '$endDate' and FBillTypeID.FNumber = 'ZJDB02_SYS'";
+      "FJoinSettleQty>0 and FDocumentStatus ='C' and FDate>= '$startDate' and FDate <= '$endDate' and FBillTypeID.FNumber = 'ZJDB02_SYS'";
     }
     if(this.isScan){
       if (this.keyWord != '') {
         userMap['FilterString'] =
-            "FBillNo like '%"+keyWord+"%' and FDocumentStatus ='C' and FJoinUnSettleQty>0 and FBillTypeID.FNumber = 'ZJDB02_SYS'";
+            "FBillNo like '%"+keyWord+"%' and FDocumentStatus ='C' and FJoinSettleQty>0 and FBillTypeID.FNumber = 'ZJDB02_SYS'";
       }
     }else{
       if (this.keyWord != '') {
         userMap['FilterString'] =
-            "FBillNo like '%"+keyWord+"%' and FDocumentStatus ='C' and FJoinUnSettleQty>0 and FBillTypeID.FNumber = 'ZJDB02_SYS'";
+            "FBillNo like '%"+keyWord+"%' and FDocumentStatus ='C' and FJoinSettleQty>0 and FBillTypeID.FNumber = 'ZJDB02_SYS'";
       }else{
         userMap['FilterString'] =
-            "FBillNo like '%"+keyWord+"%' and FDocumentStatus ='C' and FJoinUnSettleQty>0 and FDate>= '$startDate' and FDate <= '$endDate' and FBillTypeID.FNumber = 'ZJDB02_SYS'";
+            "FBillNo like '%"+keyWord+"%' and FDocumentStatus ='C' and FJoinSettleQty>0 and FDate>= '$startDate' and FDate <= '$endDate' and FBillTypeID.FNumber = 'ZJDB02_SYS'";
       }
     }
     this.isScan = false;
     userMap['FormId'] = 'STK_TransferDirect';
     userMap['OrderString'] = 'FBillNo ASC,FMaterialId.FNumber ASC';
     userMap['FieldKeys'] =
-    'FBillNo,FStockOrgId.FNumber,FStockOrgId.FName,FDate,FBillEntry_FEntryId,FMATERIALID.FNumber,FMATERIALID.FName,FMATERIALID.FSpecification,FOwnerTypeIdHead,FOwnerTypeIdHead,FUNITID.FNumber,FUNITID.FName,FJoinUnSettleQty,FApproveDate,FNote,FID,FSrcStockId.FName,FDestStockId.FName';
+    'FBillNo,FStockOrgId.FNumber,FStockOrgId.FName,FDate,FBillEntry_FEntryId,FMATERIALID.FNumber,FMATERIALID.FName,FMATERIALID.FSpecification,FOwnerTypeIdHead,FOwnerTypeIdHead,FUNITID.FNumber,FUNITID.FName,FJoinSettleQty,FApproveDate,FNote,FID,FSrcStockId.FName,FDestStockId.FName';
     Map<String, dynamic> dataMap = Map();
     dataMap['data'] = userMap;
     String order = await CurrencyEntity.polling(dataMap);

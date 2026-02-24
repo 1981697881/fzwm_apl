@@ -276,7 +276,7 @@ class _RetrievalDetailState extends State<ConsignmentAllocationDetail> {
     userMap['FormId'] = 'SAL_DELIVERYNOTICE';
     userMap['OrderString'] = 'FMaterialId.FNumber ASC';
     userMap['FieldKeys'] =
-    'FBillNo,FSaleOrgId.FNumber,FSaleOrgId.FName,FDate,FEntity_FEntryId,FMATERIALID.FNumber,FMATERIALID.FName,FMATERIALID.FSpecification,FOwnerTypeIdHead,FOwnerTypeIdHead,FUNITID.FNumber,FUNITID.FName,FRemainOutQty,FAPPROVEDATE,FNote,FID,FBACKUPSTOCKID.FNumber,FStockId.FNumber,FBillTypeID.FNUMBER,FEntity_FSeq,FMaterialId.FIsKFPeriod,FMaterialId.FExpPeriod,FMaterialId.FIsBatchManage,FLot.FNumber,FProduceDate,FExpiryDate,FBACKUPSTOCKID.FIsOpenLocation,FStockID.FIsOpenLocation,FDeliveryOrgID.FNumber,FDeliveryOrgID.FName,FDeliveryOrgID.FNumber,FDeliveryOrgID.FName,FBACKUPSTOCKID.FName,FStockId.FName,FBACKUPSTOCKLOCID.FF100002.FNumber,FStockLocID.FF100002.FNumber,F_UYEP_Date,FCustomerID.FNumber,FPrice,FTaxPrice,FAllAmount';
+    'FBillNo,FSaleOrgId.FNumber,FSaleOrgId.FName,FDate,FEntity_FEntryId,FMATERIALID.FNumber,FMATERIALID.FName,FMATERIALID.FSpecification,FOwnerTypeIdHead,FOwnerTypeIdHead,FUNITID.FNumber,FUNITID.FName,FRemainOutQty,FAPPROVEDATE,FNote,FID,FBACKUPSTOCKID.FNumber,FStockId.FNumber,FBillTypeID.FNUMBER,FEntity_FSeq,FMaterialId.FIsKFPeriod,FMaterialId.FExpPeriod,FMaterialId.FIsBatchManage,FLot.FNumber,FProduceDate,FExpiryDate,FBACKUPSTOCKID.FIsOpenLocation,FStockID.FIsOpenLocation,FDeliveryOrgID.FNumber,FDeliveryOrgID.FName,FDeliveryOrgID.FNumber,FDeliveryOrgID.FName,FBACKUPSTOCKID.FName,FStockId.FName,FBACKUPSTOCKLOCID.FF100002.FNumber,FStockLocID.FF100002.FNumber,F_UYEP_Date,FCustomerID.FNumber,FPrice,FTaxPrice,FAllAmount,FOrderNo,F_UYEP_Text';
     Map<String, dynamic> dataMap = Map();
     dataMap['data'] = userMap;
     String order = await CurrencyEntity.polling(dataMap);
@@ -427,7 +427,12 @@ class _RetrievalDetailState extends State<ConsignmentAllocationDetail> {
     }
     this.getOrganizationsList();
     this.getStockList();
-   //_onEvent("34TI4lY5kQPIGu5s7YaZc6RZI6b@ID5z3BcxWG8h087xMLEQStBuMphqBKnlA2TV1TYiduCdN3s=");
+   /*_onEvent("34TI4lY5kQOmMJMnrLiDvSij7QertlK+eCleno4Yn+W7L5zmhQY7Bt18MPPiF4OhzuymtzCQ9AQ=");
+   _onEvent("34TI4lY5kQOmMJMnrLiDvSij7QertlK+eCleno4Yn+W7L5zmhQY7BnkEsjY4Q6d1VuLmnkysYMs=");
+   _onEvent("34TI4lY5kQOmMJMnrLiDvSij7QertlK+eCleno4Yn+W7L5zmhQY7BgRwCrQ@AneAZz74EMtAmws=");
+   _onEvent("34TI4lY5kQOmMJMnrLiDvSij7QertlK+eCleno4Yn+W7L5zmhQY7Bu+b5mAsxVqujw41ZExlHn4=");
+   _onEvent("34TI4lY5kQOmMJMnrLiDvSij7QertlK+eCleno4Yn+W7L5zmhQY7Bss217Y6iOMwEclBJYsG@O8=");*/
+   //_onEvent("34TI4lY5kQPIGu5s7YaZc6RZI6b@ID5z3BcxWG8h087xMLEQStBuMpSV7BPAfgbF3feNbB6p8y8=");
   }
 
   void _onEvent(event) async {
@@ -682,11 +687,11 @@ class _RetrievalDetailState extends State<ConsignmentAllocationDetail> {
                                 double.parse(
                                     element[3]['value']['label']))
                                 .toString()+ "-" + fsn;
-                        element[10]['value']['label'] = (element[9]['value']
+                        element[10]['value']['label'] = (element[4]['value']
                         ['label'] -
                             double.parse(element[3]['value']['value']))
                             .toString();
-                        element[10]['value']['value'] = (element[9]['value']
+                        element[10]['value']['value'] = (element[4]['value']
                         ['label'] -
                             double.parse(element[3]['value']['value']))
                             .toString();
@@ -870,11 +875,11 @@ class _RetrievalDetailState extends State<ConsignmentAllocationDetail> {
                                   double.parse(
                                       element[3]['value']['label']))
                                   .toString()+ "-" + fsn;
-                          element[10]['value']['label'] = (element[9]['value']
+                          element[10]['value']['label'] = (element[4]['value']
                           ['label'] -
                               double.parse(element[3]['value']['value']))
                               .toString();
-                          element[10]['value']['value'] = (element[9]['value']
+                          element[10]['value']['value'] = (element[4]['value']
                           ['label'] -
                               double.parse(element[3]['value']['value']))
                               .toString();
@@ -1002,12 +1007,12 @@ class _RetrievalDetailState extends State<ConsignmentAllocationDetail> {
                                     double.parse(
                                         element[3]['value']['label']))
                                     .toString()+ "-" + fsn;
-                            element[10]['value']['label'] = (element[9]
+                            element[10]['value']['label'] = (element[4]
                             ['value']['label'] -
                                 double.parse(
                                     element[3]['value']['label']))
                                 .toString();
-                            element[10]['value']['value'] = (element[9]
+                            element[10]['value']['value'] = (element[4]
                             ['value']['label'] -
                                 double.parse(
                                     element[3]['value']['label']))
@@ -1966,12 +1971,19 @@ class _RetrievalDetailState extends State<ConsignmentAllocationDetail> {
           FEntityItem['FDestLot'] = {"FNumber": element[5]['value']['value']};
           FEntityItem['FQty'] = element[3]['value']['value'];
           FEntityItem['FBaseQty'] = element[3]['value']['value'];
+          FEntityItem['FSaleQty'] = element[3]['value']['value'];
+          FEntityItem['FSalBaseQty'] = element[3]['value']['value'];
+          FEntityItem['FPriceQty'] = element[3]['value']['value'];
+          FEntityItem['FPriceBaseQty'] = element[3]['value']['value'];
           FEntityItem['FProduceDate'] = element[11]['value']['value'];
           FEntityItem['FExpiryDate'] = element[12]['value']['value'];
           FEntityItem['FAllAmount'] = orderDate[hobbyIndex][38];
           FEntityItem['FTaxPrice'] = orderDate[hobbyIndex][39];
           FEntityItem['FTaxRate'] = orderDate[hobbyIndex][40];
-
+          FEntityItem['FOrderNo'] = orderDate[hobbyIndex][41];
+          FEntityItem['F_VZSF_Text'] = orderDate[hobbyIndex][42];
+          FEntityItem['FSrcBillNo'] = fBillNo;
+          FEntityItem['FSrcBillTypeId'] = 'SAL_DELIVERYNOTICE';
           var fSerialSub = [];
           var kingDeeCode = element[0]['value']['kingDeeCode'];
           for (int subj = 0; subj < kingDeeCode.length; subj++) {
@@ -1997,7 +2009,9 @@ class _RetrievalDetailState extends State<ConsignmentAllocationDetail> {
               "FBillEntry_Link_FSTableName": "T_SAL_DELIVERYNOTICEENTRY",
               "FBillEntry_Link_FSBillId": orderDate[hobbyIndex][15],
               "FBillEntry_Link_FSId": orderDate[hobbyIndex][4],
-              "FBillEntry_Link_FBaseQty": element[8]['value']['value']
+              "FBillEntry_Link_FBaseQty": element[3]['value']['value'],
+              "FBillEntry_Link_FSalBaseQty": element[3]['value']['value'],
+              "FBillEntry_Link_FPriceBaseQty": element[3]['value']['value'],
             }
           ];
           FEntity.add(FEntityItem);

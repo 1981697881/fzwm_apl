@@ -110,7 +110,7 @@ class _OtherWarehousingDetailState extends State<OtherWarehousingDetail> {
     /*getTypeList();*/
     getSupplierList();
     getDepartmentList();
-   //_onEvent("F.17.1200013;25100030;;50;WGRK23090827,1903047088;2");
+    //_onEvent("34TI4lY5kQPIGu5s7YaZc847AmLFb4HGBbhOZQ+E9rshI9@Cv1dqJIfze+qC@ALE168T3pNi0mI=");
 
   }
   //获取部门

@@ -183,11 +183,11 @@ class _ConsignmentReturnDetailState extends State<ConsignmentReturnDetail> {
   getOrderList() async {
     Map<String, dynamic> userMap = Map();
     print(fBillNo);
-    userMap['FilterString'] = "fBillNo='$fBillNo' and FJoinUnSettleQty>0";
+    userMap['FilterString'] = "fBillNo='$fBillNo' and FJoinSettleQty>0";
     userMap['FormId'] = 'STK_TransferDirect';
     userMap['OrderString'] = 'FMaterialId.FNumber ASC';
     userMap['FieldKeys'] =
-    'FBillNo,FSaleOrgId.FNumber,FSaleOrgId.FName,FDate,FBillEntry_FEntryId,FMaterialId.FNumber,FMaterialId.FName,FMaterialId.FSpecification,FStockOrgId.FNumber,FStockOrgId.FName,FUnitId.FNumber,FUnitId.FName,FJoinUnSettleQty,FApproveDate,FQty,FID,FKeeperId.FNumber,FKeeperId.FName,FDestStockId.FName,FDestStockId.FNumber,FLot.FNumber,FDestStockId.FIsOpenLocation,FMaterialId.FIsBatchManage,FTaxPrice,FTaxRate,FBizType,FAllAmount,FDestStockLocId.FF100002.FNumber';
+    'FBillNo,FSaleOrgId.FNumber,FSaleOrgId.FName,FDate,FBillEntry_FEntryId,FMaterialId.FNumber,FMaterialId.FName,FMaterialId.FSpecification,FStockOrgId.FNumber,FStockOrgId.FName,FUnitId.FNumber,FUnitId.FName,FJoinSettleQty,FApproveDate,FQty,FID,FKeeperId.FNumber,FKeeperId.FName,FDestStockId.FName,FDestStockId.FNumber,FLot.FNumber,FDestStockId.FIsOpenLocation,FMaterialId.FIsBatchManage,FTaxPrice,FTaxRate,FBizType,FAllAmount,FDestStockLocId.FF100002.FNumber,FOrderNo,F_VZSF_Text';
     Map<String, dynamic> dataMap = Map();
     dataMap['data'] = userMap;
     String order = await CurrencyEntity.polling(dataMap);
@@ -1198,6 +1198,8 @@ class _ConsignmentReturnDetailState extends State<ConsignmentReturnDetail> {
           FEntityItem['FSrcType'] = "STK_TransferDirect";
           FEntityItem['FSrcBillNo'] = orderDate[hobbyIndex][0];
           FEntityItem['FSettleType'] = "RETURN";
+          FEntityItem['FOrderNo'] = orderDate[hobbyIndex][28];
+          FEntityItem['F_VZSF_Text'] = orderDate[hobbyIndex][29];
           if (element[6]['value']['hide']) {
             Map<String, dynamic> stockMap = Map();
             stockMap['FormId'] = 'BD_STOCK';

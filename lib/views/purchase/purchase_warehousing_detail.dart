@@ -337,7 +337,8 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
       });
       ToastUtil.showInfo('无数据');
     }
-    //_onEvent("F.17.1200013;23080003;;20;WGRK23080686,;2");
+    /*_onEvent("68051032207-20260206-202602060030");
+    _onEvent("68051032207-20260206-202602060032"); */
     getStockList();
   }
 
@@ -2390,7 +2391,7 @@ class _PurchaseWarehousingDetailState extends State<PurchaseWarehousingDetail> {
           submitMap = {
             "formid": "PUR_ReceiveBill",
             "data": {
-              'Ids': res['Result']['ResponseStatus']['SuccessEntitys'][0]['Idsave']
+              'Ids': res['Result']['ResponseStatus']['SuccessEntitys'][0]['Id']
             }
           };
           //提交

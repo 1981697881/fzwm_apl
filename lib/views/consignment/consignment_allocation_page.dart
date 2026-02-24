@@ -80,26 +80,26 @@ class _RetrievalPageState extends State<ConsignmentAllocationPage> {
   getOrderList() async {
     EasyLoading.show(status: 'loading...');
     Map<String, dynamic> userMap = Map();
-    userMap['FilterString'] = "FRemainOutQty>0 and FDocumentStatus ='C' and FBillTypeID.FNumber = 'FHTZD02_SYS'";
+    userMap['FilterString'] = "FRemainOutQty-FTRANSFERQTY>0  and FDocumentStatus ='C' and FBillTypeID.FNumber = 'FHTZD02_SYS'";
     var scanCode = keyWord.split(",");
     if (this._dateSelectText != "") {
       this.startDate = this._dateSelectText.substring(0, 10);
       this.endDate = this._dateSelectText.substring(26, 36);
       userMap['FilterString'] =
-      "FRemainOutQty>0 and FDocumentStatus ='C' and FDate>= '$startDate' and FDate <= '$endDate' and FBillTypeID.FNumber = 'FHTZD02_SYS'";
+      "FRemainOutQty-FTRANSFERQTY>0 and FDocumentStatus ='C' and FDate>= '$startDate' and FDate <= '$endDate' and FBillTypeID.FNumber = 'FHTZD02_SYS'";
     }
     if(this.isScan){
       if (this.keyWord != '') {
         userMap['FilterString'] =
-            "FBillNo like '%"+keyWord+"%' and FDocumentStatus ='C' and FRemainOutQty>0 and FBillTypeID.FNumber = 'FHTZD02_SYS'";
+            "FBillNo like '%"+keyWord+"%' and FDocumentStatus ='C' and FRemainOutQty-FTRANSFERQTY>0  and FBillTypeID.FNumber = 'FHTZD02_SYS'";
       }
     }else{
       if (this.keyWord != '') {
         userMap['FilterString'] =
-            "FBillNo like '%"+keyWord+"%' and FDocumentStatus ='C' and FRemainOutQty>0 and FBillTypeID.FNumber = 'FHTZD02_SYS'";
+            "FBillNo like '%"+keyWord+"%' and FDocumentStatus ='C' and FRemainOutQty-FTRANSFERQTY>0  and FBillTypeID.FNumber = 'FHTZD02_SYS'";
       }else{
         userMap['FilterString'] =
-            "FBillNo like '%"+keyWord+"%' and FRemainOutQty>0 and FDate>= '$startDate' and FDate <= '$endDate' and FBillTypeID.FNumber = 'FHTZD02_SYS'";
+            "FBillNo like '%"+keyWord+"%' and FRemainOutQty-FTRANSFERQTY>0  and FDate>= '$startDate' and FDate <= '$endDate' and FBillTypeID.FNumber = 'FHTZD02_SYS'";
       }
     }
     this.isScan = false;
