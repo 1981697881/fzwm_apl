@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:fzwm_apl/views/consignment/consignment_allocation_page.dart';
+import 'package:fzwm_apl/views/consignment/consignment_return_detail.dart';
 import 'package:fzwm_apl/views/consignment/consignment_return_page.dart';
 import 'package:fzwm_apl/views/consignment/consignment_settlement_detail.dart';
 import 'package:fzwm_apl/views/consignment/consignment_settlement_page.dart';
@@ -393,7 +394,7 @@ class MenuPermissions {
       "text": "结算",
       "parentId": 8,
       "color": Colors.pink.withOpacity(0.7),
-      "router": ConsignmentSettlementPage(),
+      "router": ConsignmentSettlementDetail(),
       "source": '',
     });
     menu.add({
@@ -401,7 +402,7 @@ class MenuPermissions {
       "text": "退货",
       "parentId": 8,
       "color": Colors.pink.withOpacity(0.7),
-      "router": ConsignmentReturnPage(),
+      "router": ConsignmentReturnDetail(),
       "source": '',
     });
     /* menu.add({

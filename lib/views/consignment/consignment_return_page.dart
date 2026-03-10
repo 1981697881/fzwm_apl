@@ -104,7 +104,7 @@ class _ConsignmentReturnPageState extends State<ConsignmentReturnPage> {
     userMap['FormId'] = 'STK_TransferDirect';
     userMap['OrderString'] = 'FBillNo ASC,FMaterialId.FNumber ASC';
     userMap['FieldKeys'] =
-    'FBillNo,FStockOrgId.FNumber,FStockOrgId.FName,FDate,FBillEntry_FEntryId,FMATERIALID.FNumber,FMATERIALID.FName,FMATERIALID.FSpecification,FOwnerTypeIdHead,FOwnerTypeIdHead,FUNITID.FNumber,FUNITID.FName,FJoinSettleQty,FApproveDate,FNote,FID,FSrcStockId.FName,FDestStockId.FName';
+    'FBillNo,FStockOrgId.FNumber,FStockOrgId.FName,FDate,FBillEntry_FEntryId,FMATERIALID.FNumber,FMATERIALID.FName,FMATERIALID.FSpecification,FOwnerTypeIdHead,FOwnerTypeIdHead,FUNITID.FNumber,FUNITID.FName,FJoinSettleQty,FApproveDate,FNote,FID,FSrcStockId.FName,FDestStockId.FName,FKeeperId.FName';
     Map<String, dynamic> dataMap = Map();
     dataMap['data'] = userMap;
     String order = await CurrencyEntity.polling(dataMap);
@@ -120,6 +120,12 @@ class _ConsignmentReturnPageState extends State<ConsignmentReturnPage> {
           "name": "FBillNo",
           "isHide": false,
           "value": {"label": value[0], "value": value[0]}
+        });
+        arr.add({
+          "title": "客户名称",
+          "name": "FCustID",
+          "isHide": false,
+          "value": {"label": value[18], "value": value[18]}
         });
         arr.add({
           "title": "调入库存组织",
