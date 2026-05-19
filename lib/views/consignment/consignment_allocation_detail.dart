@@ -276,7 +276,7 @@ class _RetrievalDetailState extends State<ConsignmentAllocationDetail> {
     userMap['FormId'] = 'SAL_DELIVERYNOTICE';
     userMap['OrderString'] = 'FMaterialId.FNumber ASC';
     userMap['FieldKeys'] =
-    'FBillNo,FSaleOrgId.FNumber,FSaleOrgId.FName,FDate,FEntity_FEntryId,FMATERIALID.FNumber,FMATERIALID.FName,FMATERIALID.FSpecification,FOwnerTypeIdHead,FOwnerTypeIdHead,FUNITID.FNumber,FUNITID.FName,FRemainOutQty,FAPPROVEDATE,FNote,FID,FBACKUPSTOCKID.FNumber,FStockId.FNumber,FBillTypeID.FNUMBER,FEntity_FSeq,FMaterialId.FIsKFPeriod,FMaterialId.FExpPeriod,FMaterialId.FIsBatchManage,FLot.FNumber,FProduceDate,FExpiryDate,FBACKUPSTOCKID.FIsOpenLocation,FStockID.FIsOpenLocation,FDeliveryOrgID.FNumber,FDeliveryOrgID.FName,FDeliveryOrgID.FNumber,FDeliveryOrgID.FName,FBACKUPSTOCKID.FName,FStockId.FName,FBACKUPSTOCKLOCID.FF100002.FNumber,FStockLocID.FF100002.FNumber,F_UYEP_Date,FCustomerID.FNumber,FPrice,FTaxPrice,FAllAmount,FOrderNo,F_UYEP_Text,F_UYEP_UserId';
+    'FBillNo,FSaleOrgId.FNumber,FSaleOrgId.FName,FDate,FEntity_FEntryId,FMATERIALID.FNumber,FMATERIALID.FName,FMATERIALID.FSpecification,FOwnerTypeIdHead,FOwnerTypeIdHead,FUNITID.FNumber,FUNITID.FName,FRemainOutQty,FAPPROVEDATE,FNote,FID,FBACKUPSTOCKID.FNumber,FStockId.FNumber,FBillTypeID.FNUMBER,FEntity_FSeq,FMaterialId.FIsKFPeriod,FMaterialId.FExpPeriod,FMaterialId.FIsBatchManage,FLot.FNumber,FProduceDate,FExpiryDate,FBACKUPSTOCKID.FIsOpenLocation,FStockID.FIsOpenLocation,FDeliveryOrgID.FNumber,FDeliveryOrgID.FName,FDeliveryOrgID.FNumber,FDeliveryOrgID.FName,FBACKUPSTOCKID.FName,FStockId.FName,FBACKUPSTOCKLOCID.FF100002.FNumber,FStockLocID.FF100002.FNumber,F_UYEP_Date,FCustomerID.FNumber,FTaxRate,FTaxPrice,FAllAmount,FOrderNo,F_UYEP_Text,F_UYEP_UserId';
     Map<String, dynamic> dataMap = Map();
     dataMap['data'] = userMap;
     String order = await CurrencyEntity.polling(dataMap);
@@ -1978,9 +1978,9 @@ class _RetrievalDetailState extends State<ConsignmentAllocationDetail> {
           FEntityItem['FPriceBaseQty'] = element[3]['value']['value'];
           FEntityItem['FProduceDate'] = element[11]['value']['value'];
           FEntityItem['FExpiryDate'] = element[12]['value']['value'];
-          FEntityItem['FAllAmount'] = orderDate[hobbyIndex][38];
+          FEntityItem['FAllAmount'] = orderDate[hobbyIndex][40];
           FEntityItem['FTaxPrice'] = orderDate[hobbyIndex][39];
-          FEntityItem['FTaxRate'] = orderDate[hobbyIndex][40];
+          FEntityItem['FTaxRate'] = orderDate[hobbyIndex][38];
           FEntityItem['FOrderNo'] = orderDate[hobbyIndex][41];
           FEntityItem['F_VZSF_Text'] = orderDate[hobbyIndex][42];
 

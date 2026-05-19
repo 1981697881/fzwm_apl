@@ -77,7 +77,7 @@ class _ConsignmentReturnDetailState extends State<ConsignmentReturnDetail> {
   var _FNumber;
   var fBillNo;
   var fBarCodeList;
-
+  List<dynamic> availableEntries = [];
   // 新增：保管者下拉数据
   List<dynamic> keeperDisplayList = [];
   List<dynamic> keeperNumberList = [];
@@ -188,7 +188,20 @@ class _ConsignmentReturnDetailState extends State<ConsignmentReturnDetail> {
       _subscription!.cancel();
     }
   }
-
+// 新增：根据合同和保管者查询所有可退分录
+  Future<void> fetchAvailableEntries(String contractNo, String keeperNo) async {
+    Map<String, dynamic> userMap = Map();
+    userMap['FormId'] = 'STK_TransferDirect';
+    userMap['FieldKeys'] =
+    'FBillNo,FSaleOrgId.FNumber,FSaleOrgId.FName,FDate,FBillEntry_FEntryId,FMaterialId.FNumber,FMaterialId.FName,FMaterialId.FSpecification,FStockOrgId.FNumber,FStockOrgId.FName,FUnitId.FNumber,FUnitId.FName,FJoinSettleQty,FApproveDate,FQty,FID,FKeeperId.FNumber,FKeeperId.FName,FDestStockId.FName,FDestStockId.FNumber,FLot.FNumber,FDestStockId.FIsOpenLocation,FMaterialId.FIsBatchManage,FTaxPrice,FTaxRate,FBizType,FAllAmount,FDestStockLocId.FF100002.FNumber,FOrderNo,F_VZSF_Text,F_VZSF_UserId';
+    userMap['FilterString'] = "F_VZSF_Text = '$contractNo' AND FKeeperId.FNumber = '$keeperNo' AND FJoinSettleQty > 0";
+    Map<String, dynamic> dataMap = Map();
+    dataMap['data'] = userMap;
+    String res = await CurrencyEntity.polling(dataMap);
+    setState(() {
+      availableEntries = jsonDecode(res);
+    });
+  }
   // 查询数据集合
   List hobby = [];
   List fNumber = [];
@@ -1002,11 +1015,10 @@ class _ConsignmentReturnDetailState extends State<ConsignmentReturnDetail> {
 
   void _onClickItem(var data, var selectData, hobby, {String? label, var stock}) {
     if (hobby == 'keeper' || hobby == 'contract') {
-      // 保管者和合同使用可搜索弹窗
       _showSearchablePicker(
         items: data,
         currentValue: selectData ?? '',
-        onSelected: (selected) {
+        onSelected: (selected) async {
           setState(() {
             if (hobby == 'keeper') {
               selectedKeeperDisplay = selected;
@@ -1017,7 +1029,13 @@ class _ConsignmentReturnDetailState extends State<ConsignmentReturnDetail> {
             } else if (hobby == 'contract') {
               selectedContract = selected;
             }
+            hobby.clear(); // 清空现有数据
           });
+          // 重新查询可用分录
+          if (selectedContract != null && selectedKeeperNumber != null) {
+            await fetchAvailableEntries(selectedContract!, selectedKeeperNumber!);
+          }
+          ToastUtil.showInfo('合同/保管者已变更，请重新扫描');
         },
       );
     } else {
@@ -1216,7 +1234,27 @@ class _ConsignmentReturnDetailState extends State<ConsignmentReturnDetail> {
     });
   }
 
-  // 保存方法（重构后）
+  // 回溯法查找子集和
+  bool _findSubsetSum(List<List<dynamic>> entries, double target, List<List<dynamic>> selected) {
+    entries.sort((a, b) => (b[12] ?? 0).compareTo(a[12] ?? 0));
+    List<List<dynamic>> current = [];
+    bool dfs(int start, double sum) {
+      if ((sum - target).abs() < 0.001) {
+        selected.addAll(current);
+        return true;
+      }
+      if (sum > target + 0.001) return false;
+      for (int i = start; i < entries.length; i++) {
+        double qty = entries[i][12] ?? 0;
+        if (qty == 0) continue;
+        current.add(entries[i]);
+        if (dfs(i + 1, sum + qty)) return true;
+        current.removeLast();
+      }
+      return false;
+    }
+    return dfs(0, 0.0);
+  }
   saveOrder() async {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     var menuData = sharedPreferences.getString('MenuPermissions');
@@ -1227,44 +1265,138 @@ class _ConsignmentReturnDetailState extends State<ConsignmentReturnDetail> {
       return;
     }
 
-    String contractNo = selectedContract ?? '';
-    String keeperNo = selectedKeeperNumber ?? '';
+    // 检查是否有可用分录
+    if (availableEntries.isEmpty) {
+      ToastUtil.showInfo('请先选择合同和保管者并确保有可用分录');
+      setState(() => isSubmit = false);
+      return;
+    }
 
-    // 1. 按物料分组计算总数量
-    Map<String, Map<String, dynamic>> materialGroup = {}; // key: 物料编码, value: {qty: 总数量, rows: [索引]}
+    // 按物料+批号+退回仓库+退回仓位分组
+    Map<String, List<Map>> detailGroups = {};
     for (int i = 0; i < hobby.length; i++) {
       var element = hobby[i];
       double qty = double.tryParse(element[3]['value']['value'] ?? '0') ?? 0;
       if (qty == 0) continue;
-
       String materialNo = element[0]['value']['value'];
-      if (!materialGroup.containsKey(materialNo)) {
-        materialGroup[materialNo] = {'qty': 0.0, 'rows': []};
+      String batchNo = element[5]['value']['value'] ?? '';
+      String stockNo = element[4]['value']['value'] ?? '';
+      String locationNo = element[6]['value']['value'] ?? '';
+      bool locationHide = element[6]['value']['hide'] ?? false;
+      String key;
+      if (locationHide) {
+        key = '$materialNo|$batchNo|$stockNo|$locationNo';
+      } else {
+        key = '$materialNo|$batchNo|$stockNo';
       }
-      materialGroup[materialNo]!['qty'] = materialGroup[materialNo]!['qty'] + qty;
-      materialGroup[materialNo]!['rows'].add(i);
+      if (!detailGroups.containsKey(key)) {
+        detailGroups[key] = [];
+      }
+      detailGroups[key]!.add({
+        'index': i,
+        'qty': qty,
+        'element': element,
+        'barcodes': element[0]['value']['kingDeeCode'] ?? [],
+      });
     }
 
-    // 2. 对每组进行校验，并分配分录信息
-    List<List<dynamic>?> matchingEntries = List.filled(hobby.length, null);
-    for (var entry in materialGroup.entries) {
-      String materialNo = entry.key;
-      double totalQty = entry.value['qty'];
-      List<dynamic> rowIndices = entry.value['rows'];
-      var fetchedEntry = await _fetchMatchingEntry(contractNo, keeperNo, materialNo, totalQty);
-      if (fetchedEntry == null) {
-        String materialLabel = hobby[rowIndices.first][0]['value']['label'] ?? materialNo;
-        ToastUtil.showInfo('物料 $materialLabel 总数量 $totalQty 未找到匹配的调拨单分录或可退数量不足');
+    // 分配结果：每个分录对应一个提交项
+    List<Map<String, dynamic>> submitItems = [];
+
+
+    for (var group in detailGroups.entries) {
+      String key = group.key;
+      var parts = key.split('|');
+      String materialNo = parts[0];
+      String batchNo = parts[1];
+      String stockNo = parts[2];
+      String? locationNo = parts.length > 3 ? parts[3] : null;
+
+      // 从 availableEntries 中筛选匹配的分录
+      List<List<dynamic>> matchedEntries = [];
+      for (var entry in availableEntries) {
+        if (entry[5] == materialNo && entry[20] == batchNo) {
+          // 检查仓库
+          if (entry[19] != stockNo) continue;
+          // 检查仓位（如果分录启用了仓位）
+          bool entryLocationHide = entry[21] ?? false;
+          String entryLocation = entry[27] ?? '';
+          if (entryLocationHide) {
+            if (locationNo == null || entryLocation != locationNo) continue;
+          }
+          matchedEntries.add(entry);
+        }
+      }
+      if (matchedEntries.isEmpty) {
+        ToastUtil.showInfo('物料 $materialNo 批号 $batchNo 仓库 $stockNo 仓位 ${locationNo ?? ''} 无可用分录');
         setState(() => isSubmit = false);
         return;
       }
-      // 为该组所有行分配相同的分录信息
-      for (int idx in rowIndices) {
-        matchingEntries[idx] = fetchedEntry;
+
+      // 计算总扫描数量
+      double totalQty = group.value.fold(0, (sum, item) => sum + item['qty']);
+
+      // 查找子集和，选择一组分录，其可退数量之和等于 totalQty
+      List<List<dynamic>> selectedEntries = [];
+      bool found = _findSubsetSum(matchedEntries, totalQty, selectedEntries);
+      if (!found) {
+        ToastUtil.showInfo('物料 $materialNo 批号 $batchNo 扫描总数量 $totalQty 无法匹配任何分录组合');
+        setState(() => isSubmit = false);
+        return;
+      }
+
+      // 收集该组所有条码（每个条码带数量）
+      List<Map<String, dynamic>> barcodeList = [];
+      for (var item in group.value) {
+        var barcodes = item['barcodes'];
+        for (var bc in barcodes) {
+          var parts = bc.toString().split('-');
+          double bcQty = double.tryParse(parts[1]) ?? 1;
+          barcodeList.add({'code': bc, 'qty': bcQty});
+        }
+      }
+      // 按数量降序排序（便于分配）
+      barcodeList.sort((a, b) => b['qty'].compareTo(a['qty']));
+
+      // 为选中的每个分录分配条码
+      int barcodeIndex = 0;
+      for (var entry in selectedEntries) {
+        double needQty = entry[12] ?? 0;
+        if (needQty == 0) continue;
+        List<String> assignedBarcodes = [];
+        double assignedQty = 0;
+        while (barcodeIndex < barcodeList.length && assignedQty < needQty - 0.001) {
+          var bc = barcodeList[barcodeIndex];
+          if (assignedQty + bc['qty'] <= needQty + 0.001) {
+            assignedBarcodes.add(bc['code']);
+            assignedQty += bc['qty'];
+            barcodeIndex++;
+          } else {
+            ToastUtil.showInfo('条码 ${bc['code']} 数量 ${bc['qty']} 无法拆分分配给分录');
+            setState(() => isSubmit = false);
+            return;
+          }
+        }
+        if ((needQty - assignedQty).abs() > 0.001) {
+          ToastUtil.showInfo('分录分配数量不足');
+          setState(() => isSubmit = false);
+          return;
+        }
+        submitItems.add({
+          'entry': entry,
+          'qty': needQty,
+          'barcodes': assignedBarcodes,
+        });
+      }
+
+      if (barcodeIndex < barcodeList.length) {
+        ToastUtil.showInfo('条码分配未完成，请检查');
+        setState(() => isSubmit = false);
+        return;
       }
     }
 
-    // 全部校验通过，开始构建保存数据
+    // 构建保存数据
     setState(() => isSubmit = true);
 
     Map<String, dynamic> dataMap = Map();
@@ -1279,77 +1411,72 @@ class _ConsignmentReturnDetailState extends State<ConsignmentReturnDetail> {
     Model['FBillType'] = {"FNUMBER": "JSJSD01_SYS"};
     Model['FDate'] = FDate;
 
-    // 取第一个非空分录的组织信息（假设所有分录同组织）
-    var firstEntry = matchingEntries.firstWhere((e) => e != null, orElse: () => null);
-    if (firstEntry != null) {
-      Model['FStockOrgId'] = {"FNumber": firstEntry[8]};  // FStockOrgId.FNumber
-      Model['FSaleOrgId'] = {"FNumber": firstEntry[1]};   // FSaleOrgId.FNumber
-      Model['FCustId'] = {"FNumber": firstEntry[16]};     // FKeeperId.FNumber 作为客户编号（根据业务调整）
+    if (submitItems.isNotEmpty) {
+      var firstEntry = submitItems.first['entry'];
+      Model['FStockOrgId'] = {"FNumber": firstEntry[8]};
+      Model['FSaleOrgId'] = {"FNumber": firstEntry[1]};
+      Model['FCustId'] = {"FNumber": firstEntry[16]};
+      Model['F_VZSF_UserId'] = {"FUserID": firstEntry[30]};
     } else {
-      // 无任何分录（全为0数量），使用默认组织
-      Model['FStockOrgId'] = {"FNumber": fOrgID};
-      Model['FSaleOrgId'] = {"FNumber": fOrgID};
-      Model['FCustId'] = {"FNumber": keeperNo};
+      setState(() => isSubmit = false);
+      ToastUtil.showInfo('无有效数据');
+      return;
     }
-
-    // 用户ID：取第一个分录的头用户ID，若无则置空
-    Model['F_VZSF_UserId'] = firstEntry != null ? {"FUserID": firstEntry[30]} : null;
     Model['F_VZSF_Text_PDA'] = "PDA-";
+    Model['F_VZSF_Text'] = selectedContract ?? '';
 
     var FEntity = [];
     var FSelBill = [];
 
-    for (int i = 0; i < hobby.length; i++) {
-      var element = hobby[i];
-      if (element[3]['value']['value'] == '0' || element[4]['value']['value'] == '') {
-        continue; // 跳过无效行
-      }
-
-      var entry = matchingEntries[i];
-      if (entry == null) continue; // 理论上不会走到这里
+    for (var item in submitItems) {
+      var entry = item['entry'];
+      double qty = item['qty'];
+      List<String> barcodes = item['barcodes'];
 
       Map<String, dynamic> FEntityItem = Map();
       Map<String, dynamic> FSelBillEntity = Map();
 
-      FEntityItem['FMaterialId'] = {"FNumber": element[0]['value']['value']};
-      FEntityItem['FUnitID'] = {"FNumber": element[2]['value']['value']};
-      FEntityItem['FTaxPrice'] = entry[23]; // FTaxPrice
-      FEntityItem['FTaxRate'] = entry[24];   // FTaxRate
-      FEntityItem['FReturnStockId'] = {"FNumber": element[4]['value']['value']}; // 退货仓库
-      FEntityItem['FLot'] = {"FNumber": element[5]['value']['value']};
+      FEntityItem['FMaterialId'] = {"FNumber": entry[5]};
+      FEntityItem['FUnitID'] = {"FNumber": entry[10]};
+      FEntityItem['FTaxPrice'] = entry[23];
+      FEntityItem['FTaxRate'] = entry[24];
+      // 退回仓库使用分录的目标仓库（已匹配）
+      FEntityItem['FReturnStockId'] = {"FNumber": entry[19]};
+      FEntityItem['FLot'] = {"FNumber": entry[20]};
       FEntityItem['FSrcType'] = "STK_TransferDirect";
-      FEntityItem['FSrcBillNo'] = entry[0];   // FBillNo
-      FEntityItem['FOrderNo'] = entry[28];    // FOrderNo
-      FEntityItem['F_VZSF_Text'] = contractNo; // 使用头字段合同编号
+      FEntityItem['FSrcBillNo'] = entry[0];
+      FEntityItem['FOrderNo'] = entry[28];
       FEntityItem['FSettleType'] = "RETURN";
 
-      // 仓位处理
-      if (element[6]['value']['hide']) {
-        Map<String, dynamic> stockMap = Map();
-        stockMap['FormId'] = 'BD_STOCK';
-        stockMap['FieldKeys'] = 'FFlexNumber';
-        stockMap['FilterString'] = "FNumber = '" + element[4]['value']['value'] + "'";
-        Map<String, dynamic> stockDataMap = Map();
-        stockDataMap['data'] = stockMap;
-        String res = await CurrencyEntity.polling(stockDataMap);
-        var stockRes = jsonDecode(res);
-        if (stockRes.isNotEmpty) {
-          var postionList = element[6]['value']['value'].split(".");
-          FEntityItem['FReturnStockLocId'] = {};
-          for (int idx = 0; idx < postionList.length; idx++) {
-            FEntityItem['FReturnStockLocId']["FRETURNSTOCKLOCID__" + stockRes[idx][0]] = {
-              "FNumber": postionList[idx]
-            };
+      // 退回仓位处理（如果分录启用了仓位）
+      if (entry[21] == true) {
+        var locationNo = entry[27] ?? '';
+        if (locationNo.isNotEmpty) {
+          Map<String, dynamic> stockMap = Map();
+          stockMap['FormId'] = 'BD_STOCK';
+          stockMap['FieldKeys'] = 'FFlexNumber';
+          stockMap['FilterString'] = "FNumber = '" + entry[19] + "'";
+          Map<String, dynamic> stockDataMap = Map();
+          stockDataMap['data'] = stockMap;
+          String res = await CurrencyEntity.polling(stockDataMap);
+          var stockRes = jsonDecode(res);
+          if (stockRes.isNotEmpty) {
+            var postionList = locationNo.split(".");
+            FEntityItem['FReturnStockLocId'] = {};
+            for (int idx = 0; idx < postionList.length; idx++) {
+              FEntityItem['FReturnStockLocId']["FRETURNSTOCKLOCID__" + stockRes[idx][0]] = {
+                "FNumber": postionList[idx]
+              };
+            }
           }
         }
       }
 
-      FEntityItem['FQty'] = element[3]['value']['value'];
+      FEntityItem['FQty'] = qty.toString();
 
       // 序列号子实体
       var fSerialSub = [];
-      var kingDeeCode = element[0]['value']['kingDeeCode'];
-      for (var code in kingDeeCode) {
+      for (var code in barcodes) {
         Map<String, dynamic> subObj = Map();
         var parts = code.split("-");
         if (parts.length > 2) {
@@ -1365,10 +1492,10 @@ class _ConsignmentReturnDetailState extends State<ConsignmentReturnDetail> {
         {
           "FSelBillEntity_Link_FRuleId": "TransferDirect-ConsignmentSettle",
           "FSelBillEntity_Link_FSTableName": "T_STK_STKTRANSFERINENTRY",
-          "FSelBillEntity_Link_FSBillId": entry[15], // FID
-          "FSelBillEntity_Link_FSId": entry[4],       // FBillEntry_FEntryId
-          "FSelBillEntity_Link_FBaseSettleQtyRow": element[3]['value']['value'],
-          "FSelBillEntity_Link_FSalBaseQtyRow": element[3]['value']['value'],
+          "FSelBillEntity_Link_FSBillId": entry[15],
+          "FSelBillEntity_Link_FSId": entry[4],
+          "FSelBillEntity_Link_FBaseSettleQtyRow": qty.toString(),
+          "FSelBillEntity_Link_FSalBaseQtyRow": qty.toString(),
         }
       ];
 
@@ -1386,7 +1513,7 @@ class _ConsignmentReturnDetailState extends State<ConsignmentReturnDetail> {
     Model['FSelBillEntity'] = FSelBill;
     orderMap['Model'] = Model;
     dataMap['data'] = orderMap;
-    var saveData = jsonEncode(dataMap);
+
     print(jsonEncode(dataMap));
     String order = await SubmitEntity.save(dataMap);
     var res = jsonDecode(order);
@@ -1396,65 +1523,63 @@ class _ConsignmentReturnDetailState extends State<ConsignmentReturnDetail> {
         "formid": "SAL_ConsignmentSettle",
         "data": {'Ids': res['Result']['ResponseStatus']['SuccessEntitys'][0]['Id']}
       };
-      // 提交
       HandlerOrder.orderHandler(context, submitMap, 1, "SAL_ConsignmentSettle", SubmitEntity.submit(submitMap)).then((submitResult) async {
         if (submitResult) {
-          // 条码清单更新
           var errorMsg = "";
           if (fBarCodeList == 1) {
-            for (int i = 0; i < hobby.length; i++) {
-              if (hobby[i][3]['value']['value'] != '0') {
-                var kingDeeCode = hobby[i][0]['value']['kingDeeCode'];
-                for (int j = 0; j < kingDeeCode.length; j++) {
-                  Map<String, dynamic> dataCodeMap = Map();
-                  dataCodeMap['formid'] = 'QDEP_Cust_BarCodeList';
-                  Map<String, dynamic> orderCodeMap = Map();
-                  orderCodeMap['NeedReturnFields'] = [];
-                  orderCodeMap['IsDeleteEntry'] = false;
-                  Map<String, dynamic> codeModel = Map();
-                  var itemCode = kingDeeCode[j].split("-");
-                  codeModel['FID'] = itemCode[0];
-                  Map<String, dynamic> codeFEntityItem = Map();
-                  codeFEntityItem['FBillDate'] = FDate;
-                  codeFEntityItem['FInQty'] = itemCode[1]; // 退货使用 FInQty
-                  codeFEntityItem['FEntryBillNo'] = matchingEntries[i] != null ? matchingEntries[i]![0] : "";
-                  codeFEntityItem['FEntryStockID'] = {
-                    "FNUMBER": hobby[i][4]['value']['value']
-                  };
-                  if (hobby[i][6]['value']['hide']) {
-                    codeFEntityItem['FStockLocNumber'] = hobby[i][6]['value']['value'];
-                    Map<String, dynamic> stockMap = Map();
-                    stockMap['FormId'] = 'BD_STOCK';
-                    stockMap['FieldKeys'] = 'FFlexNumber';
-                    stockMap['FilterString'] = "FNumber = '" + hobby[i][4]['value']['value'] + "'";
-                    Map<String, dynamic> stockDataMap = Map();
-                    stockDataMap['data'] = stockMap;
-                    String res = await CurrencyEntity.polling(stockDataMap);
-                    var stockRes = jsonDecode(res);
-                    if (stockRes.length > 0) {
-                      var postionList = hobby[i][6]['value']['value'].split(".");
-                      codeFEntityItem['FStockLocID'] = {};
-                      var positonIndex = 0;
-                      for (var dimension in postionList) {
-                        codeFEntityItem['FStockLocID']["FSTOCKLOCID__" + stockRes[positonIndex][0]] = {
-                          "FNumber": dimension
-                        };
-                        positonIndex++;
-                      }
+            for (var item in submitItems) {
+              var entry = item['entry'];
+              var barcodes = item['barcodes'];
+              for (var bc in barcodes) {
+                var parts = bc.toString().split("-");
+                Map<String, dynamic> dataCodeMap = Map();
+                dataCodeMap['formid'] = 'QDEP_Cust_BarCodeList';
+                Map<String, dynamic> orderCodeMap = Map();
+                orderCodeMap['NeedReturnFields'] = [];
+                orderCodeMap['IsDeleteEntry'] = false;
+                Map<String, dynamic> codeModel = Map();
+                codeModel['FID'] = parts[0];
+                Map<String, dynamic> codeFEntityItem = Map();
+                codeFEntityItem['FBillDate'] = FDate;
+                codeFEntityItem['FInQty'] = parts[1]; // 退货用 FInQty
+                codeFEntityItem['FEntryBillNo'] = entry[0];
+                codeFEntityItem['FEntryStockID'] = {"FNUMBER": entry[19]};
+
+                // 仓位处理（如果分录启用了仓位）
+                bool entryLocationHide = entry[21] ?? false;
+                String entryLocation = entry[27] ?? '';
+                if (entryLocationHide && entryLocation.isNotEmpty) {
+                  codeFEntityItem['FStockLocNumber'] = entryLocation;
+                  Map<String, dynamic> stockMap = Map();
+                  stockMap['FormId'] = 'BD_STOCK';
+                  stockMap['FieldKeys'] = 'FFlexNumber';
+                  stockMap['FilterString'] = "FNumber = '" + entry[19] + "'";
+                  Map<String, dynamic> stockDataMap = Map();
+                  stockDataMap['data'] = stockMap;
+                  String res = await CurrencyEntity.polling(stockDataMap);
+                  var stockRes = jsonDecode(res);
+                  if (stockRes.isNotEmpty) {
+                    var postionList = entryLocation.split(".");
+                    codeFEntityItem['FStockLocID'] = {};
+                    for (int idx = 0; idx < postionList.length; idx++) {
+                      codeFEntityItem['FStockLocID']["FSTOCKLOCID__" + stockRes[idx][0]] = {
+                        "FNumber": postionList[idx]
+                      };
                     }
                   }
-                  var codeFEntity = [codeFEntityItem];
-                  codeModel['FEntity'] = codeFEntity;
-                  orderCodeMap['Model'] = codeModel;
-                  dataCodeMap['data'] = orderCodeMap;
-                  print(dataCodeMap);
-                  String codeRes = await SubmitEntity.save(dataCodeMap);
-                  var barcodeRes = jsonDecode(codeRes);
-                  if (!barcodeRes['Result']['ResponseStatus']['IsSuccess']) {
-                    errorMsg += "错误反馈：" + itemCode[1] + ":" + barcodeRes['Result']['ResponseStatus']['Errors'][0]['Message'];
-                  }
-                  print(codeRes);
                 }
+
+                var codeFEntity = [codeFEntityItem];
+                codeModel['FEntity'] = codeFEntity;
+                orderCodeMap['Model'] = codeModel;
+                dataCodeMap['data'] = orderCodeMap;
+                print(dataCodeMap);
+                String codeRes = await SubmitEntity.save(dataCodeMap);
+                var barcodeRes = jsonDecode(codeRes);
+                if (!barcodeRes['Result']['ResponseStatus']['IsSuccess']) {
+                  errorMsg += "错误反馈：" + parts[1] + ":" + barcodeRes['Result']['ResponseStatus']['Errors'][0]['Message'];
+                }
+                print(codeRes);
               }
             }
           }
