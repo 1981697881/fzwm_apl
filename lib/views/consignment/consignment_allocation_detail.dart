@@ -2050,10 +2050,10 @@ class _RetrievalDetailState extends State<ConsignmentAllocationDetail> {
             .then((submitResult) async{
           if (submitResult) {
             //审核
-            HandlerOrder.orderHandler(context, submitMap, 1,
+            /*HandlerOrder.orderHandler(context, submitMap, 1,
                 "STK_TransferDirect", SubmitEntity.audit(submitMap))
                 .then((auditResult) async {
-              if (auditResult) {
+              if (auditResult) {*/
             var errorMsg = "";
             if (fBarCodeList == 1) {
               for (int i = 0; i < this.hobby.length; i++) {
@@ -2205,7 +2205,7 @@ class _RetrievalDetailState extends State<ConsignmentAllocationDetail> {
               ToastUtil.showInfo('提交成功');
               Navigator.of(context).pop("refresh");
             });
-            } else {
+            /*} else {
                 //失败后反审
                 HandlerOrder.orderHandler(context, submitMap, 0,
                     "STK_TransferDirect", SubmitEntity.unAudit(submitMap))
@@ -2217,7 +2217,7 @@ class _RetrievalDetailState extends State<ConsignmentAllocationDetail> {
                   }
                 });
               }
-            });
+            });*/
           } else {
             this.isSubmit = false;
           }

@@ -324,14 +324,14 @@ class _PickingDetailState extends State<PickingDetail> {
         EasyLoading.dismiss();
         this._getHobby();
       });
-      getStockList();
+      //();
     } else {
       setState(() {
         EasyLoading.dismiss();
         this._getHobby();
       });
       ToastUtil.showInfo('已领料');
-      getStockList();
+      //getStockList();
     }
     /* _onEvent("247230329291267");*/
   }
@@ -421,16 +421,18 @@ class _PickingDetailState extends State<PickingDetail> {
         EasyLoading.dismiss();
         this._getHobby();
       });
-      getStockList();
+      //getStockList();
     } else {
       setState(() {
         EasyLoading.dismiss();
         this._getHobby();
       });
       ToastUtil.showInfo('无数据');
-      getStockList();
+      //getStockList();
     }
      //_onEvent("F.17.1200013;25100030;;50;WGRK23090827,1903047088;2");
+     /*_onEvent("88010065-260507-26050714898");
+     _onEvent("88010065-260507-26050714899");*/
   }
 
   void _onEvent(event) async {
@@ -449,7 +451,8 @@ class _PickingDetailState extends State<PickingDetail> {
     }else{
       if (fBarCodeList == 1) {
         if (event.split('-').length > 2) {
-          getMaterialListT(event, event.split('-')[2]);
+          String trimmedEvent = event.trim();
+          getMaterialListT(trimmedEvent, trimmedEvent.split('-')[2]);
 
         } else {
           if (event.length > 15) {
@@ -495,7 +498,8 @@ class _PickingDetailState extends State<PickingDetail> {
               ToastUtil.showInfo('条码不在条码清单中');
             }
           } else {
-            getMaterialListTH(event, event.substring(9, 15));
+            String trimmedEvent = event.trim();
+            getMaterialListTH(trimmedEvent, trimmedEvent.substring(9, 15));
           }
         }
       } else {
